@@ -122,15 +122,42 @@ private struct PreferenceIntakeQuestionsView: View {
                 .scrollIndicators(.hidden)
             }
 
-            TBFlowStepCTA(
-                actionLabel: isLastQuestion
-                    ? "선호 저장"
-                    : "다음 질문",
-                currentIndex: questionIndex,
-                total: questions.count,
-                isEnabled: canContinue,
-                helperText: helperText,
-                action: continueFlow
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+                TBStepIndicator(
+                    currentIndex: questionIndex,
+                    total: questions.count
+                )
+                .padding(.bottom, FlowBottomCtaMetrics.indicatorToHelperGap)
+
+                Text(helperText)
+                    .font(TBFont.medium(11))
+                    .foregroundStyle(TBColor.textFaint)
+                    .multilineTextAlignment(.center)
+                    .padding(.bottom, FlowBottomCtaMetrics.helperBottomMargin)
+
+                PrimaryButton(
+                    title: isLastQuestion ? "선호 저장" : "다음 질문",
+                    isEnabled: canContinue,
+                    action: continueFlow
+                )
+            }
+            .padding(.horizontal, FlowBottomCtaMetrics.horizontalPadding)
+            .padding(.bottom, FlowBottomCtaMetrics.bottomPadding)
+            .frame(maxWidth: .infinity)
+            .frame(height: FlowBottomCtaMetrics.minHeight)
+            .background(
+                LinearGradient(
+                    stops: [
+                        .init(color: TBColor.focus.opacity(0), location: 0),
+                        .init(color: TBColor.focus.opacity(0.8), location: 0.45),
+                        .init(color: TBColor.focus, location: 1),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea(edges: .bottom)
+                .allowsHitTesting(false)
             )
         }
         .tbScreenTopChrome()

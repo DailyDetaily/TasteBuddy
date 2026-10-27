@@ -136,46 +136,9 @@ private struct ProfileIdentityCard: View {
             .buttonStyle(TBTokenButtonStyle())
             .accessibilityLabel("프로필 설정 열기")
         } footerAction: {
-            Button {
+            TBCapsuleButton(title: "버디 찾기", icon: .userPlus) {
                 onFindBuddy?()
-            } label: {
-                ProfileFindBuddyButtonContent()
             }
-            .buttonStyle(TBTokenButtonStyle())
         }
-    }
-}
-
-private enum ProfileFindBuddyButtonMetrics {
-    static let height: CGFloat = 36
-    static let horizontalPadding: CGFloat = TBSpacing.x12
-    static let gap: CGFloat = TBSpacing.x8
-    static let iconSize: CGFloat = TBIcon.Size.small
-    static let fontSize: CGFloat = 12
-}
-
-private struct ProfileFindBuddyButtonContent: View {
-    var body: some View {
-        HStack(spacing: ProfileFindBuddyButtonMetrics.gap) {
-            LucideIcon(
-                .userPlus,
-                size: ProfileFindBuddyButtonMetrics.iconSize,
-                strokeWidth: TBIcon.Stroke.regular
-            )
-            .foregroundStyle(TBColor.iconPrimary)
-
-            Text("버디 찾기")
-                .font(TBFont.semibold(ProfileFindBuddyButtonMetrics.fontSize))
-                .foregroundStyle(TBColor.textPrimary)
-        }
-        .lineLimit(1)
-        .padding(.horizontal, ProfileFindBuddyButtonMetrics.horizontalPadding)
-        .frame(height: ProfileFindBuddyButtonMetrics.height)
-        .background(TBColor.surface)
-        .clipShape(Capsule())
-        .overlay {
-            Capsule().stroke(TBColor.border, lineWidth: 1)
-        }
-        .fixedSize(horizontal: true, vertical: false)
     }
 }

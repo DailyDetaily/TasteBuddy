@@ -121,7 +121,10 @@ enum HomeDiscoveryEngine {
         dateFormatter.dateFormat = "yyyy.M.d"
         var candidates: [HomeDiscoveryCard] = []
 
+        // Keep the original text in the revision signature so a copy edit cannot bypass
+        // older revision-based suppression. Display overrides are transient presentation only.
         func add(_ kind: HomeDiscoveryCard.Kind, subject: String, title: String, detail: String,
+                 displayTitle: String? = nil, displayDetail: String? = nil,
                  explanation: String, rows: [DiningEntry], evidenceIDs: Set<String> = [], meaning: String = "initial") {
             guard !rows.isEmpty else { return }
             let ordered = rows.sorted {
@@ -136,7 +139,7 @@ enum HomeDiscoveryEngine {
             proof.sourceRevisions = Dictionary(uniqueKeysWithValues: ordered.map { ($0.id.uuidString, $0.memoryRevisionNumber) })
             candidates.append(.init(
                 id: id, revisionKey: revisionKey, kind: kind, subjectID: subject,
-                title: title, detail: detail, explanation: explanation,
+                title: displayTitle ?? title, detail: displayDetail ?? detail, explanation: explanation,
                 entryIDs: Set(ordered.map(\.id)), evidenceIDs: evidenceIDs,
                 sourceRevisions: Dictionary(uniqueKeysWithValues: ordered.map { ($0.id, $0.memoryRevisionNumber) }),
                 photoFilename: ordered.compactMap(\.reflectionPhotoFilename).first,
@@ -178,6 +181,8 @@ enum HomeDiscoveryEngine {
                     add(.timeGap, subject: subject,
                         title: "\(first.menu)\n두 식사 기록 사이 \(gap)일",
                         detail: "\(dateFormatter.string(from: previous.date)) · \(dateFormatter.string(from: latest.date))",
+                        displayTitle: "\(first.menu) · 기록 간격 \(gap)일",
+                        displayDetail: "\(dateFormatter.string(from: previous.date)) → \(dateFormatter.string(from: latest.date))",
                         explanation: "같은 메뉴의 확인된 식사일 두 개를 비교했어요. 그 사이에 이 음식을 먹지 않았다는 뜻은 아니에요.",
                         rows: rows.filter { $0.mealID == previous.id || $0.mealID == latest.id })
                 }
@@ -198,6 +203,8 @@ enum HomeDiscoveryEngine {
                 add(.repeatedGoodEvaluation, subject: subject,
                     title: "\(first.menu)\n좋은 평가를 남긴 식사 \(goodMealCount)번",
                     detail: "\(first.restaurant) · 직접 평가가 있는 식사 \(ratedMeals.count)번",
+                    displayTitle: "\(first.menu) · 좋은 평가 \(goodMealCount)/\(ratedMeals.count)회",
+                    displayDetail: "\(first.restaurant) · 직접 평가한 식사 기준",
                     explanation: "‘정말 좋았어요’ 또는 ‘좋았어요’로 직접 평가한 서로 다른 식사만 셌어요. 미응답과 별점은 사용하지 않고, 다른 평가와 미응답 기록도 아래에 함께 보여줘요.",
                     rows: rows, evidenceIDs: evidenceIDs,
                     meaning: "positive|counter:\(rows.filter { responses[$0.id].map { !goodResponses.contains($0) } ?? false }.map { $0.mealID.uuidString }.sorted().joined(separator: ","))")
@@ -213,6 +220,8 @@ enum HomeDiscoveryEngine {
             add(.restaurantCollection, subject: "restaurant:" + identity,
                 title: "\(first.restaurant)\n\(menuCount)가지 메뉴가 쌓였어요",
                 detail: "\(mealCount)번의 식사에 남긴 메뉴 기록",
+                displayTitle: "\(first.restaurant) · 메뉴 \(menuCount)가지",
+                displayDetail: "식사 \(mealCount)회에서 기록",
                 explanation: "이 식당에 연결된 서로 다른 메뉴를 셌어요. 메뉴 ID가 없을 때는 식당과 정규화한 메뉴명을 함께 구분해요.",
                 rows: named, meaning: "milestone:\(HomeDiscoveryRelations.milestone(menuCount))")
         }
@@ -226,6 +235,7 @@ enum HomeDiscoveryEngine {
                     title: "지난해 이맘때의 식사 기록",
                     detail: [dateFormatter.string(from: date), first.restaurant,
                              rows.count == 1 ? first.menu : "메뉴 기록 \(rows.count)개"].filter { !$0.isEmpty }.joined(separator: " · "),
+                    displayTitle: "지난해 이맘때 기록",
                     explanation: "지난해 오늘 전후 7일에 해당하는, 식사일이 확인된 기록이에요.", rows: rows)
             }
         }
@@ -491,8 +501,10 @@ private enum HomeDiscoveryRelations {
         let evidence: Evidence
         var candidates: [HomeDiscoveryCard] = []
 
+        // Display overrides do not participate in discovery identity, meaning, or revision.
         mutating func add(_ kind: HomeDiscoveryCard.Kind, subject: String, scope: String, title: String,
-                          detail: String, explanation: String, rows: [DiningEntry], evidenceIDs: Set<String>,
+                          detail: String, displayTitle: String? = nil, displayDetail: String? = nil,
+                          explanation: String, rows: [DiningEntry], evidenceIDs: Set<String>,
                           meaning: String, strength: Int, summary: String, proof: TDEvidenceBundle? = nil, limits: [String] = []) {
             let unique = Dictionary(rows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
             let ordered = unique.values.sorted {
@@ -512,7 +524,7 @@ private enum HomeDiscoveryRelations {
                 currentProof = value
             }
             candidates.append(.init(id: id, revisionKey: revision, kind: kind, subjectID: subject,
-                title: title, detail: detail, explanation: explanation, entryIDs: Set(ordered.map(\.id)),
+                title: displayTitle ?? title, detail: displayDetail ?? detail, explanation: explanation, entryIDs: Set(ordered.map(\.id)),
                 evidenceIDs: evidenceIDs,
                 sourceRevisions: Dictionary(uniqueKeysWithValues: ordered.map { ($0.id, $0.memoryRevisionNumber) }),
                 photoFilename: ordered.compactMap(\.reflectionPhotoFilename).first,
@@ -537,6 +549,8 @@ private enum HomeDiscoveryRelations {
                     add(.commonPreference, subject: subject, scope: scope,
                         title: "메뉴는 달라도\n\(first.label)에 호감을 남겼어요",
                         detail: "직접 평가한 식사 \(votes.total)번 중 호감 \(votes.count("positive"))번 · 호감 메뉴 \(positiveMenus.count)가지",
+                        displayTitle: "여러 메뉴에서 \(first.label)에 호감",
+                        displayDetail: "평가한 식사 \(votes.total)회 중 \(votes.count("positive"))회\n호감 기록 메뉴 \(positiveMenus.count)가지",
                         explanation: "\(evidence.scopeLabel(first)) 범위에서 감각 자체에 남긴 직접 호감을 식사별로 묶었어요. 감각 태그의 등장이나 음식 전체 평가로 호감을 추정하지 않아요.",
                         rows: rows, evidenceIDs: Set(units.flatMap(\.evidenceIDs)),
                         meaning: "positive|counter:" + votes.counterKey(to: "positive"),
@@ -567,6 +581,8 @@ private enum HomeDiscoveryRelations {
                     add(.conditionalContrast, subject: subject, scope: key([scope, keys[i], keys[j]]),
                         title: "같은 \(first.label)에도\n메뉴별로 다른 평가를 남겼어요",
                         detail: "\(evidence.namedMenu(keys[i])): \(directionLabel(dx)) \(x.count(dx))/\(x.total)번\n\(evidence.namedMenu(keys[j])): \(directionLabel(dy)) \(y.count(dy))/\(y.total)번",
+                        displayTitle: "\(first.label) · 메뉴별 평가 차이",
+                        displayDetail: "\(evidence.namedMenu(keys[i])): \(compactDirectionLabel(dx)) \(x.count(dx))/\(x.total)회\n\(evidence.namedMenu(keys[j])): \(compactDirectionLabel(dy)) \(y.count(dy))/\(y.total)회",
                         explanation: "\(evidence.scopeLabel(first))에서 서로 다른 메뉴의 직접 평가를 비교했어요. 각 메뉴에 식사 3번 이상, 같은 방향 75% 이상이며 식사 하나를 제외해도 방향이 유지되는 후보예요.",
                         rows: evidence.rows(a + b), evidenceIDs: Set((a + b).flatMap(\.evidenceIDs)),
                         meaning: key([dx, dy, x.counterKey(to: dx), y.counterKey(to: dy)]),
@@ -595,6 +611,8 @@ private enum HomeDiscoveryRelations {
             add(.patternException, subject: subject, scope: scope,
                 title: "최근 식사의 \(first.label),\n앞선 기록과 다른 반응이었어요",
                 detail: "앞선 \(baseline.total)번 중 \(directionLabel(direction)) \(baseline.count(direction))번 · 최근 식사: \(directionLabel(currentDirection))",
+                displayTitle: "\(first.label) · 최근 1회는 다른 평가",
+                displayDetail: "이전 \(baseline.total)회 중 \(compactDirectionLabel(direction)) \(baseline.count(direction))회\n최근 1회는 \(compactDirectionLabel(currentDirection))",
                 explanation: "\(evidence.scopeLabel(first))에서 확인된 식사일을 기준으로 이전 기록과 가장 최근 한 식사를 분리했어요. 최근 식사는 이전 경향 계산에 넣지 않았어요.",
                 rows: evidence.rows(units), evidenceIDs: Set(dated.flatMap(\.evidenceIDs)),
                 meaning: key([direction, currentDirection] + current.values.keys.sorted()),
@@ -631,6 +649,8 @@ private enum HomeDiscoveryRelations {
                     add(.familiarTasteInNewMenu, subject: "menu:" + menu, scope: scope,
                         title: "\(entry.menu)에서도\n익숙한 \(unit.label) 취향을 만났어요",
                         detail: "처음 기록한 메뉴 · 이전 다른 메뉴의 평가 \(priorVotes.total)번 중 호감 \(priorVotes.count("positive"))번",
+                        displayTitle: "\(entry.menu)에서도 \(unit.label)에 호감",
+                        displayDetail: "이번 메뉴는 첫 기록\n이전 다른 메뉴에서 호감 \(priorVotes.count("positive"))/\(priorVotes.total)회",
                         explanation: "이번 메뉴의 전체 평가와 \(unit.label) 자체의 평가가 모두 긍정이에요. 이전 다른 메뉴의 같은 대상·시점 범위에서도 감각 자체에 호감을 남겼어요.",
                         rows: rows, evidenceIDs: Set((prior + [unit]).flatMap(\.evidenceIDs) + [overall.observationId]),
                         meaning: key([meal, priorVotes.counterKey(to: "positive")]), strength: 65,
@@ -674,6 +694,8 @@ private enum HomeDiscoveryRelations {
                     title: "\(entry.menu)의 \(PersonalTasteModelBuilder.label(first))\n" + (preferred.repeatedValue == "just_right"
                         ? "알맞았던 강도가 보여요" : "이 강도는 ‘\(fitLabel(preferred.repeatedValue ?? ""))’으로 남겼어요"),
                     detail: detail,
+                    displayTitle: "\(entry.menu) · \(PersonalTasteModelBuilder.label(first))의 알맞음",
+                    displayDetail: selected.map { "\(compactIntensityLabel($0.conditions[0].value)): \(fitLabel($0.repeatedValue ?? "")) \($0.distribution.mealCount)회" }.joined(separator: "\n"),
                     explanation: "\(evidence.scopeLabel(target: first.target, phase: first.phase))에서 같은 선택 또는 검증된 부모 선택의 강도와 알맞음을 연결했어요. 선택한 각 강도에서 같은 응답이 서로 다른 식사 3번 이상 반복됐어요.",
                     rows: rows, evidenceIDs: directIDs,
                     meaning: key(selected.map { $0.conditions[0].value + ":" + ($0.repeatedValue ?? "") }),
@@ -707,6 +729,8 @@ private enum HomeDiscoveryRelations {
                 add(.overallContrast, subject: "sense:" + key([first.attribute ?? "", first.reference ?? ""]), scope: scope,
                     title: "\(PersonalTasteModelBuilder.label(first))에는 ‘\(directionLabel(cell.attributeValue))’\n음식 전체에는 ‘\(overallLabel(cell.overallValue))’",
                     detail: "두 평가가 있는 식사 \(pattern.mealIDs.count)번 중 이 조합 \(count)번 · \(count >= 3 ? "반복 관찰" : "개별 경험")",
+                    displayTitle: "\(PersonalTasteModelBuilder.label(first)) ‘\(compactDirectionLabel(cell.attributeValue))’ · 전체 ‘\(compactOverallLabel(cell.overallValue))’",
+                    displayDetail: "두 평가가 있는 식사 \(pattern.mealIDs.count)회 중 \(count)회\n\(count >= 3 ? "반복 관찰" : "개별 경험")",
                     explanation: "\(evidence.scopeLabel(target: first.target, phase: first.phase))의 감각 평가와 같은 음식 경험의 전체 평가만 짝지었어요. 다른 메뉴의 평가를 서로 붙이지 않아요.",
                     rows: experienceIDs.sorted().compactMap { evidence.byID[$0] }, evidenceIDs: Set(pattern.evidenceIDs),
                     meaning: key([cell.overallValue, cell.attributeValue, count >= 3 ? "repeated" : "example"]),
@@ -738,6 +762,8 @@ private enum HomeDiscoveryRelations {
                 add(.revisitComparison, subject: "menu:" + identity, scope: "overall",
                     title: "\(rows[0].menu)\n두 식사의 평가는 달랐어요",
                     detail: "\(evidence.dateText(previous.1)): \(overallLabel(a))\n\(evidence.dateText(latest.1)): \(overallLabel(b))",
+                    displayTitle: "\(rows[0].menu) · 두 식사의 평가 차이",
+                    displayDetail: "\(evidence.dateText(previous.1)): \(compactOverallLabel(a))\n\(evidence.dateText(latest.1)): \(compactOverallLabel(b))",
                     explanation: "같은 식당의 같은 메뉴에 남긴 최근 두 식사의 직접 전체 평가를 비교했어요. 두 기록은 확인된 서로 다른 식사일에 해당해요.",
                     rows: selected, evidenceIDs: ids, meaning: key([previous.0, latest.0, a, b]),
                     strength: 63, summary: "직접 전체 평가가 있는 식사 2번",
@@ -784,6 +810,8 @@ private enum HomeDiscoveryRelations {
                 add(.periodChange, subject: "menu:" + menu, scope: evidence.comparisonWindow == nil ? scope : key([scope, window.label]),
                     title: "\(evidence.menus[menu]?.first?.menu ?? "같은 메뉴")의 \(first.label)\n두 기간의 긍정 평가가 달랐어요",
                     detail: "이전 \(days)일: 호감 \(a.count("positive"))/\(a.total)번\n최근 \(days)일: 호감 \(b.count("positive"))/\(b.total)번",
+                    displayTitle: "\(evidence.menus[menu]?.first?.menu ?? "같은 메뉴") · \(first.label) 호감 비율 차이",
+                    displayDetail: "이전 \(days)일: 호감 \(a.count("positive"))/\(a.total)회\n최근 \(days)일: 호감 \(b.count("positive"))/\(b.total)회",
                     explanation: "같은 식당·메뉴·감각·대상·시점·기록된 강도 범위에서 비교했어요. 이전 \(previousWindow.range(calendar: evidence.calendar)), 최근 \(window.range(calendar: evidence.calendar)). 각 5회 이상, 40퍼센트포인트 이상 차이가 있고 식사 하나를 제외해도 차이의 방향이 유지돼요.",
                     rows: evidence.rows(units), evidenceIDs: Set(selected.flatMap(\.evidenceIDs)),
                     meaning: delta > 0 ? "positive-increase" : "positive-decrease", strength: 78,
@@ -797,6 +825,16 @@ private enum HomeDiscoveryRelations {
             }
         }
 
+        private func compactDirectionLabel(_ value: String) -> String {
+            ["positive": "좋음", "negative": "아쉬움", "neutral": "보통"][value] ?? "다른 응답"
+        }
+        private func compactOverallLabel(_ value: String) -> String {
+            ["very_positive": "매우 좋음", "positive": "좋음", "neutral": "보통",
+             "negative": "아쉬움", "very_negative": "많이 아쉬움"][value] ?? "응답 미확인"
+        }
+        private func compactIntensityLabel(_ value: String) -> String {
+            ["weak": "약함", "medium": "중간", "strong": "강함"][value] ?? "미지정"
+        }
         private func directionLabel(_ value: String) -> String {
             ["positive": "좋았어요", "negative": "아쉬웠어요", "neutral": "보통이에요"][value] ?? "다른 응답"
         }

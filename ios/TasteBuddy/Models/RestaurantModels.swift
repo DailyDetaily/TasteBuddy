@@ -28,6 +28,7 @@ struct RestaurantSummary: Identifiable, Hashable {
     let tags: [String]
     let memorableDishes: [Dish]
     let infoRows: [InfoRow]
+    var placeReference: DiningRestaurantPlaceReference? = nil
 }
 
 enum RestaurantCatalog {
@@ -159,5 +160,28 @@ enum RestaurantCatalog {
 
     static func restaurants(ids: Set<String>) -> [RestaurantSummary] {
         restaurants.filter { ids.contains($0.id) }
+    }
+}
+
+extension DiningEntry {
+    var linkedRestaurantSummary: RestaurantSummary? {
+        guard foodSource?.kind != "homeCooked", let restaurantID,
+              !restaurantID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              !restaurant.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+        if let catalog = RestaurantCatalog.restaurants.first(where: { $0.id == restaurantID }) { return catalog }
+        return RestaurantSummary(id: restaurantID, name: restaurant, chefName: "", category: "",
+                                 locationLabel: foodSource?.restaurantPlace?.address ?? "", imageName: nil,
+                                 axis: .umami, matchRate: 0, summary: "", tags: [], memorableDishes: [], infoRows: [],
+                                 placeReference: foodSource?.restaurantPlace)
+    }
+}
+
+extension DiningRestaurantPlaceReference {
+    var placeInfo: RestaurantPlaceInfo {
+        let source: RestaurantInfoSource = kakaoPlaceID == nil ? .google : .kakao
+        return RestaurantPlaceInfo(address: address, googlePlaceID: googlePlaceID,
+                                   kakaoPlaceID: kakaoPlaceID, lat: latitude, lng: longitude,
+                                   mapURL: kakaoPlaceID.flatMap { URL(string: "https://place.map.kakao.com/\($0)") },
+                                   phone: phone, sourceByRow: [.address: source, .phone: source])
     }
 }

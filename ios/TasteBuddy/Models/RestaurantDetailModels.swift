@@ -270,7 +270,8 @@ extension RestaurantDetailModel {
 
     static func infoRows(
         from info: RestaurantPlaceInfo,
-        includingFallbacks: Bool = false
+        includingFallbacks: Bool = false,
+        missingHoursLabel: String = "영업시간 미확인"
     ) -> [RestaurantInfoRowModel] {
         if includingFallbacks {
             return [
@@ -279,12 +280,12 @@ extension RestaurantDetailModel {
                     value: info.address,
                     fallback: "주소를 알려주세요",
                     source: info.sourceByRow[.address] ?? .manual,
-                    url: nil
+                    url: info.googleMapsURL ?? info.mapURL
                 ),
                 rowOrFallback(
                     id: .hours,
                     value: info.hours,
-                    fallback: "영업시간을 알려주세요",
+                    fallback: missingHoursLabel,
                     source: info.sourceByRow[.hours] ?? .manual
                 ),
                 rowOrFallback(
@@ -302,7 +303,7 @@ extension RestaurantDetailModel {
                 id: .address,
                 value: info.address,
                 source: info.sourceByRow[.address] ?? .manual,
-                url: info.sourceByRow[.address] == .kakao ? nil : mapSearchURL(for: info.address)
+                url: info.googleMapsURL ?? info.mapURL ?? mapSearchURL(for: info.address)
             ),
             row(id: .hours, value: info.hours, source: info.sourceByRow[.hours] ?? .manual),
             row(id: .website, value: info.website, source: info.sourceByRow[.website] ?? .manual, url: websiteURL(for: info.website)),
@@ -449,6 +450,13 @@ extension RestaurantDetailModel {
     }
 
     private static func fallbackPlaceInfo(for restaurant: RestaurantSummary) -> RestaurantPlaceInfo {
+        if let reference = restaurant.placeReference { return reference.placeInfo }
+        if restaurant.id.hasPrefix("kakao-") {
+            return RestaurantPlaceInfo(address: restaurant.locationLabel,
+                kakaoPlaceID: String(restaurant.id.dropFirst(6)),
+                phone: restaurant.infoRows.first(where: { $0.id == "phone" })?.value,
+                sourceByRow: [.address: .kakao, .phone: .kakao])
+        }
         switch restaurant.id {
         case "mingles":
             return RestaurantPlaceInfo(

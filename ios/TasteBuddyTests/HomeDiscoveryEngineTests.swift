@@ -59,6 +59,39 @@ final class HomeDiscoveryEngineTests: XCTestCase {
         XCTAssertTrue(collection.title.contains("3가지"))
     }
 
+    func testCopyRefreshKeepsLegacyRevisionSuppressionAndSemanticReadHistory() throws {
+        let entries = (1...3).map { record(menu: "메뉴 \($0)") }
+        let card = try XCTUnwrap(cards(entries).first { $0.kind == .restaurantCollection })
+        let legacyTitle = "합성 식당\n3가지 메뉴가 쌓였어요"
+        let legacyDetail = "3번의 식사에 남긴 메뉴 기록"
+        let revisions = entries.map { "\($0.id.uuidString):\($0.memoryRevisionNumber)" }.sorted()
+        let legacyRevision = HomeDiscoveryCard.digest(([card.id, legacyTitle, legacyDetail] + revisions).joined(separator: "|"))
+
+        XCTAssertEqual(card.title, "합성 식당 · 메뉴 3가지")
+        XCTAssertEqual(card.detail, "식사 3회에서 기록")
+        XCTAssertEqual(card.revisionKey, legacyRevision, "A copy-only update must not reopen a previously suppressed finding")
+        let expiry = now.addingTimeInterval(86400)
+        XCTAssertTrue(HomeDiscoveryPresentationPolicy.visible([card], hiddenUntil: [legacyRevision: expiry], referenceDate: now).isEmpty)
+        let history = HomeDiscoveryPresentationPolicy.recordingRead(card, in: [:], at: now)
+        XCTAssertTrue(HomeDiscoveryPresentationPolicy.visible([card], hiddenUntil: history, referenceDate: expiry).isEmpty)
+        XCTAssertEqual(card.entryIDs, Set(entries.map(\.id)))
+    }
+
+    #if DEBUG || targetEnvironment(simulator)
+    func testCopyReviewSourcesReachEveryActiveDiscoveryKind() throws {
+        let entries = GastronomyRuntimePreview.entries(now: now, calendar: calendar, discoveryExamples: true,
+                                                       comprehensiveCopyExamples: true)
+        let snapshot = try SensoryAnalysisEngine.analyze(entries: entries)
+        let input = TDNativeAdapter.inputs(entries: entries, snapshot: snapshot, now: now)
+        let state = TDDataEngine.prepare(records: input.records, observations: input.observations, window: .all,
+                                        now: now, calendar: calendar, issues: input.issues)
+        let candidates = HomeDiscoveryEngine.gastronomyCards(input: input, state: state, calendar: calendar)
+        let expected = Set(HomeDiscoveryCard.Kind.allCases.filter { $0 != .repeatedMenu })
+        XCTAssertEqual(Set(candidates.map(\.kind)), expected)
+        XCTAssertTrue(candidates.allSatisfy { !$0.title.isEmpty && !$0.detail.isEmpty })
+    }
+    #endif
+
     func testGapUsesTwoConfirmedMealsWithoutClaimingNoMealsBetweenThem() throws {
         let previous = record(daysAgo: 87), latest = record(daysAgo: 1)
         let uncertain = record(daysAgo: 30, confirmed: false)
@@ -90,8 +123,8 @@ final class HomeDiscoveryEngineTests: XCTestCase {
         let entries = [record(overall: .liked), record(overall: .veryLiked), record(overall: .liked),
                        record(overall: .disliked), record()]
         let card = try XCTUnwrap(cards(entries, analyze: true).first { $0.kind == .repeatedGoodEvaluation })
-        XCTAssertTrue(card.title.contains("3번"))
-        XCTAssertTrue(card.detail.contains("직접 평가가 있는 식사 4번"))
+        XCTAssertTrue(card.title.contains("좋은 평가 3/4회"))
+        XCTAssertTrue(card.detail.contains("직접 평가한 식사 기준"))
         XCTAssertEqual(card.entryIDs, Set(entries.map(\.id)))
         XCTAssertEqual(card.evidenceIDs.count, 4)
     }
@@ -183,7 +216,7 @@ final class HomeDiscoveryEngineTests: XCTestCase {
         let negative = record(menu: "합성 메뉴 0", selections: [sense(.disliked)])
         let entries = commonRecords() + [negative]
         let card = try XCTUnwrap(cards(entries, analyze: true).first { $0.kind == .commonPreference })
-        XCTAssertTrue(card.detail.contains("4번 중 호감 3번"))
+        XCTAssertTrue(card.detail.contains("식사 4회 중 3회"))
         XCTAssertTrue(card.evidenceSummary.contains("아쉬움 1"))
         XCTAssertTrue(card.entryIDs.contains(negative.id))
         XCTAssertFalse(card.evidenceIDs.isEmpty)
@@ -246,17 +279,17 @@ final class HomeDiscoveryEngineTests: XCTestCase {
         }
         let result = try cards(entries, analyze: true)
         let card = try XCTUnwrap(result.first { $0.kind == .preferredIntensity })
-        XCTAssertTrue(card.detail.contains("중간 강도: 알맞음 3번"))
-        XCTAssertTrue(card.detail.contains("강한 강도: 과함 3번"))
+        XCTAssertTrue(card.detail.contains("중간: 알맞음 3회"))
+        XCTAssertTrue(card.detail.contains("강함: 과함 3회"))
         XCTAssertFalse(result.contains { $0.kind == .commonPreference })
     }
 
     func testOnlyExcessFitDoesNotClaimTheIntensityWasJustRight() throws {
         let entries = (1...3).map { record(daysAgo: $0, selections: [sense(nil, intensity: .strong, fit: .tooStrong)]) }
         let card = try XCTUnwrap(cards(entries, analyze: true).first { $0.kind == .preferredIntensity })
-        XCTAssertTrue(card.title.contains("과함"))
+        XCTAssertFalse(card.detail.contains("알맞음"))
         XCTAssertFalse(card.title.contains("알맞았던"))
-        XCTAssertTrue(card.detail.contains("강한 강도: 과함 3번"))
+        XCTAssertTrue(card.detail.contains("강함: 과함 3회"))
     }
 
     func testFitFromDifferentMenusIsNotAttributedToIntensityAlone() throws {
@@ -267,15 +300,15 @@ final class HomeDiscoveryEngineTests: XCTestCase {
         }
         let result = try cards(entries, analyze: true).filter { $0.kind == .preferredIntensity }
         XCTAssertEqual(result.count, 2)
-        XCTAssertFalse(result.contains { $0.detail.contains("중간 강도") && $0.detail.contains("강한 강도") })
+        XCTAssertFalse(result.contains { $0.detail.contains("중간:") && $0.detail.contains("강함:") })
     }
 
     func testConditionalContrastNeedsIndependentDisjointMealGroups() throws {
         let a = (1...3).map { record(menu: "A", daysAgo: $0, selections: [sense(.liked)]) }
         let b = (1...3).map { record(menu: "B", daysAgo: $0 + 5, selections: [sense(.disliked)]) }
         let card = try XCTUnwrap(cards(a + b, analyze: true).first { $0.kind == .conditionalContrast })
-        XCTAssertTrue(card.detail.contains("좋았어요 3/3번"))
-        XCTAssertTrue(card.detail.contains("아쉬웠어요 3/3번"))
+        XCTAssertTrue(card.detail.contains("좋음 3/3회"))
+        XCTAssertTrue(card.detail.contains("아쉬움 3/3회"))
         XCTAssertEqual(card.entryIDs.count, 6)
         let paired = (1...3).flatMap { day -> [DiningEntry] in
             let meal = UUID()
@@ -289,7 +322,7 @@ final class HomeDiscoveryEngineTests: XCTestCase {
         let previous = (1...4).map { record(daysAgo: $0 + 10, selections: [sense(.disliked)]) }
         let recent = record(selections: [sense(.liked)])
         let card = try XCTUnwrap(cards(previous + [recent], analyze: true).first { $0.kind == .patternException })
-        XCTAssertTrue(card.detail.contains("앞선 4번 중"))
+        XCTAssertTrue(card.detail.contains("이전 4회 중"))
         XCTAssertTrue(card.limitations.joined().contains("한 번의 다른 경험"))
         XCTAssertFalse(try cards(Array(previous.prefix(3)) + [recent], analyze: true).contains { $0.kind == .patternException })
     }
@@ -345,8 +378,8 @@ final class HomeDiscoveryEngineTests: XCTestCase {
 
     func testPeriodComparisonUsesFixedNinetyDayWindowsAndKeepsTheDenominator() throws {
         let card = try XCTUnwrap(cards(periodRecords(), analyze: true).first { $0.kind == .periodChange })
-        XCTAssertTrue(card.detail.contains("이전 90일: 호감 1/5번"))
-        XCTAssertTrue(card.detail.contains("최근 90일: 호감 4/5번"))
+        XCTAssertTrue(card.detail.contains("이전 90일: 호감 1/5회"))
+        XCTAssertTrue(card.detail.contains("최근 90일: 호감 4/5회"))
         XCTAssertEqual(card.entryIDs.count, 10)
         XCTAssertFalse(try cards(Array(periodRecords().dropLast()), analyze: true).contains { $0.kind == .periodChange })
     }
@@ -368,7 +401,7 @@ final class HomeDiscoveryEngineTests: XCTestCase {
         let new = record(menu: "새 메뉴", overall: .liked, selections: [sense()])
         let card = try XCTUnwrap(cards(earlier + [new], analyze: true).first { $0.kind == .familiarTasteInNewMenu })
         XCTAssertTrue(card.entryIDs.contains(new.id))
-        XCTAssertTrue(card.detail.contains("처음 기록한 메뉴"))
+        XCTAssertTrue(card.detail.contains("이번 메뉴는 첫 기록"))
         let unknownPrior = record(menu: "새 메뉴", daysAgo: 50, confirmed: false)
         XCTAssertFalse(try cards(earlier + [new, unknownPrior], analyze: true).contains { $0.kind == .familiarTasteInNewMenu })
         let noOverall = record(menu: "새 메뉴", selections: [sense()])
@@ -382,7 +415,7 @@ final class HomeDiscoveryEngineTests: XCTestCase {
         let card = try XCTUnwrap(cards(earlier + [counter, new], analyze: true)
             .first { $0.kind == .familiarTasteInNewMenu })
         XCTAssertTrue(card.entryIDs.contains(counter.id))
-        XCTAssertTrue(card.detail.contains("평가 4번 중 호감 3번"))
+        XCTAssertTrue(card.detail.contains("이전 다른 메뉴에서 호감 3/4회"))
         XCTAssertTrue(card.evidenceSummary.contains("아쉬움 1"))
         let moreCounters = (1...3).map { record(menu: "합성 메뉴 0", daysAgo: $0 + 25, selections: [sense(.disliked)]) }
         XCTAssertFalse(try cards(earlier + [counter, new] + moreCounters, analyze: true)

@@ -68,7 +68,7 @@ enum AppRoute: Hashable {
 
     var showsContentUnderBottomSafeArea: Bool {
         switch self {
-        case .restaurant, .restaurantSummary, .homeInsight: true
+        case .restaurant, .restaurantSummary, .homeInsight, .cardDetail, .tasteChange: true
         default: false
         }
     }

@@ -406,7 +406,8 @@ struct LiveHomeSearchRepository: HomeSearchRepository {
                         symbol: "phone"
                     )
                 ]
-            } ?? [])
+            } ?? []),
+            placeReference: place.recordReference
         )
     }
 }

@@ -47,11 +47,35 @@ struct OnboardingView: View {
                 .tbPagingTabStyle()
             }
 
-            TBFlowStepCTA(
-                actionLabel: selection == steps.count - 1 ? "시작하기" : "다음",
-                currentIndex: selection,
-                total: steps.count,
-                action: advance
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+                TBStepIndicator(
+                    currentIndex: selection,
+                    total: steps.count
+                )
+                .padding(.bottom, FlowBottomCtaMetrics.stepIndicatorBottomMargin)
+
+                PrimaryButton(
+                    title: selection == steps.count - 1 ? "시작하기" : "다음",
+                    action: advance
+                )
+            }
+            .padding(.horizontal, FlowBottomCtaMetrics.horizontalPadding)
+            .padding(.bottom, FlowBottomCtaMetrics.bottomPadding)
+            .frame(maxWidth: .infinity)
+            .frame(height: FlowBottomCtaMetrics.minHeight)
+            .background(
+                LinearGradient(
+                    stops: [
+                        .init(color: TBColor.focus.opacity(0), location: 0),
+                        .init(color: TBColor.focus.opacity(0.8), location: 0.45),
+                        .init(color: TBColor.focus, location: 1),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea(edges: .bottom)
+                .allowsHitTesting(false)
             )
         }
         .background(TBColor.focus.ignoresSafeArea())

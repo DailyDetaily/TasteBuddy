@@ -8,6 +8,7 @@ struct DesignSystemPreviewView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: TBSpacing.section) {
                 previewHeader
+                NativeTCSBadgePreviewSection()
                 NativeCalloutPreviewSection()
                 if !ProcessInfo.processInfo.arguments.contains("--callout-preview") {
                 FoundationPreviewSection()
@@ -49,6 +50,25 @@ struct DesignSystemPreviewView: View {
                 .lineSpacing(3)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct NativeTCSBadgePreviewSection: View {
+    var body: some View {
+        SectionCard {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("TCSBadge · TCS 배지").font(TBFont.semibold(14))
+                HStack(spacing: 16) {
+                    TCSBadge(adjustments: [.init(taste: .sweet, change: 12)])
+                    TCSBadge(adjustments: [.init(taste: .sweet, change: 20), .init(taste: .umami, change: 5)])
+                    TCSBadge(adjustments: [.init(taste: .sour, change: 10), .init(taste: .fat, change: 6), .init(taste: .bitter, change: 3)])
+                    TCSBadge()
+                    TCSBadge(disabled: true)
+                }
+                Text("조정량의 절대값 비율 · 빈 데이터는 회색 · 읽기 전용")
+                    .font(TBFont.regular(11)).foregroundStyle(TBColor.textBody)
+            }
+        }
     }
 }
 
@@ -348,7 +368,7 @@ private struct CoreControlsPreviewSection: View {
                         HStack(spacing: 8) {
                             OutlineBadge(title: "Profile based")
                             NeutralChip(title: "식사 기록 2회", symbol: "fork.knife")
-                            TasteChip(axis: .umami, value: "72")
+                            Chip(title: TasteAxis.umami.label, value: "72", tasteAxis: .umami, size: .extraSmall)
                         }
 
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -587,13 +607,13 @@ private struct NativeInputRecipesPreviewSection: View {
                         Text("미각 라벨과 넘치는 태그").tbTextStyle(.caption)
                         TBWrapLayout(spacing: 6) {
                             ForEach(TasteAxis.allCases) { axis in
-                                TasteChip(title: axis.label, tone: .taste, colorAxis: axis, size: .sm)
+                                Chip(title: axis.label, tasteAxis: axis, size: .small)
                             }
                         }
-                        TBOverflowTagRow(items: TasteAxis.allCases) { axis in
-                            TasteChip(title: axis.label, tone: .neutral, size: .sm)
+                        OverflowTagRow(items: TasteAxis.allCases, allowsExpansion: true) { axis in
+                            Chip(title: axis.label, size: .small)
                         } overflow: { count in
-                            TasteChip(title: "+\(count)", tone: .neutral, size: .sm)
+                            Chip(title: "+\(count)", size: .small)
                                 .accessibilityLabel("\(count)개 태그 더 있음")
                         }
                         .frame(maxWidth: 220)
@@ -682,7 +702,7 @@ private struct FullInventoryPreviewSection: View {
                             )
                             PalateSignatureAvatar(profile: profile, size: 58)
                             PalateOrbAvatar(axes: profile.topAxes + TasteAxis.allCases, size: 54)
-                            TCSBadge(title: "TCS")
+                            TCSBadge(adjustments: [.init(taste: .sweet, change: 20), .init(taste: .umami, change: 5)])
                         }
                     }
                 }
@@ -997,7 +1017,7 @@ private struct TokenSwatch: View {
         .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous)
-                .stroke(TBColor.borderCard)
+                .stroke(TBColor.borderFaint)
         }
     }
 }
@@ -1022,7 +1042,7 @@ private struct TokenPill: View {
         .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous)
-                .stroke(TBColor.borderCard)
+                .stroke(TBColor.borderFaint)
         }
     }
 }
@@ -1046,7 +1066,7 @@ private struct InventoryMetricPill: View {
         .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous)
-                .stroke(TBColor.borderCard)
+                .stroke(TBColor.borderFaint)
         }
     }
 }
@@ -1071,7 +1091,7 @@ private struct TastePaletteCard: View {
                     .foregroundStyle(axis.tintTextColor)
             }
 
-            TasteChip(axis: axis, value: "taste")
+            Chip(title: axis.label, value: "taste", tasteAxis: axis, size: .extraSmall)
 
             Text("해석이 필요한 곳에서만 의미 색으로 사용합니다.")
                 .font(TBFont.regular(11))
@@ -1084,7 +1104,7 @@ private struct TastePaletteCard: View {
         .clipShape(RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
-                .stroke(axis.tintSoftBorderColor, lineWidth: 1)
+                .stroke(axis.borderDefaultColor, lineWidth: 1)
         }
     }
 }
@@ -1135,7 +1155,7 @@ private enum PlatingNativeAuditCapture {
         "taste-bloom", "interpretation-card", "taste-graph", "segmented-control", "period-tabs",
         "text-action", "icon-action-button", "record-actions", "social-actions", "notification-badge", "skeleton", "image-frame",
         "disclosure", "scope-label", "tag-group", "flow-loading", "flow-retry", "action-area",
-        "callout",
+        "callout", "stack-card", "expandable-card", "mini-chart", "mini-line-chart", "tcs-badge",
     ]
 
     static func export() async {
@@ -1152,13 +1172,18 @@ private enum PlatingNativeAuditCapture {
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             var captures: [Capture] = []
             let documentationVariants: [String: [String]] = [
+                "tcs-badge": ["default", "single", "triple", "empty", "disabled", "dark"],
+                "stack-card": ["default", "expanded"],
+                "expandable-card": ["default", "expanded"],
+                "mini-chart": ["default", "dense", "grouped"],
+                "mini-line-chart": ["default", "dark"],
                 "callout": ["default", "anatomy", "informative", "actionable", "dismissible", "positive", "warning", "critical", "large"],
                 "primary-button": ["default", "selected", "disabled", "intrinsic", "tint", "visual-disabled", "busy"],
                 "text-input": ["default", "selected", "disabled", "auth", "error"],
                 "chip": ["size-xs", "size-sm", "size-md", "variant-soft", "variant-outline", "variant-solid", "variant-text"],
                 "taste-chip": ["size-xs", "size-sm", "size-md", "value", "neutral"],
                 "avatar": ["size-32", "size-48", "size-64"],
-                "top-bar": ["appearance-default", "appearance-solid", "appearance-transparent"],
+                "top-bar": ["appearance-default", "appearance-solid", "appearance-transparent", "appearance-glass", "usage-home"],
                 "selection-card": ["default", "selected", "disabled", "checkbox", "single-line"],
                 "checkbox": ["default", "unchecked"],
                 "radio": ["default", "first"],
@@ -1173,16 +1198,21 @@ private enum PlatingNativeAuditCapture {
             let textAreaOnly = ProcessInfo.processInfo.arguments.contains("--plating-textarea-capture")
             let iconActionsOnly = ProcessInfo.processInfo.arguments.contains("--plating-icon-actions-capture")
             let profileFieldsOnly = ProcessInfo.processInfo.arguments.contains("--plating-profile-fields-capture")
-            let captureFamilies = profileFieldsOnly ? ["text-input", "select"] : iconActionsOnly ? ["icon-action-button", "record-actions", "social-actions"] : textAreaOnly ? ["textarea"] : documentsOnly ? documentationVariants.keys.sorted()
+            let topBarOnly = ProcessInfo.processInfo.arguments.contains("--plating-top-bar-capture")
+            let stackCardOnly = ProcessInfo.processInfo.arguments.contains("--plating-stack-card-capture")
+            let miniChartOnly = ProcessInfo.processInfo.arguments.contains("--plating-mini-chart-capture")
+            let miniLineChartOnly = ProcessInfo.processInfo.arguments.contains("--plating-mini-line-chart-capture")
+            let tcsBadgeOnly = ProcessInfo.processInfo.arguments.contains("--plating-tcs-badge-capture")
+            let captureFamilies = tcsBadgeOnly ? ["tcs-badge"] : miniLineChartOnly ? ["mini-line-chart"] : miniChartOnly ? ["mini-chart"] : stackCardOnly ? ["stack-card", "expandable-card"] : topBarOnly ? ["top-bar"] : profileFieldsOnly ? ["text-input", "select"] : iconActionsOnly ? ["icon-action-button", "record-actions", "social-actions"] : textAreaOnly ? ["textarea"] : documentsOnly ? documentationVariants.keys.sorted()
                 : ProcessInfo.processInfo.arguments.contains("--plating-callout-capture") ? ["callout"] : families
             for id in captureFamilies {
-                let variants = profileFieldsOnly ? ["default", "selected", "error", "disabled", "large"] : iconActionsOnly ? (id == "record-actions" ? ["default", "selected", "disabled"] : ["default", "selected", "disabled", "no-count"]) : id == "textarea" ? ["default", "selected", "error", "disabled", "large"] : documentsOnly ? documentationVariants[id]! : ["primary-button", "text-input", "selection-card", "chip"].contains(id)
+                let variants = ["tcs-badge", "mini-chart", "mini-line-chart"].contains(id) ? documentationVariants[id]! : ["stack-card", "expandable-card"].contains(id) ? documentationVariants[id]! : topBarOnly ? documentationVariants["top-bar"]! : profileFieldsOnly ? ["default", "selected", "error", "disabled", "large"] : iconActionsOnly ? (id == "record-actions" ? ["default", "selected", "disabled"] : ["default", "selected", "disabled", "no-count"]) : id == "textarea" ? ["default", "selected", "error", "disabled", "large"] : documentsOnly ? documentationVariants[id]! : ["primary-button", "text-input", "selection-card", "chip"].contains(id)
                     ? ["default", "selected", "disabled"]
                     : id == "taste-chip" ? ["default", "selected"]
                     : id == "callout" ? ["default", "actionable", "dismissible", "positive", "warning", "critical", "large"] : ["default"]
                 for state in variants {
                     guard let fixture = fixture(id, state: state) else { continue }
-                    let height: CGFloat = id == "textarea" ? (state == "large" ? 560 : 320) : state == "large" ? 320 : ["search-field", "bottom-sheet", "dialog"].contains(id) ? 520
+                    let height: CGFloat = id == "stack-card" && state == "expanded" ? 320 : id == "expandable-card" && state == "expanded" ? 220 : id == "textarea" ? (state == "large" ? 560 : 320) : state == "large" ? 320 : ["search-field", "bottom-sheet", "dialog"].contains(id) ? 520
                         : ["taste-graph", "taste-bloom", "empty-state", "flow-retry"].contains(id) ? 350
                         : ["text-input", "inline-error", "action-area"].contains(id) ? 220 : 160
                     let view = fixture
@@ -1192,7 +1222,7 @@ private enum PlatingNativeAuditCapture {
                         .background(TBColor.page)
                         .ignoresSafeArea()
                     let host = UIHostingController(rootView: view)
-                    host.overrideUserInterfaceStyle = .light
+                    host.overrideUserInterfaceStyle = ["tcs-badge", "mini-line-chart"].contains(id) && state == "dark" ? .dark : .light
                     let window = UIWindow(windowScene: scene)
                     window.frame = CGRect(x: 0, y: 0, width: 390, height: height)
                     window.windowLevel = .normal + 1
@@ -1201,8 +1231,8 @@ private enum PlatingNativeAuditCapture {
                     host.view.frame = window.bounds
                     host.view.setNeedsLayout()
                     host.view.layoutIfNeeded()
-                    // Give system and SwiftUI subviews one display pass before capturing.
-                    try await Task.sleep(for: .milliseconds(180))
+                    // Chart masks need the reveal animation to finish before a static capture.
+                    try await Task.sleep(for: .milliseconds(["mini-chart", "mini-line-chart"].contains(id) ? 800 : 180))
                     let format = UIGraphicsImageRendererFormat()
                     format.scale = 3
                     let renderer = UIGraphicsImageRenderer(bounds: window.bounds, format: format)
@@ -1241,6 +1271,21 @@ private enum PlatingNativeAuditCapture {
         let selected = state == "selected"
         let enabled = state != "disabled"
         switch id {
+        case "tcs-badge":
+            let adjustments: [TCSBadgeAdjustment] = state == "empty" ? []
+                : state == "single" ? [.init(taste: .sweet, change: 12)]
+                : state == "triple" ? [.init(taste: .sour, change: 10), .init(taste: .fat, change: 6), .init(taste: .bitter, change: 3)]
+                : [.init(taste: .sweet, change: 20), .init(taste: .umami, change: 5)]
+            return AnyView(TCSBadge(adjustments: adjustments, disabled: !enabled))
+        case "mini-line-chart":
+            return AnyView(TasteLineChart(entries: [TasteLineChartEntry(axis: .umami, values: [1.2, 2.1, 2.4, 4.5])],
+                plotWidth: TBMiniChartMetrics.width, plotHeight: TBMiniChartMetrics.height)
+                .frame(width: TBMiniChartMetrics.width, height: TBMiniChartMetrics.height))
+        case "mini-chart":
+            if state == "grouped" {
+                return AnyView(TBMiniChart(values: [1, 4, 3, 6], comparisonValues: [0, 2, 4, 3], axis: .umami))
+            }
+            return AnyView(TBMiniChart(values: state == "dense" ? [0, 1, 0, 3, 2, 5, 4, 7, 6, 4, 8, 9] : [0, 1, 0, 3, 2, 5, 6], axis: .umami))
         case "textarea":
             return AnyView(TBTextArea(text: .constant(state == "default" ? "" : "산미는 좋았어요. 생선의 향은 아쉬웠어요."),
                 label: "추가 메모 · 선택사항", placeholder: "기억에 남는 맛과 상황을 적어 주세요.",
@@ -1291,6 +1336,18 @@ private enum PlatingNativeAuditCapture {
         case "switch":
             return AnyView(TBUISwitch(isOn: state != "off"))
         case "top-bar", "back-button", "notification-badge":
+            if state == "appearance-glass" {
+                return AnyView(TopAppBar(
+                    appearance: .glass, title: "버섯 리소토", showBack: true, showsDefaultActions: false,
+                    rightActions: [
+                        TopAppBarAction(id: "search", symbol: "magnifyingglass", accessibilityLabel: "미각 단어 검색", action: {}),
+                        TopAppBarAction(id: "next", symbol: "chevron.right", accessibilityLabel: "디테일 태그 기록하기", action: {})
+                    ], backAccessibilityLabel: "전체 평가로 돌아가기", onBack: {}
+                ))
+            }
+            if state == "usage-home" {
+                return AnyView(TopAppBar(appearance: .transparent, hasUnreadNotifications: true))
+            }
             return AnyView(TopAppBar(appearance: state == "appearance-default" ? .default : state == "appearance-transparent" ? .transparent : .solid, title: "식사 기록", showBack: id != "notification-badge",
                 hasUnreadNotifications: id == "notification-badge", onBack: {}))
         case "bottom-tab":
@@ -1301,6 +1358,28 @@ private enum PlatingNativeAuditCapture {
             return AnyView(CompactCard(heading: "오늘의 식사", metadata: "합성 예제 · 저녁", isSelected: selected) {
                 ImageBox(alt: "사진 없는 식사", kind: .menu, size: .small)
             })
+        case "stack-card":
+            let expanded = state == "expanded"
+            let questions = ["산뜻한 산미는 얼마나 강하게 느껴졌나요?", "고소한 여운은 얼마나 좋았나요?", "바삭한 식감은 얼마나 강하게 느껴졌나요?"]
+            return AnyView(StackCard(showsStack: true, isExpanded: expanded) {
+                ForEach(0..<(expanded ? 3 : 1), id: \.self) { index in
+                    TasteQuestionStackCard(
+                        question: questions[index], supportingText: "답변하려면 카드를 탭해주세요.",
+                        choices: PersonalTasteInlineAnswer.choices(for: "intensity"),
+                        showsMedia: true, illustrationSeed: "stack-example-\(index)", showsStack: false,
+                        isStackExpanded: expanded, onToggleStack: index == 0 ? {} : nil,
+                        onConfirm: { _ in nil }, stackAccessibilityLabel: "질문과 발견 카드"
+                    )
+                }
+            })
+        case "expandable-card":
+            return AnyView(TasteQuestionStackCard(
+                question: "산뜻한 산미는 얼마나 강하게 느껴졌나요?",
+                supportingText: "답변하려면 카드를 탭해주세요.",
+                choices: PersonalTasteInlineAnswer.choices(for: "intensity"),
+                showsMedia: true, showsStack: false,
+                initiallyExpanded: state == "expanded", onConfirm: { _ in nil }
+            ))
         case "list-row":
             return AnyView(TasteDetailValueRow(title: "기록한 식사", value: "8개", showsChevron: state != "plain"))
         case "badge":
@@ -1334,12 +1413,13 @@ private enum PlatingNativeAuditCapture {
                 actions: [.init(id: "cancel", label: "취소", action: {}), .init(id: "delete", label: "삭제", tone: .destructive, action: {})]) { EmptyView() })
         case "taste-chip":
             if state.hasPrefix("size-") || state == "value" || state == "neutral" {
-                let size: TasteChipSize = state == "size-sm" ? .sm : state == "size-md" ? .md : .xs
-                return AnyView(TasteChip(axis: .sweet, value: state == "value" ? "0" : nil, tone: state == "neutral" ? .neutral : .taste, size: size))
+                let size: ChipSize = state == "size-sm" ? .small : state == "size-md" ? .medium : .extraSmall
+                return AnyView(Chip(title: TasteAxis.sweet.label, value: state == "value" ? "0" : nil,
+                                    tasteAxis: state == "neutral" ? nil : .sweet, size: size))
             }
             return AnyView(VStack(spacing: 12) {
-                TasteChip(axis: .sweet, value: selected ? "0" : nil)
-                TasteChip(title: "중립 표현", value: "0")
+                Chip(title: TasteAxis.sweet.label, value: selected ? "0" : nil, tasteAxis: .sweet, size: .extraSmall)
+                Chip(title: "중립 표현", value: "0", size: .extraSmall)
             })
         case "taste-bloom":
             return AnyView(PalateBloomAvatar(size: 200, tasteProfile: TasteProfile.sample, shapeSeed: "plating-native-audit"))
@@ -1402,7 +1482,40 @@ private enum PlatingNativeAuditCapture {
         case "flow-retry":
             return AnyView(TBFlowRetryState(title: "불러오지 못했어요", message: "잠시 후 다시 시도해 주세요.", retry: {}))
         case "action-area":
-            return AnyView(TBFlowStepCTA(actionLabel: "다음", currentIndex: 1, total: 5, stepLabel: "2 / 5단계", action: {}))
+            return AnyView(VStack(spacing: 0) {
+                Spacer(minLength: 0)
+                VStack(spacing: 0) {
+                    TBStepIndicator(currentIndex: 1, total: 5)
+                    Text("2 / 5단계")
+                        .font(TBFont.medium(12))
+                        .foregroundStyle(TBColor.textFaint)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 6)
+                }
+                .padding(.bottom, FlowBottomCtaMetrics.stepIndicatorBottomMargin)
+
+                PrimaryButton(
+                    title: "다음",
+                    action: {}
+                )
+            }
+            .padding(.horizontal, FlowBottomCtaMetrics.horizontalPadding)
+            .padding(.bottom, FlowBottomCtaMetrics.bottomPadding)
+            .frame(maxWidth: .infinity)
+            .frame(height: FlowBottomCtaMetrics.minHeight)
+            .background(
+                LinearGradient(
+                    stops: [
+                        .init(color: TBColor.focus.opacity(0), location: 0),
+                        .init(color: TBColor.focus.opacity(0.8), location: 0.45),
+                        .init(color: TBColor.focus, location: 1),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea(edges: .bottom)
+                .allowsHitTesting(false)
+            ))
         default:
             return nil
         }

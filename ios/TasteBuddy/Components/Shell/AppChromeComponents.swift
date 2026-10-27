@@ -578,7 +578,6 @@ struct MainTabChromeScrollView<Content: View>: View {
                 content()
                     .frame(maxWidth: .infinity, alignment: .topLeading)
             }
-            .environment(\.colorScheme, .light)
             .scrollClipDisabled()
             .ignoresSafeArea(.container, edges: .top)
         } else {
@@ -628,6 +627,7 @@ enum TopAppBarAppearance {
     case `default`
     case solid
     case transparent
+    case glass
 }
 
 enum TopAppBarSolidBackground {
@@ -678,6 +678,7 @@ struct TopAppBar: View {
     var hasUnreadNotifications = false
     var bloomToken = 0
     var rightActions: [TopAppBarAction] = []
+    var backAccessibilityLabel = "뒤로"
     var onBack: (() -> Void)? = nil
     var onStartMeasurement: (() -> Void)? = nil
     var onOpenSearch: (() -> Void)? = nil
@@ -686,16 +687,43 @@ struct TopAppBar: View {
     var onOpenProfile: (() -> Void)? = nil
 
     var body: some View {
+        Group {
+            if appearance == .glass {
+                if #available(iOS 26.0, *) {
+                    GlassEffectContainer(spacing: 0) { barContent }
+                } else {
+                    barContent
+                }
+            } else {
+                barContent
+            }
+        }
+        .zIndex(20)
+        .platingLayoutFrame("top-bar")
+    }
+
+    private var barContent: some View {
         ZStack {
             if let title {
-                Text(title)
-                    .font(TBFont.bold(15))
-                    .foregroundStyle(TBColor.textPrimary)
-                    .lineLimit(1)
-                    .frame(maxWidth: 240)
-                    .offset(x: centerContentOffset)
-                    .tbTopChromeDissolve(.title)
-                    .allowsHitTesting(false)
+                if appearance == .glass {
+                    Text(title)
+                        .font(TBFont.bold(15))
+                        .foregroundStyle(TBColor.textPrimary)
+                        .padding(.horizontal, 12)
+                        .frame(height: TBSize.chromeIconButton)
+                        .modifier(TopAppBarGlassSurface(shape: Capsule()))
+                        .offset(x: centerContentOffset)
+                        .allowsHitTesting(false)
+                } else {
+                    Text(title)
+                        .font(TBFont.bold(15))
+                        .foregroundStyle(TBColor.textPrimary)
+                        .lineLimit(1)
+                        .frame(maxWidth: 240)
+                        .offset(x: centerContentOffset)
+                        .tbTopChromeDissolve(.title)
+                        .allowsHitTesting(false)
+                }
             }
 
             HStack(spacing: 0) {
@@ -716,6 +744,7 @@ struct TopAppBar: View {
                             TopAppBarIconButton(
                                 symbol: action.symbol,
                                 accessibilityLabel: action.accessibilityLabel,
+                                isGlass: appearance == .glass,
                                 action: action.action
                             )
                             .topAppBarBloom(
@@ -730,11 +759,11 @@ struct TopAppBar: View {
             .padding(.horizontal, TBSpacing.page)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: TBSize.topAppBarHeight)
-        .padding(.top, AppChromeMetrics.topPadding)
-        .padding(.bottom, AppChromeMetrics.bottomPadding)
+        .frame(height: appearance == .glass ? TBSize.chromeIconButton : TBSize.topAppBarHeight)
+        .padding(.top, appearance == .glass ? 0 : AppChromeMetrics.topPadding)
+        .padding(.bottom, appearance == .glass ? 0 : AppChromeMetrics.bottomPadding)
         .background {
-            if topChromeInset != nil, appearance != .transparent {
+            if topChromeInset != nil, appearance != .transparent, appearance != .glass {
                 Color.clear
                     .tbTopChromeBackground(fallback: solidBackground.color)
             } else {
@@ -750,8 +779,6 @@ struct TopAppBar: View {
                     }
             }
         }
-        .zIndex(20)
-        .platingLayoutFrame("top-bar")
     }
 
     @ViewBuilder
@@ -759,7 +786,8 @@ struct TopAppBar: View {
         if showBack {
             TopAppBarIconButton(
                 symbol: "chevron.left",
-                accessibilityLabel: "뒤로",
+                accessibilityLabel: backAccessibilityLabel,
+                isGlass: appearance == .glass,
                 action: { onBack?() }
             )
         } else {
@@ -800,6 +828,7 @@ struct TopAppBar: View {
                 symbol: "bell",
                 accessibilityLabel: "알림",
                 showsDot: hasUnreadNotifications,
+                isGlass: appearance == .glass,
                 action: { onOpenNotifications?() }
             )
             .topAppBarBloom(token: bloomToken, delay: rightActionBloomDelay(index: 0, count: 3))
@@ -807,6 +836,7 @@ struct TopAppBar: View {
             TopAppBarIconButton(
                 symbol: primaryAction.symbol,
                 accessibilityLabel: primaryAction.accessibilityLabel,
+                isGlass: appearance == .glass,
                 action: {
                     if showSearchAction {
                         onOpenSearch?()
@@ -820,6 +850,7 @@ struct TopAppBar: View {
             TopAppBarIconButton(
                 symbol: "line.3.horizontal",
                 accessibilityLabel: "메뉴 열기",
+                isGlass: appearance == .glass,
                 action: { onOpenMenu?() }
             )
             .topAppBarBloom(token: bloomToken, delay: rightActionBloomDelay(index: 2, count: 3))
@@ -842,42 +873,173 @@ struct TopAppBar: View {
                 .background(.ultraThinMaterial)
         case .solid:
             solidBackground.color
-        case .transparent:
+        case .transparent, .glass:
             Color.clear
         }
     }
 }
 
+/// Samples the displayed photo behind each control, including its aspect-fill crop.
+struct TopAppBarPhotoBackdrop {
+    enum IconTone: Equatable {
+        case light
+        case dark
+
+        var color: Color { self == .light ? TBColor.textInverse : TBColor.textPrimary }
+    }
+
+    let image: CGImage
+    let frame: CGRect
+
+    func iconTone(in controlFrame: CGRect) -> IconTone {
+        let visible = frame.intersection(controlFrame)
+        guard frame.width > 0, frame.height > 0,
+              controlFrame.width > 0, controlFrame.height > 0,
+              !visible.isNull, !visible.isEmpty else { return .dark }
+        let scale = max(frame.width / CGFloat(image.width), frame.height / CGFloat(image.height))
+        let origin = CGPoint(x: frame.midX - CGFloat(image.width) * scale / 2,
+                             y: frame.midY - CGFloat(image.height) * scale / 2)
+        let crop = CGRect(x: (visible.minX - origin.x) / scale,
+                          y: (visible.minY - origin.y) / scale,
+                          width: visible.width / scale, height: visible.height / scale).integral
+            .intersection(CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        guard let cropped = image.cropping(to: crop),
+              let photoLuminance = Self.averageLuminance(cropped) else { return .dark }
+        let coverage = Double(min(1, visible.width * visible.height / (controlFrame.width * controlFrame.height)))
+        let luminance = photoLuminance * coverage + Self.pageLuminance * (1 - coverage)
+        let whiteContrast = 1.05 / (luminance + 0.05)
+        let blackContrast = (luminance + 0.05) / (Self.blackLuminance + 0.05)
+        return whiteContrast > blackContrast ? .light : .dark
+    }
+
+    private static let pageLuminance = tokenLuminance(TBColor.page)
+    private static let blackLuminance = tokenLuminance(TBColor.textPrimary)
+
+    private static func tokenLuminance(_ color: Color) -> Double {
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        UIColor(color).getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        return luminance(red: Double(red), green: Double(green), blue: Double(blue))
+    }
+
+    private static func luminance(red: Double, green: Double, blue: Double) -> Double {
+        func linear(_ value: Double) -> Double {
+            value <= 0.04045 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4)
+        }
+        return 0.2126 * linear(red) + 0.7152 * linear(green) + 0.0722 * linear(blue)
+    }
+
+    private static func averageLuminance(_ image: CGImage) -> Double? {
+        let side = 8
+        var pixels = [UInt8](repeating: 0, count: side * side * 4)
+        let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+        let rendered = pixels.withUnsafeMutableBytes { buffer -> Bool in
+            guard let context = CGContext(data: buffer.baseAddress, width: side, height: side,
+                                          bitsPerComponent: 8, bytesPerRow: side * 4,
+                                          space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                          bitmapInfo: bitmapInfo) else { return false }
+            context.interpolationQuality = .medium
+            context.draw(image, in: CGRect(x: 0, y: 0, width: side, height: side))
+            return true
+        }
+        guard rendered else { return nil }
+        var total = 0.0
+        for offset in stride(from: 0, to: pixels.count, by: 4) {
+            let alpha = Double(pixels[offset + 3]) / 255
+            let pixelLuminance = luminance(red: Double(pixels[offset]) / 255,
+                                           green: Double(pixels[offset + 1]) / 255,
+                                           blue: Double(pixels[offset + 2]) / 255)
+            total += pixelLuminance + pageLuminance * (1 - alpha)
+        }
+        return total / Double(side * side)
+    }
+}
+
+private struct TopAppBarPhotoBackdropKey: EnvironmentKey {
+    static let defaultValue: TopAppBarPhotoBackdrop? = nil
+}
+
+extension EnvironmentValues {
+    var tbTopAppBarPhotoBackdrop: TopAppBarPhotoBackdrop? {
+        get { self[TopAppBarPhotoBackdropKey.self] }
+        set { self[TopAppBarPhotoBackdropKey.self] = newValue }
+    }
+}
+
 private struct TopAppBarIconButton: View {
+    @Environment(\.tbTopAppBarPhotoBackdrop) private var photoBackdrop
+    @State private var controlFrame = CGRect.zero
     let symbol: String
     let accessibilityLabel: String
     var showsDot = false
+    var isGlass = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            LucideIcon(
-                systemName: symbol,
-                size: AppChromeMetrics.iconSize,
-                strokeWidth: TBIcon.Stroke.regular
-            )
-                .foregroundStyle(TBColor.iconPrimary)
-                .frame(
-                    width: AppChromeMetrics.actionButtonSize,
-                    height: AppChromeMetrics.actionButtonSize
-                )
-                .overlay(alignment: .topTrailing) {
-                    if showsDot {
-                        Circle()
-                            .fill(TasteAxis.sweet.mainColor)
-                            .frame(width: 6, height: 6)
-                            .offset(x: -2, y: 2)
+            if isGlass {
+                icon
+                    .foregroundStyle(glassIconColor)
+                    .frame(width: TBSize.chromeIconButton, height: TBSize.chromeIconButton)
+                    .modifier(TopAppBarGlassSurface(shape: Circle(), isInteractive: true))
+                    .overlay(alignment: .topTrailing) {
+                        if showsDot {
+                            Circle()
+                                .fill(TasteAxis.sweet.mainColor)
+                                .frame(width: 6, height: 6)
+                                .offset(x: -2, y: 2)
+                        }
                     }
-                }
-                .contentShape(Circle())
+                    .contentShape(Rectangle())
+            } else {
+                icon
+                    .foregroundStyle(TBColor.iconPrimary)
+                    .frame(
+                        width: AppChromeMetrics.actionButtonSize,
+                        height: AppChromeMetrics.actionButtonSize
+                    )
+                    .overlay(alignment: .topTrailing) {
+                        if showsDot {
+                            Circle()
+                                .fill(TasteAxis.sweet.mainColor)
+                                .frame(width: 6, height: 6)
+                                .offset(x: -2, y: 2)
+                        }
+                    }
+                    .contentShape(Circle())
+            }
         }
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel)
+        .onGeometryChange(for: CGRect.self, of: { $0.frame(in: .global) }) {
+            if isGlass { controlFrame = $0 }
+        }
+    }
+
+    private var glassIconColor: Color {
+        let tone = photoBackdrop?.iconTone(in: controlFrame) ?? .dark
+        return tone.color
+    }
+
+    private var icon: some View {
+        LucideIcon(
+            systemName: symbol,
+            size: AppChromeMetrics.iconSize,
+            strokeWidth: TBIcon.Stroke.regular
+        )
+    }
+}
+
+private struct TopAppBarGlassSurface<ChromeShape: Shape>: ViewModifier {
+    let shape: ChromeShape
+    var isInteractive = false
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.clear.interactive(isInteractive), in: shape)
+        } else {
+            content.background(.ultraThinMaterial, in: shape)
+        }
     }
 }
 

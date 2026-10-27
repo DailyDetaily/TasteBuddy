@@ -70,6 +70,8 @@ final class TastePerceptionTests: XCTestCase {
         XCTAssertEqual(TasteChangeSeries.changeLabel(sweet.points), "더 약하게")
         XCTAssertTrue(sweet.points.allSatisfy { $0.experienceIDs.isEmpty })
         XCTAssertEqual(TasteChangeSeries.changeLabel(Array(sweet.points.suffix(1))), "비교 부족")
+        XCTAssertEqual(TasteChangeSeries.summary(series).map(\.id), [sweet.id])
+        XCTAssertEqual(TasteChangeSeries.summary(series).first?.points.map(\.value), [2, 0])
     }
     func testMouthfeelDoesNotFillMissingTasteAxisAndUnknownMealTimeCannotBecomeRecentComparison() throws {
         let entries = (0..<3).map { index -> DiningEntry in
@@ -112,5 +114,61 @@ final class TastePerceptionTests: XCTestCase {
         XCTAssertEqual(series.points.first?.evidenceIDs, pattern.previous.evidenceIDs)
         XCTAssertEqual(series.points.last?.experienceIDs, pattern.recent.experienceIDs)
         XCTAssertTrue(TasteChangeSeries.build(perception: .empty, survey: []).isEmpty)
+        let summary = TasteChangeSeries.summary([series])
+        XCTAssertEqual(summary.map(\.id), [pattern.id])
+        XCTAssertEqual(summary.first?.points.map(\.value), [pattern.previousLevel!, pattern.currentLevel!])
+    }
+
+    func testSummaryKeepsUnchangedComparisonsAndRejectsMissingOrOverlappingPeriods() {
+        let date = Date(timeIntervalSince1970: 1_780_000_000)
+        func point(_ id: String, day: Int, value: Int) -> TasteChangeSeries.Point {
+            .init(id: id, date: date.addingTimeInterval(Double(day) * 86400), start: date.addingTimeInterval(Double(day) * 86400),
+                  value: value, label: "중간", evidenceIDs: [id], experienceIDs: [], count: 3)
+        }
+        func series(_ id: String, _ points: [TasteChangeSeries.Point], source: String = "식사 기록") -> TasteChangeSeries {
+            .init(id: id, axis: .salty, source: source, condition: "같은 국물 · 첫입", maximum: source == "식사 기록" ? 2 : 4, points: points, details: [])
+        }
+        let stable = series("stable", [point("이전", day: 0, value: 1), point("최근", day: 1, value: 1)])
+        let missing = series("missing", [point("최근", day: 1, value: 2)])
+        let overlap = series("overlap", [point("이전", day: 1, value: 0), point("최근", day: 1, value: 2)])
+        let recall = series("recall", [point("이전", day: 0, value: 4), point("최근", day: 1, value: 0)], source: "기준 음식 회상")
+        XCTAssertEqual(TasteChangeSeries.summary([missing, overlap, stable, recall]).map(\.id), ["stable"])
+        XCTAssertEqual(TasteChangeSeries.changeLabel(stable.points), "같은 강도")
+        XCTAssertTrue(TasteChangeSeries.summary([missing, overlap]).isEmpty)
+        XCTAssertEqual(TasteChangeSeries.summary([recall]).first?.points.map(\.value), [4, 0])
+    }
+}
+
+
+extension TastePerceptionTests {
+    func testOverallProfileSharedCases() throws {
+        struct Fixture: Decodable {
+            struct Example: Decodable {
+                struct Expected: Decodable { let values: [Double?]; let previous: [Double?]; let rated: [Int]; let mixed: [Int] }
+                let id: String; let records: [PersonalTasteModelRecord]; let expected: Expected
+            }
+            let asOf: String; let timeZone: String; let cases: [Example]
+        }
+        let url = root.deletingLastPathComponent().appendingPathComponent("scripts/fixtures/overall-taste-profile.json")
+        let fixture = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url))
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: fixture.timeZone)!
+        let now = try XCTUnwrap(PersonalTasteModelBuilder.date(fixture.asOf))
+        for example in fixture.cases {
+            let model = PersonalTasteModelBuilder.buildRecords(records: example.records, userID: "owner", assessQuestions: false)
+            let result = OverallTasteProfile.build(model: model, records: example.records, userID: "owner", referenceDate: now, calendar: calendar)
+            for (index, axis) in result.axes.enumerated() {
+                if let expected = example.expected.values[index] {
+                    XCTAssertEqual(try XCTUnwrap(axis.current.value), expected, accuracy: 0.000001, example.id)
+                } else { XCTAssertNil(axis.current.value, example.id) }
+                if let expected = example.expected.previous[index] {
+                    XCTAssertEqual(try XCTUnwrap(axis.previous.value), expected, accuracy: 0.000001, example.id)
+                } else { XCTAssertNil(axis.previous.value, example.id) }
+            }
+            XCTAssertEqual(result.axes.map { $0.current.rated }, example.expected.rated, example.id)
+            XCTAssertEqual(result.axes.map { $0.current.mixed }, example.expected.mixed, example.id)
+            XCTAssertEqual(OverallTasteProfile.build(model: model, records: example.records + example.records, userID: "owner", referenceDate: now, calendar: calendar), result, example.id)
+            XCTAssertEqual(OverallTasteProfile.build(model: model, records: example.records, userID: "other", referenceDate: now, calendar: calendar), .empty)
+        }
     }
 }

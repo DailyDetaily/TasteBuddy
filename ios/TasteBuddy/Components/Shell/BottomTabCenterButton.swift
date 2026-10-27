@@ -156,7 +156,7 @@ struct BottomTabCenterButton: View {
                     size: AppChromeMetrics.iconSize,
                     strokeWidth: TBIcon.Stroke.strong
                 )
-                .foregroundStyle(TBColor.textInverse)
+                .foregroundStyle(Color.white)
             }
             .frame(width: Metrics.buttonSize, height: Metrics.buttonSize)
             .clipShape(Circle())

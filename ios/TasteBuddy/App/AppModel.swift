@@ -500,6 +500,7 @@ final class AppModel: ObservableObject {
         let operationID = UUID()
         accountSyncID = operationID
         needsAccountSync = false
+        var syncStage = "fetch"
         defer {
             if accountSyncID == operationID {
                 accountSyncID = nil
@@ -509,6 +510,7 @@ final class AppModel: ObservableObject {
         do {
             let remote = try await accountDataRepository.fetch(userID: scope)
             guard activeAccountScope == scope, accountSyncID == operationID else { return }
+            syncStage = "validate"
             if let remote { try validateAccountSnapshot(remote.payload) }
             var archive = accountArchive(for: scope) ?? NativeAccountArchive(snapshot: .init())
             do { try validateAccountSnapshot(archive.snapshot) }
@@ -527,6 +529,7 @@ final class AppModel: ObservableObject {
                 guard (remote?.revision ?? 0) == archive.remoteRevision else { throw NativeAccountDataError.conflict }
                 let uploadedSnapshot = archive.snapshot
                 let filenames = uploadedSnapshot.photoFilenames
+                syncStage = "photo-backup"
                 try await accountPhotoRepository.backup(filenames: filenames, userID: scope)
                 guard activeAccountScope == scope, accountSyncID == operationID else { return }
                 let removedPhotos = Set(remote?.payload.photoFilenames ?? []).subtracting(filenames)
@@ -534,6 +537,7 @@ final class AppModel: ObservableObject {
                     pending.pendingPhotoDeletions = Array(Set(pending.pendingPhotoDeletions).union(removedPhotos)).sorted()
                     storeAccountArchive(pending, scope: scope)
                 }
+                syncStage = "save"
                 let revision = try await accountDataRepository.save(uploadedSnapshot, userID: scope, expectedRevision: archive.remoteRevision)
                 guard activeAccountScope == scope, accountSyncID == operationID else { return }
                 // 저장을 기다리는 동안 추가된 로컬 변경은 다음 전송 대상으로 보존한다.
@@ -547,6 +551,7 @@ final class AppModel: ObservableObject {
             } else if let remote {
                 guard remote.payload.hasSupportedSchema else { throw NativeAccountDataError.unsupportedVersion }
                 var photoRestoreError: Error?
+                syncStage = "photo-restore"
                 do { try await accountPhotoRepository.restore(filenames: remote.payload.photoFilenames, userID: scope) }
                 catch { photoRestoreError = error }
                 guard activeAccountScope == scope, accountSyncID == operationID,
@@ -587,6 +592,9 @@ final class AppModel: ObservableObject {
             accountDataHasConflict = false
         } catch {
             guard activeAccountScope == scope, accountSyncID == operationID else { return }
+            #if DEBUG
+            print("[AccountDataSync] \(syncStage) failed: \(NativeAccountDataDiagnostics.code(for: error))")
+            #endif
             accountDataHasConflict = (error as? NativeAccountDataError) == .conflict
                 || String(describing: error).contains("native account revision conflict")
             accountDataSyncError = accountDataHasConflict ? NativeAccountDataError.conflict.localizedDescription
@@ -1793,7 +1801,11 @@ final class AppModel: ObservableObject {
     var visibleHomeDiscoveries: [HomeDiscoveryCard] {
         guard let presentation = homeArchivePresentation,
               Calendar.current.isDate(presentation.referenceDay, inSameDayAs: now()) else { return [] }
-        return HomeDiscoveryPresentationPolicy.visible(presentation.discoveries,
+        let repeatedIDs = Set(presentation.menuInsights.repeatedMenus.flatMap(\.entryIDs))
+        let discoveries = presentation.discoveries.filter { card in
+            card.kind != .repeatedMenu || !card.entryIDs.allSatisfy { repeatedIDs.contains($0.uuidString) }
+        }
+        return HomeDiscoveryPresentationPolicy.visible(discoveries,
             hiddenUntil: homeDiscoveryHiddenUntil, referenceDate: now())
     }
 
@@ -1864,7 +1876,8 @@ final class AppModel: ObservableObject {
 
     func refreshHomeDiscoveriesIfNeeded() {
         guard !sensoryAnalysisIsUpdating, let presentation = homeArchivePresentation,
-              !Calendar.current.isDate(presentation.referenceDay, inSameDayAs: now()) else { return }
+              !Calendar.current.isDate(presentation.referenceDay, inSameDayAs: now())
+                || presentation.sourceTimeZone != Calendar.current.timeZone.identifier else { return }
         refreshSensoryAnalysis()
     }
 
@@ -1878,7 +1891,9 @@ final class AppModel: ObservableObject {
             homeArchivePresentation = nil
             memorySourceFingerprint = ""
             sensoryAnalysisIsUpdating = false
-            sensoryAnalysisError = accountDataSyncError ?? NativeAccountDataError.invalidSource.localizedDescription
+            sensoryAnalysisError = currentAccountSnapshot().hasSupportedSchema
+                ? NativeAccountDataError.invalidSource.localizedDescription
+                : NativeAccountDataError.unsupportedVersion.localizedDescription
             return
         }
         let revision = sensoryAnalysisRevision
@@ -1920,7 +1935,8 @@ final class AppModel: ObservableObject {
                         entries: entries,
                         userID: userID,
                         suppressedQuestionIDs: suppressedQuestionIDs,
-                        preferenceSubmissions: preferenceSubmissions
+                        preferenceSubmissions: preferenceSubmissions,
+                        referenceDate: archiveReferenceDate
                     )
                     return (result, FoodMemoryIndex.build(entries: entries, snapshot: result, generation: generation, analysisReady: true),
                             HomeArchivePresentation.make(entries: entries, snapshot: result, referenceDate: archiveReferenceDate))

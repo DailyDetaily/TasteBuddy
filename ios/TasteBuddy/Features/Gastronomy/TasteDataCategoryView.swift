@@ -14,12 +14,29 @@ extension TDCategory {
     }
     var symbol: String {
         switch self {
-        case .experience: return "square.grid.2x2"
-        case .sensation: return "waveform"
+        case .experience: return "globe"
+        case .sensation: return "speech"
         case .preference: return "heart"
-        case .context: return "slider.horizontal.3"
-        case .change: return "chart.xyaxis.line"
+        case .context: return "orbit"
+        case .change: return "refresh-cw"
         }
+    }
+
+    var icon: LucideIconName { LucideIconName(systemName: symbol) }
+}
+
+/// Shared semantic icon for category navigation and every summary-card header.
+struct TDCategoryIcon: View {
+    let category: TDCategory
+    var size: CGFloat = TBIcon.Size.base
+    var strokeWidth: CGFloat = TBIcon.Stroke.medium
+    var color: Color? = nil
+
+    var body: some View {
+        LucideIcon(category.icon, size: size,
+                   strokeWidth: category == .preference ? TBIcon.Stroke.strong : strokeWidth)
+            .foregroundStyle(color ?? category.routeKind.axis.mainColor)
+            .accessibilityHidden(true)
     }
 }
 extension HomeArchiveCard.Kind {

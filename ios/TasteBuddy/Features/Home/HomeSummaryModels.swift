@@ -694,6 +694,17 @@ struct HomePeriodInsightCardData: Identifiable, Equatable {
     let accentAxis: TasteAxis?
     let state: HomeSummaryMetricState
     var archiveChart: HomeArchiveChart? = nil
+    /// Presentation metadata only; never stored as account data or inferred from a color.
+    var category: TDCategory? = nil
+
+    var insightCategory: TDCategory {
+        if let category { return category }
+        switch kind {
+        case .recordFlow, .newExperiences, .repeatPatterns, .experienceBreadth: return .experience
+        case .tasteClue: return .sensation
+        case .tasteChange: return .change
+        }
+    }
 
     var id: String { kind.rawValue }
 }

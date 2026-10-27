@@ -115,7 +115,7 @@ struct AxisInterpretationCard: View {
     var displayDescription: String? = nil
 
     var body: some View {
-        SectionCard(background: axis.tintColor.opacity(0.65)) {
+        SectionCard(background: axis.tintSurfaceColor) {
             HStack(alignment: .top, spacing: 12) {
                 LucideIcon(
                     systemName: axis.symbol,
@@ -124,7 +124,7 @@ struct AxisInterpretationCard: View {
                 )
                     .foregroundStyle(axis.mainColor)
                     .frame(width: 40, height: 40)
-                    .background(Color.white.opacity(0.8))
+                    .background(TBColor.overlaySurface)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 6) {

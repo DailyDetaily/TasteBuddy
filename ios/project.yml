@@ -102,7 +102,6 @@ targets:
         TBChatGPTEntryURL: $(TB_CHATGPT_ENTRY_URL)
         TBChatGPTExportVersion: $(TB_CHATGPT_EXPORT_VERSION)
         TBAuthRedirectURL: $(TB_AUTH_REDIRECT_URL)
-        TBGoogleMapsAPIKey: $(TB_GOOGLE_MAPS_API_KEY)
         TBInstagramFacebookAppID: $(TB_INSTAGRAM_FACEBOOK_APP_ID)
         TBKakaoRestAPIKey: $(TB_KAKAO_REST_API_KEY)
         TBPublicMediaBaseURL: $(TB_PUBLIC_MEDIA_BASE_URL)
@@ -166,6 +165,12 @@ targets:
         DEVELOPMENT_TEAM: U7QNRP437U
 
 schemes:
+  TasteBuddyPreview:
+    build:
+      targets:
+        TasteBuddy: all
+    run:
+      config: Debug
   TasteBuddy:
     build:
       targets:

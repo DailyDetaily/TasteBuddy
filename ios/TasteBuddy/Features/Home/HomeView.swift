@@ -217,31 +217,8 @@ struct HomeView: View {
             }
         )
 
-        HomeArchiveMetricsSection(
-            sections: appModel.homeArchivePresentation?.sections ?? []
-        )
-
-        TBPageSection(title: "최근 기록") {
-            if appModel.diningEntries.isEmpty {
-                HomeJournalEmptyState()
-            } else {
-                let entries = appModel.diningEntries.sorted { $0.date > $1.date }
-                let complete = entries.filter(\.hasCompletedTasteFeedback).count
-                HomePeriodInsightCard(
-                    data: HomePeriodInsightCardData(
-                        kind: .recordFlow,
-                        title: "\(entries.count)개의 미식 기록",
-                        detail: "맛 피드백 완료 \(complete)개 · 최근 메뉴 \(entries.first?.menu ?? "")",
-                        supportingText: nil,
-                        stats: [],
-                        chartValues: [],
-                        accentAxis: .umami,
-                        state: .populated
-                    ),
-                    onTap: onOpenJournal
-                )
-            }
-        }
+        HomeArchiveMetricsSection()
+        HomeRecentArchiveRecords(onOpenAll: onOpenJournal)
     }
 
     private var socialArchiveContent: some View {
@@ -1532,7 +1509,7 @@ private struct HomeRecommendationSection: View {
                         } label: {
                             Text(option.label)
                                 .font(TBFont.semibold(12))
-                                .foregroundStyle(option == mode ? Color.white : TBColor.textHint)
+                                .foregroundStyle(option == mode ? TBColor.selectionText : TBColor.textHint)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 7)
                                 .background(option == mode ? TBColor.textPrimary : TBColor.surface)
@@ -1706,7 +1683,7 @@ private struct RestaurantRecommendationCard: View {
                 cornerRadius: TasteMatchRecommendationCardMetrics.radius,
                 style: .continuous
             )
-            .stroke(sourceAxis.mainColor.opacity(TasteMatchRecommendationCardMetrics.borderOpacity))
+            .stroke(sourceAxis.borderDefaultColor)
         }
         .accessibilityLabel(
             "\(item.restaurantName), \(dishLabel), 적합도 \(item.matchRate)%"
@@ -1767,7 +1744,7 @@ private struct ChefRecommendationCard: View {
                 cornerRadius: TasteMatchRecommendationCardMetrics.radius,
                 style: .continuous
             )
-            .stroke(sourceAxis.mainColor.opacity(TasteMatchRecommendationCardMetrics.borderOpacity))
+            .stroke(sourceAxis.borderDefaultColor)
         }
         .accessibilityLabel(
             "\(chefName), \(item.restaurantName), 적합도 \(item.matchRate)%"
@@ -1934,7 +1911,7 @@ private struct HomeProfileContextCard: View {
 
                 HStack(spacing: 8) {
                     ForEach(profile.topAxes) { axis in
-                        TasteChip(axis: axis, value: "주요 축")
+                        Chip(title: axis.label, value: "주요 축", tasteAxis: axis, size: .extraSmall)
                     }
                 }
             }

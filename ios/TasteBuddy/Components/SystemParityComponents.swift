@@ -45,7 +45,7 @@ struct TBCapsuleTabs<Selection: Hashable>: View {
     TBCapsuleTabs(options: [1, 3, 6, 12, 0], selection: $selectedMonths,
                   selectedForeground: TasteAxis.salty.tintSurfaceTextColor,
                   selectedBackground: TasteAxis.salty.tintColor,
-                  selectedBorder: TasteAxis.salty.tintSoftBorderColor) {
+                  selectedBorder: TasteAxis.salty.borderDefaultColor) {
         $0 == 0 ? "전부" : $0 == 12 ? "1년" : "\($0)개월"
     }
     .padding(.top, TBSpacing.x16)
@@ -117,11 +117,7 @@ enum ChipSize: CaseIterable {
     }
 
     var font: Font {
-        TBFont.semibold(fontSize)
-    }
-
-    var lineHeight: CGFloat {
-        fontSize * TBTypography.LineHeight.normal
+        TBFont.medium(fontSize)
     }
 
     var iconSize: CGFloat {
@@ -175,13 +171,30 @@ struct ChipStyle: Equatable {
     let border: Color
     let foreground: Color
 
-    static func resolve(tone: ChipTone, variant: ChipVariant) -> ChipStyle {
-        switch (tone, variant) {
+    static func resolve(tone: ChipTone, variant: ChipVariant, tasteAxis: TasteAxis? = nil) -> ChipStyle {
+        if let tasteAxis {
+            switch variant {
+            case .soft:
+                return ChipStyle(background: tasteAxis.chipBackgroundColor,
+                                 border: tasteAxis.borderDefaultColor,
+                                 foreground: tasteAxis.tintTextColor)
+            case .outline:
+                return ChipStyle(background: .clear, border: tasteAxis.borderAccentColor,
+                                 foreground: tasteAxis.tintTextColor)
+            case .solid:
+                return ChipStyle(background: tasteAxis.tintTextColor, border: tasteAxis.tintTextColor,
+                                 foreground: TBColor.textInverse)
+            case .text:
+                return ChipStyle(background: .clear, border: .clear, foreground: tasteAxis.tintTextColor)
+            }
+        }
+
+        return switch (tone, variant) {
         case (.neutral, .soft):
             ChipStyle(
-                background: TBColor.mutedSurface,
-                border: TBColor.border,
-                foreground: TBColor.textMuted
+                background: TBChipColor.neutralBackground,
+                border: TBColor.borderOnMuted,
+                foreground: TBColor.textTertiary
             )
         case (.neutral, .outline):
             ChipStyle(
@@ -192,7 +205,7 @@ struct ChipStyle: Equatable {
         case (.neutral, .solid), (.accent, .solid):
             ChipStyle(
                 background: TBColor.selectionSurface,
-                border: TBColor.selectionSurface,
+                border: TBColor.borderSelected,
                 foreground: TBColor.selectionText
             )
         case (.neutral, .text):
@@ -204,11 +217,11 @@ struct ChipStyle: Equatable {
         case (.success, .soft):
             ChipStyle(
                 background: TBColor.successSoft,
-                border: TBColor.successSoft,
+                border: TBColor.borderSuccessSoft,
                 foreground: TBColor.successText
             )
         case (.success, .outline):
-            ChipStyle(background: .clear, border: TBColor.success, foreground: TBColor.successText)
+            ChipStyle(background: .clear, border: TBColor.borderSuccess, foreground: TBColor.successText)
         case (.success, .solid):
             ChipStyle(
                 background: TBColor.successStrong,
@@ -220,11 +233,11 @@ struct ChipStyle: Equatable {
         case (.warning, .soft):
             ChipStyle(
                 background: TBColor.warningSoft,
-                border: TBColor.warningSoft,
+                border: TBColor.borderWarningSoft,
                 foreground: TBColor.warningText
             )
         case (.warning, .outline):
-            ChipStyle(background: .clear, border: TBColor.warning, foreground: TBColor.warningText)
+            ChipStyle(background: .clear, border: TBColor.borderWarning, foreground: TBColor.warningText)
         case (.warning, .solid):
             ChipStyle(
                 background: TBColor.warningStrong,
@@ -251,11 +264,15 @@ struct Chip: View {
     @Environment(\.isEnabled) private var environmentIsEnabled
 
     let title: String
+    var value: String? = nil
+    var tasteAxis: TasteAxis? = nil
+    var valueForegroundColorOverride: Color? = nil
     var leadingSymbol: String? = nil
     var trailingSymbol: String? = nil
     var trailingAction: (() -> Void)? = nil
     var trailingAccessibilityLabel: String? = nil
     var backgroundColorOverride: Color? = nil
+    var borderColorOverride: Color? = nil
     var foregroundColorOverride: Color? = nil
     var trailingForegroundColorOverride: Color? = nil
     var horizontalPaddingOverride: CGFloat? = nil
@@ -268,9 +285,17 @@ struct Chip: View {
         isEnabled && environmentIsEnabled
     }
 
-    var body: some View {
-        let style = ChipStyle.resolve(tone: tone, variant: variant)
+    private var style: ChipStyle {
+        ChipStyle.resolve(tone: tone, variant: variant, tasteAxis: tasteAxis)
+    }
 
+    private var labelColor: Color {
+        guard isEffectivelyEnabled else { return TBColor.textDisabled }
+        if let foregroundColorOverride { return foregroundColorOverride }
+        return tasteAxis != nil && value != nil && variant != .solid ? TBColor.textPrimary : style.foreground
+    }
+
+    var body: some View {
         HStack(spacing: size.gap) {
             if let leadingSymbol {
                 LucideIcon(
@@ -283,21 +308,30 @@ struct Chip: View {
 
             Text(title)
                 .lineLimit(1)
-                .frame(height: size.lineHeight)
                 .fixedSize(horizontal: true, vertical: false)
+
+            if let value {
+                Text(value)
+                    .font(TBFont.semibold(size.fontSize))
+                    .foregroundStyle(isEffectivelyEnabled
+                        ? (valueForegroundColorOverride ?? foregroundColorOverride ?? style.foreground)
+                        : TBColor.textDisabled)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+            }
 
             if let trailingSymbol {
                 trailingIcon(symbol: trailingSymbol)
             }
         }
         .font(size.font)
-        .foregroundStyle(isEffectivelyEnabled ? (foregroundColorOverride ?? style.foreground) : TBColor.textDisabled)
+        .foregroundStyle(labelColor)
         .padding(.horizontal, horizontalPaddingOverride ?? size.horizontalPadding)
         .padding(.vertical, size.verticalPadding)
         .background(isEffectivelyEnabled ? (backgroundColorOverride ?? style.background) : TBColor.disabledSurface)
         .clipShape(Capsule())
         .overlay {
-            Capsule().stroke(isEffectivelyEnabled ? style.border : TBColor.borderDisabled, lineWidth: 1)
+            Capsule().strokeBorder(isEffectivelyEnabled ? (borderColorOverride ?? style.border) : TBColor.borderDisabled, lineWidth: 1)
         }
         .disabled(!isEnabled)
         .accessibilityElement(children: .combine)
@@ -312,7 +346,7 @@ struct Chip: View {
         )
         .foregroundStyle(
             isEffectivelyEnabled
-                ? (trailingForegroundColorOverride ?? foregroundColorOverride ?? ChipStyle.resolve(tone: tone, variant: variant).foreground)
+                ? (trailingForegroundColorOverride ?? foregroundColorOverride ?? style.foreground)
                 : TBColor.textDisabled
         )
         .frame(width: size.iconSize, height: size.iconSize)
@@ -342,121 +376,6 @@ struct NeutralChip: View {
             tone: .neutral,
             variant: .soft
         )
-    }
-}
-
-enum TasteChipTone {
-    case taste
-    case neutral
-}
-
-enum TasteChipSize {
-    case xs
-    case sm
-    case md
-
-    var fontSize: CGFloat {
-        switch self {
-        case .xs: 10
-        case .sm: 11
-        case .md: 12
-        }
-    }
-
-    var gap: CGFloat {
-        switch self {
-        case .xs: 4
-        case .sm: 6
-        case .md: 8
-        }
-    }
-
-    var horizontalPadding: CGFloat {
-        switch self {
-        case .xs: 8
-        case .sm: 10
-        case .md: 12
-        }
-    }
-
-    var verticalPadding: CGFloat {
-        switch self {
-        case .xs: 4
-        case .sm: 6
-        case .md: 8
-        }
-    }
-}
-
-struct TasteChip: View {
-    let axis: TasteAxis?
-    let title: String
-    var value: String? = nil
-    var tone: TasteChipTone = .taste
-    var colorAxis: TasteAxis? = nil
-    var size: TasteChipSize = .xs
-
-    init(
-        axis: TasteAxis,
-        value: String? = nil,
-        tone: TasteChipTone = .taste,
-        size: TasteChipSize = .xs
-    ) {
-        self.axis = axis
-        self.title = axis.label
-        self.value = value
-        self.tone = tone
-        self.size = size
-    }
-
-    init(
-        title: String,
-        value: String? = nil,
-        tone: TasteChipTone = .neutral,
-        colorAxis: TasteAxis? = nil,
-        size: TasteChipSize = .xs
-    ) {
-        self.axis = nil
-        self.title = title
-        self.value = value
-        self.tone = tone
-        self.colorAxis = colorAxis
-        self.size = size
-    }
-
-    var body: some View {
-        let isNeutral = tone == .neutral
-        let resolvedAxis = colorAxis ?? axis
-        let signalColor = isNeutral ? TBColor.textTertiary : (resolvedAxis?.tintTextColor ?? TBColor.textTertiary)
-        let labelColor = isNeutral
-            ? TBColor.textTertiary
-            : (value == nil ? (resolvedAxis?.tintTextColor ?? TBColor.textTertiary) : TBColor.textPrimary)
-        let background = isNeutral
-            ? TBColor.mutedSurface
-            : (resolvedAxis?.tintSoftColor ?? TBColor.mutedSurface)
-        let border = isNeutral
-            ? TBColor.borderStrong
-            : (resolvedAxis?.tintSoftBorderColor ?? TBColor.borderStrong)
-
-        HStack(spacing: size.gap) {
-            Text(title)
-                .foregroundStyle(labelColor)
-
-            if let value {
-                Text(value)
-                    .font(TBFont.semibold(size.fontSize))
-                    .foregroundStyle(signalColor)
-            }
-        }
-        .font(TBFont.medium(size.fontSize))
-        .padding(.horizontal, size.horizontalPadding)
-        .padding(.vertical, size.verticalPadding)
-        .background(background)
-        .clipShape(Capsule())
-        .overlay {
-            Capsule().strokeBorder(border, lineWidth: 1)
-        }
-        .accessibilityElement(children: .combine)
     }
 }
 
@@ -664,7 +583,7 @@ struct PalateSignatureHeroCard: View {
                             .foregroundStyle(TBColor.textHint)
                         HStack(spacing: 6) {
                             ForEach(signature.accentAxes) { axis in
-                                TasteChip(axis: axis, size: .sm)
+                                Chip(title: axis.label, tasteAxis: axis, size: .small)
                             }
                         }
                     }
@@ -800,8 +719,8 @@ struct TasteMeasurementMiniCta: View {
 
     private var borderColor: Color {
         switch tone {
-        case .neutral: TBColor.borderCard
-        case .alert: Color(hex: 0xFFD699)
+        case .neutral: TBColor.borderFaint
+        case .alert: TasteAxis.sweet.borderStrongColor
         }
     }
 }
@@ -1027,29 +946,182 @@ enum TasteLineChartMetrics {
     static let maximumHistoryCount = TasteProfileHistoryContract.maximumStoredProfiles
     static let maximumPointCount = maximumHistoryCount + 1
     static let currentNodeDiameter: CGFloat = 12
+    static let historyNodeDiameter: CGFloat = 4
     static let trackLineWidth: CGFloat = currentNodeDiameter
     static let coreLineWidth: CGFloat = 2
+    static let cornerRadius: CGFloat = 12
     static let rowHeight: CGFloat = 24
     static let rowSpacing: CGFloat = 4
 
     static func visibleValues(_ values: [Double]) -> [Double] {
         Array(values.suffix(maximumPointCount))
     }
+
+    static func horizontalLayout(pointCount: Int, availableWidth: CGFloat, maxPointGap: CGFloat = 36,
+                                 plotWidth: CGFloat? = nil, showsPendingHistory: Bool = false)
+        -> (width: CGFloat, pointGap: CGFloat, firstX: CGFloat) {
+        let pending = showsPendingHistory && pointCount == 1
+        let intervals = max(pointCount - 1, 0)
+        let contentWidth = max((plotWidth ?? availableWidth) - currentNodeDiameter, 0)
+        let gap = intervals > 0 ? (plotWidth != nil ? contentWidth / CGFloat(intervals)
+            : min(maxPointGap, contentWidth / CGFloat(intervals))) : 0
+        let width = plotWidth ?? (pending ? max(availableWidth, 0) : currentNodeDiameter + CGFloat(intervals) * gap)
+        // Keep the existing left-to-right waiting track; one observed point alone has no line.
+        let firstX = pointCount == 1 && plotWidth != nil && !pending
+            ? width - currentNodeDiameter / 2 : currentNodeDiameter / 2
+        return (width, gap, firstX)
+    }
 }
 
-/// 홈의 기존 캡슐 막대와 끝점을 공유한다. 작은 값도 실제 높이 안에서만 그린다.
+/// Fixed circular fillets shared with web roundedLinePath.ts; source values stay unchanged.
+enum TasteLineRounding {
+    struct Corner {
+        let entry: CGPoint
+        let exit: CGPoint
+        let radius: CGFloat
+        let marker: CGPoint
+    }
+
+    static func corners(_ points: [CGPoint], radius: CGFloat = 12) -> [Corner?] {
+        points.enumerated().map { index, point in
+            guard index > 0, index < points.count - 1, radius > 0 else { return nil }
+            let before = points[index - 1], after = points[index + 1]
+            let incomingLength = hypot(point.x - before.x, point.y - before.y)
+            let outgoingLength = hypot(after.x - point.x, after.y - point.y)
+            guard incomingLength > 0, outgoingLength > 0 else { return nil }
+            let incoming = CGPoint(x: (point.x - before.x) / incomingLength, y: (point.y - before.y) / incomingLength)
+            let outgoing = CGPoint(x: (after.x - point.x) / outgoingLength, y: (after.y - point.y) / outgoingLength)
+            let angle = acos(max(-1, min(1, incoming.x * outgoing.x + incoming.y * outgoing.y)))
+            guard angle >= 1e-6, .pi - angle >= 1e-6 else { return nil }
+            let tangent = tan(angle / 2)
+            let trim = min(radius * tangent, incomingLength / 2, outgoingLength / 2)
+            let arcRadius = trim / tangent
+            let entry = CGPoint(x: point.x - incoming.x * trim, y: point.y - incoming.y * trim)
+            let sign: CGFloat = incoming.x * outgoing.y - incoming.y * outgoing.x > 0 ? 1 : -1
+            let center = CGPoint(x: entry.x - sign * incoming.y * arcRadius,
+                                 y: entry.y + sign * incoming.x * arcRadius)
+            return Corner(
+                entry: entry,
+                exit: CGPoint(x: point.x + outgoing.x * trim, y: point.y + outgoing.y * trim),
+                radius: arcRadius,
+                marker: CGPoint(x: point.x, y: center.y - sign * sqrt(max(0,
+                    arcRadius * arcRadius - (point.x - center.x) * (point.x - center.x))))
+            )
+        }
+    }
+
+    /// Keep each historical sample's x while placing its dot on the rounded line.
+    static func markers(_ points: [CGPoint], radius: CGFloat = 12) -> [CGPoint] {
+        zip(points, corners(points, radius: radius)).map { point, corner in corner?.marker ?? point }
+    }
+
+    static func path(_ points: [CGPoint], radius: CGFloat = 12) -> Path {
+        var path = Path()
+        guard let first = points.first else { return path }
+        path.move(to: first)
+        let rounds = corners(points, radius: radius)
+        for index in 1..<max(1, points.count) {
+            if let corner = rounds[index] {
+                path.addLine(to: corner.entry)
+                path.addArc(tangent1End: points[index], tangent2End: corner.exit, radius: corner.radius)
+            } else {
+                path.addLine(to: points[index])
+            }
+        }
+        return path
+    }
+}
+
+/// 홈 카드의 고정 크기 미니 그래프. 상세 차트의 실제 수치 높이와 구분한다.
+enum TBMiniChartMetrics {
+    static let width: CGFloat = TBMiniChartDimensions.width
+    static let height: CGFloat = TBMiniChartDimensions.height
+    static let gap: CGFloat = 3
+    static let weeklyGap: CGFloat = 8
+    static let groupGap: CGFloat = 8
+    static let intraGroupGap: CGFloat = 2
+    static let maximumBarWidth: CGFloat = 12
+    static let zeroHeightRatio: CGFloat = 0.5
+
+    static func spacing(count: Int, grouped: Bool = false, fitWeek: Bool = true) -> CGFloat {
+        let preferred = grouped ? groupGap : (fitWeek && count == 7 ? weeklyGap : gap)
+        return count > 0 ? min(preferred, width / CGFloat((grouped ? 3 : 2) * count)) : gap
+    }
+
+    static func innerSpacing(count: Int) -> CGFloat {
+        guard count > 0 else { return 0 }
+        let cell = (width - spacing(count: count, grouped: true) * CGFloat(count - 1)) / CGFloat(count)
+        return min(intraGroupGap, cell / 4)
+    }
+
+    static func barWidth(count: Int, grouped: Bool = false, fitWeek: Bool = true) -> CGFloat {
+        guard count > 0 else { return 0 }
+        let cell = (width - spacing(count: count, grouped: grouped, fitWeek: fitWeek) * CGFloat(count - 1)) / CGFloat(count)
+        return min(maximumBarWidth, grouped ? (cell - innerSpacing(count: count)) / 2 : cell)
+    }
+
+    static func barHeight(value: Double, maximum: Double, barWidth: CGFloat) -> CGFloat {
+        guard value.isFinite, value >= 0 else { return 0 }
+        if value == 0 { return barWidth * zeroHeightRatio }
+        guard maximum > 1 else { return barWidth }
+        return barWidth + CGFloat(max(0, value - 1) / (maximum - 1)) * (height - barWidth)
+    }
+}
+
+struct TBMiniChart: View {
+    let values: [Double]
+    var comparisonValues: [Double]? = nil
+    let axis: TasteAxis
+    var onSelect: ((Int) -> Void)? = nil
+    var highlightsEachValue = false
+
+    var body: some View {
+        let grouped = comparisonValues != nil
+        let count = max(values.count, comparisonValues?.count ?? 0)
+        let maximum = (values + (comparisonValues ?? [])).filter { $0.isFinite }.max() ?? 0
+        let width = TBMiniChartMetrics.barWidth(count: count, grouped: grouped)
+        HStack(alignment: .bottom, spacing: TBMiniChartMetrics.spacing(count: count, grouped: grouped)) {
+            ForEach(0..<count, id: \.self) { index in
+                HStack(alignment: .bottom, spacing: grouped ? TBMiniChartMetrics.innerSpacing(count: count) : 0) {
+                    if let comparisonValues {
+                        bar(value: comparisonValues.indices.contains(index) ? comparisonValues[index] : .nan,
+                            width: width, maximum: maximum, last: highlightsEachValue || index == count - 1, comparison: true)
+                    }
+                    bar(value: values.indices.contains(index) ? values[index] : .nan,
+                        width: width, maximum: maximum, last: highlightsEachValue || index == count - 1, comparison: false)
+                }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                    .contentShape(Rectangle())
+                    .onTapGesture { onSelect?(index) }
+            }
+        }
+        .frame(width: TBMiniChartMetrics.width, height: TBMiniChartMetrics.height)
+        .tasteBloomChartReveal(from: .bottom)
+        .accessibilityHidden(true)
+    }
+
+    private func bar(value: Double, width: CGFloat, maximum: Double, last: Bool, comparison: Bool) -> some View {
+        TasteChartBarMark(axis: axis, showsEndpoint: value > 0 && last, isComparison: comparison,
+                          endpointColor: axis.mainColor)
+            .frame(width: width, height: TBMiniChartMetrics.barHeight(value: value, maximum: maximum, barWidth: width))
+    }
+}
+
+/// 캡슐 막대와 끝점을 공유한다. 높이는 호출부가 미니/상세 규칙에 맞춰 전달한다.
 struct TasteChartBarMark: View {
     let axis: TasteAxis
     var showsEndpoint = false
+    var isComparison = false
+    var endpointColor: Color? = nil
 
     var body: some View {
         GeometryReader { geometry in
             let diameter = min(geometry.size.width, geometry.size.height)
             if diameter > 0 {
                 ZStack(alignment: .top) {
-                    Capsule().fill(axis.tintSoftBorderColor)
+                    Capsule().fill(isComparison ? TBColor.chartComparisonTrack : axis.chartTrackColor)
                     if showsEndpoint {
-                        Circle().fill(axis.mainColor)
+                        Circle().fill(isComparison ? TBColor.textBody : (endpointColor ?? axis.mainColor))
                             .frame(width: diameter, height: diameter)
                     }
                 }
@@ -1074,13 +1146,13 @@ struct TasteChartTrackMark: View {
             var path = Path()
             path.move(to: start)
             path.addLine(to: end)
-            context.stroke(path, with: .color(axis.tintSoftBorderColor),
+            context.stroke(path, with: .color(axis.lineChartTrackColor),
                            style: StrokeStyle(lineWidth: diameter, lineCap: .round))
             context.stroke(path, with: .linearGradient(
-                Gradient(colors: [axis.tintSoftBorderColor, axis.mainColor]), startPoint: start, endPoint: end),
+                Gradient(colors: [axis.lineChartStartColor, axis.lineChartEndColor]), startPoint: start, endPoint: end),
                 style: StrokeStyle(lineWidth: min(TasteLineChartMetrics.coreLineWidth, diameter), lineCap: .round))
             context.fill(Path(ellipseIn: CGRect(x: end.x - radius, y: end.y - radius, width: diameter, height: diameter)),
-                         with: .color(axis.mainColor))
+                         with: .color(axis.lineChartEndColor))
         }
         .accessibilityHidden(true)
     }
@@ -1089,9 +1161,18 @@ struct TasteChartTrackMark: View {
 struct TasteLineChart: View {
     let entries: [TasteLineChartEntry]
     var maxPointGap: CGFloat = 36
+    var plotWidth: CGFloat? = nil
     var showsPendingHistory = false
+    var plotHeight: CGFloat? = nil
+    var valueDomain: ClosedRange<Double>? = nil
+
+    private var rowHeight: CGFloat {
+        guard let plotHeight else { return TasteLineChartMetrics.rowHeight }
+        return (plotHeight - CGFloat(max(0, entries.count - 1)) * TasteLineChartMetrics.rowSpacing) / CGFloat(max(1, entries.count))
+    }
 
     private var domain: ClosedRange<Double> {
+        if let valueDomain { return valueDomain }
         let values = entries.flatMap { TasteLineChartMetrics.visibleValues($0.values) }
         guard let minimum = values.min(), let maximum = values.max() else {
             return -1...1
@@ -1110,17 +1191,9 @@ struct TasteLineChart: View {
                 GeometryReader { proxy in
                     let values = TasteLineChartMetrics.visibleValues(entry.values)
                     let drawsPendingTrack = showsPendingHistory && values.count == 1
-                    let intervalCount = max(values.count - 1, 0)
-                    let availableWidth = max(
-                        proxy.size.width - TasteLineChartMetrics.currentNodeDiameter,
-                        0
-                    )
-                    let pointGap = intervalCount > 0
-                        ? min(maxPointGap, availableWidth / CGFloat(intervalCount))
-                        : 0
-                    let graphWidth = drawsPendingTrack
-                        ? max(proxy.size.width, 0)
-                        : TasteLineChartMetrics.currentNodeDiameter + CGFloat(intervalCount) * pointGap
+                    let layout = TasteLineChartMetrics.horizontalLayout(pointCount: values.count,
+                        availableWidth: proxy.size.width, maxPointGap: maxPointGap,
+                        plotWidth: plotWidth, showsPendingHistory: showsPendingHistory)
 
                     HStack(spacing: 0) {
                         Spacer(minLength: 0)
@@ -1130,14 +1203,15 @@ struct TasteLineChart: View {
                                 size: size,
                                 axis: entry.axis,
                                 values: values,
-                                pointGap: pointGap,
+                                pointGap: layout.pointGap,
+                                firstX: layout.firstX,
                                 drawsPendingTrack: drawsPendingTrack
                             )
                         }
-                        .frame(width: graphWidth, height: TasteLineChartMetrics.rowHeight)
+                        .frame(width: layout.width, height: rowHeight)
                     }
                 }
-                .frame(height: TasteLineChartMetrics.rowHeight)
+                .frame(height: rowHeight)
             }
         }
         .tasteBloomChartReveal()
@@ -1150,6 +1224,7 @@ struct TasteLineChart: View {
         axis: TasteAxis,
         values: [Double],
         pointGap: CGFloat,
+        firstX: CGFloat,
         drawsPendingTrack: Bool
     ) {
         guard !values.isEmpty else { return }
@@ -1158,20 +1233,24 @@ struct TasteLineChart: View {
             let denominator = max(domain.upperBound - domain.lowerBound, 0.001)
             let normalized = (value - domain.lowerBound) / denominator
             return CGPoint(
-                x: nodeRadius + pointGap * CGFloat(index),
-                y: 18 - CGFloat(normalized) * 10
+                x: firstX + pointGap * CGFloat(index),
+                y: plotHeight == nil ? 18 - CGFloat(normalized) * 10
+                    : size.height - nodeRadius - CGFloat(normalized) * (size.height - 2 * nodeRadius)
             )
         }
-        var path = Path()
-        path.move(to: points[0])
-        points.dropFirst().forEach { path.addLine(to: $0) }
+        let path = TasteLineRounding.path(points, radius: TasteLineChartMetrics.cornerRadius)
+        let lineShading = GraphicsContext.Shading.linearGradient(
+            Gradient(colors: [axis.lineChartStartColor, axis.lineChartEndColor]),
+            startPoint: CGPoint(x: 0, y: 12),
+            endPoint: CGPoint(x: size.width, y: 12)
+        )
 
         if drawsPendingTrack, let current = points.first {
             drawPendingTrack(context: &context, size: size, axis: axis, current: current)
         } else if points.count > 1 {
             context.stroke(
                 path,
-                with: .color(axis.tintSoftBorderColor),
+                with: .color(axis.lineChartTrackColor),
                 style: StrokeStyle(
                     lineWidth: TasteLineChartMetrics.trackLineWidth,
                     lineCap: .round,
@@ -1180,17 +1259,21 @@ struct TasteLineChart: View {
             )
             context.stroke(
                 path,
-                with: .linearGradient(
-                    Gradient(colors: [axis.tintSoftBorderColor, axis.mainColor]),
-                    startPoint: CGPoint(x: 0, y: 12),
-                    endPoint: CGPoint(x: size.width, y: 12)
-                ),
+                with: lineShading,
                 style: StrokeStyle(
                     lineWidth: TasteLineChartMetrics.coreLineWidth,
                     lineCap: .round,
                     lineJoin: .round
                 )
             )
+        }
+
+        let historyDiameter = TasteLineChartMetrics.historyNodeDiameter
+        for point in TasteLineRounding.markers(points, radius: TasteLineChartMetrics.cornerRadius).dropLast() {
+            context.fill(Path(ellipseIn: CGRect(
+                x: point.x - historyDiameter / 2, y: point.y - historyDiameter / 2,
+                width: historyDiameter, height: historyDiameter
+            )), with: lineShading)
         }
 
         if let current = points.last {
@@ -1203,7 +1286,7 @@ struct TasteLineChart: View {
                         height: TasteLineChartMetrics.currentNodeDiameter
                     )
                 ),
-                with: .color(axis.mainColor)
+                with: .color(axis.lineChartEndColor)
             )
         }
     }
@@ -1229,8 +1312,8 @@ struct TasteLineChart: View {
             track,
             with: .linearGradient(
                 Gradient(stops: [
-                    .init(color: axis.tintSoftBorderColor, location: 0),
-                    .init(color: axis.tintSoftBorderColor, location: 0.45),
+                    .init(color: axis.lineChartTrackColor, location: 0),
+                    .init(color: axis.lineChartTrackColor, location: 0.45),
                     .init(color: .clear, location: 1)
                 ]),
                 startPoint: current,
@@ -1242,8 +1325,8 @@ struct TasteLineChart: View {
             track,
             with: .linearGradient(
                 Gradient(stops: [
-                    .init(color: axis.mainColor, location: 0),
-                    .init(color: axis.tintSoftBorderColor, location: 0.6),
+                    .init(color: axis.lineChartEndColor, location: 0),
+                    .init(color: axis.lineChartStartColor, location: 0.6),
                     .init(color: .clear, location: 1)
                 ]),
                 startPoint: current,
@@ -1278,10 +1361,82 @@ private struct TasteInsightEqualSectionsLayout: Layout {
     }
 }
 
+/// SummaryCard Body: text occupies at most half the row; the graph keeps its 132pt plot.
+/// Matches the 156pt text column in a 352pt Figma card, without fixing the card width.
+struct TBSummaryCardBodyLayout: Layout {
+    private func textWidth(_ width: CGFloat) -> CGFloat {
+        max(0, min((width - TBSpacing.x16) / 2, width - TBMiniChartMetrics.width - TBSpacing.x16))
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? 328
+        guard subviews.count == 2 else {
+            return subviews.first?.sizeThatFits(.init(width: width, height: nil)) ?? .zero
+        }
+        let text = subviews[0].sizeThatFits(.init(width: textWidth(width), height: nil))
+        let chart = subviews[1].sizeThatFits(.init(width: TBMiniChartMetrics.width, height: nil))
+        return CGSize(width: width, height: max(text.height, chart.height))
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard subviews.count == 2 else {
+            subviews.first?.place(at: bounds.origin, anchor: .topLeading, proposal: .init(width: bounds.width, height: bounds.height))
+            return
+        }
+        subviews[0].place(at: CGPoint(x: bounds.minX, y: bounds.midY), anchor: .leading,
+                          proposal: .init(width: textWidth(bounds.width), height: nil))
+        subviews[1].place(at: CGPoint(x: bounds.maxX, y: bounds.midY), anchor: .trailing,
+                          proposal: .init(width: TBMiniChartMetrics.width, height: nil))
+    }
+}
+
+struct TBSummaryCardLegendItem: Identifiable {
+    let id: String
+    let label: String
+    var color: Color? = nil
+}
+
+struct TBSummaryCardLegend: View {
+    let items: [TBSummaryCardLegendItem]
+
+    var body: some View {
+        TBWrapLayout(spacing: TBSpacing.x8) { labels }
+        .font(TBFont.medium(TBTypography.FontSize.x10))
+        .foregroundStyle(TBColor.textBody)
+    }
+
+    private var labels: some View {
+        ForEach(items) { item in
+            HStack(spacing: TBSpacing.x4) {
+                if let color = item.color {
+                    Circle().fill(color).frame(width: 5, height: 5).accessibilityHidden(true)
+                }
+                Text(item.label).fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(minHeight: 14)
+        }
+    }
+}
+
+struct TBSummaryCardFooter: View {
+    let items: [TBSummaryCardLegendItem]
+
+    var body: some View {
+        if !items.isEmpty {
+            VStack(alignment: .leading, spacing: TBSpacing.x12) {
+                Rectangle().fill(TBColor.borderSubtle).frame(height: 0.5).accessibilityHidden(true)
+                TBSummaryCardLegend(items: items)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+
 struct TasteInsightSummaryCardLayout<Content: View>: View {
     let indicatorColors: [Color]
     var indicatorWeights: [Double] = []
     var indicatorIcon: LucideIconName? = nil
+    var indicatorCategory: TDCategory? = nil
     let sectionLabel: String
     let actionLabel: String?
     let title: String
@@ -1294,11 +1449,13 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
     var onTap: (() -> Void)? = nil
     private let content: Content
     private let balancedFooter: AnyView?
+    private let legend: [TBSummaryCardLegendItem]
 
     init(
         indicatorColors: [Color],
         indicatorWeights: [Double] = [],
         indicatorIcon: LucideIconName? = nil,
+        indicatorCategory: TDCategory? = nil,
         sectionLabel: String,
         actionLabel: String?,
         title: String,
@@ -1310,11 +1467,13 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
         accessibilityHint: String? = nil,
         onTap: (() -> Void)? = nil,
         balancedFooter: AnyView? = nil,
+        legend: [TBSummaryCardLegendItem] = [],
         @ViewBuilder content: () -> Content
     ) {
         self.indicatorColors = indicatorColors
         self.indicatorWeights = indicatorWeights
         self.indicatorIcon = indicatorIcon
+        self.indicatorCategory = indicatorCategory
         self.sectionLabel = sectionLabel
         self.actionLabel = actionLabel
         self.title = title
@@ -1326,6 +1485,7 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
         self.accessibilityHint = accessibilityHint
         self.onTap = onTap
         self.balancedFooter = balancedFooter
+        self.legend = legend
         self.content = content()
     }
 
@@ -1341,13 +1501,13 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
             }
         }
         .accessibilityElement(children: combinesAccessibilityChildren ? .combine : .contain)
-        .accessibilityLabel(accessibilityLabel ?? "\(sectionLabel), \(title)")
+        .accessibilityLabel(([accessibilityLabel ?? "\(sectionLabel), \(title)"] + legend.map(\.label)).joined(separator: ", "))
         .accessibilityHint(accessibilityHint ?? "")
         .accessibilityAddTraits(onTap == nil ? [] : .isButton)
     }
 
     private var cardContent: some View {
-        Group {
+        VStack(alignment: .leading, spacing: TBSpacing.x12) {
             if let balancedFooter {
                 TasteInsightEqualSectionsLayout {
                     upperContent
@@ -1359,6 +1519,7 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
             } else {
                 upperContent
             }
+            TBSummaryCardFooter(items: legend)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1370,7 +1531,9 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 16) {
                 HStack(spacing: 6) {
-                    if let indicatorIcon {
+                    if let indicatorCategory {
+                        TDCategoryIcon(category: indicatorCategory, color: indicatorColors.first)
+                    } else if let indicatorIcon {
                         LucideIcon(
                             indicatorIcon,
                             size: TBIcon.Size.base,
@@ -1395,6 +1558,7 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
                         .font(TBFont.bold(14))
                         .foregroundStyle(TBColor.textPrimary)
                         .lineLimit(sectionLabelLineLimit)
+                        .frame(minHeight: 20, alignment: .leading)
                 }
 
                 Spacer(minLength: 0)
@@ -1410,6 +1574,7 @@ struct TasteInsightSummaryCardLayout<Content: View>: View {
                         .font(TBFont.bold(16))
                         .foregroundStyle(TBColor.textPrimary)
                         .lineSpacing(2)
+                        .frame(minHeight: 23, alignment: .leading)
 
                     content
                 }
@@ -1446,6 +1611,7 @@ struct TasteInsightSummaryCard: View {
         TasteInsightSummaryCardLayout(
             indicatorColors: summaryDetails.map(\.axis.mainColor),
             indicatorWeights: summaryDetails.map { abs($0.changeValue) },
+            indicatorCategory: .change,
             sectionLabel: data.sectionLabel,
             actionLabel: data.actionLabel ?? "자세히보기",
             title: data.title,
@@ -1503,6 +1669,7 @@ struct TasteInsightSummaryCard: View {
                                 values: $0.history + [$0.changeValue]
                             )
                         },
+                        plotWidth: TBMiniChartMetrics.width,
                         showsPendingHistory: !data.hasHistory
                     )
 
@@ -1536,9 +1703,9 @@ struct TasteInsightSummaryCard: View {
             let value = keyword
                 .dropFirst(axis.label.count)
                 .trimmingCharacters(in: .whitespaces)
-            TasteChip(axis: axis, value: value.isEmpty ? nil : value, size: .sm)
+            Chip(title: axis.label, value: value.isEmpty ? nil : value, tasteAxis: axis, size: .small)
         } else {
-            TasteChip(title: keyword, size: .sm)
+            Chip(title: keyword, size: .small)
         }
     }
 }
@@ -1562,21 +1729,15 @@ struct InterpretationCard: View {
     var accentColor: Color = TBColor.textDisabled
     var indicatorColors: [Color]? = nil
     var indicatorWeights: [Double] = []
+    var actionAccentColor: Color = TasteAxis.sweet.mainColor
+    @State private var supportingTextExpanded = false
     var onExpand: (() -> Void)? = nil
 
     var body: some View {
-        Group {
-            if let onExpand {
-                Button(action: onExpand) {
-                    content
-                }
-                .buttonStyle(.plain)
-            } else {
-                content
-            }
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(onExpand == nil ? [] : .isButton)
+        content
+            .onTapGesture { onExpand?() }
+            .accessibilityElement(children: .contain)
+            .onChange(of: supportingText) { _, _ in supportingTextExpanded = false }
     }
 
     private var content: some View {
@@ -1592,7 +1753,9 @@ struct InterpretationCard: View {
 
                     Spacer(minLength: 0)
 
-                    if let detailLabel {
+                    if let onExpand {
+                        InlineButton(title: detailLabel ?? "자세히보기", tone: .neutral, icon: .chevronRight, action: onExpand)
+                    } else if let detailLabel {
                         CardDetailLabel(label: detailLabel)
                     }
                 }
@@ -1608,10 +1771,7 @@ struct InterpretationCard: View {
                             .lineLimit(supportingText == nil ? 2 : 1)
 
                         if let supportingText {
-                            Text(supportingText)
-                                .font(TBFont.regular(12))
-                                .foregroundStyle(TBColor.textHint)
-                                .lineLimit(2)
+                            supportingDescription(supportingText)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -1619,6 +1779,43 @@ struct InterpretationCard: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+
+    @ViewBuilder
+    private func supportingDescription(_ text: String) -> some View {
+        if supportingTextExpanded {
+            HStack(alignment: .firstTextBaseline, spacing: TBSpacing.x6) {
+                supportingLabel(text)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                InlineButton(title: "접기", accentColor: actionAccentColor) {
+                    supportingTextExpanded = false
+                }
+            }
+        } else {
+            ViewThatFits(in: .horizontal) {
+                supportingLabel(text)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                HStack(alignment: .firstTextBaseline, spacing: TBSpacing.x6) {
+                    supportingLabel(text)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    InlineButton(title: "더보기", accentColor: actionAccentColor) {
+                        if let onExpand { onExpand() }
+                        else { supportingTextExpanded = true }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func supportingLabel(_ text: String) -> some View {
+        Text(text)
+            .font(TBFont.regular(12))
+            .foregroundStyle(TBColor.textHint)
     }
 
     private var indicator: some View {
@@ -1648,7 +1845,6 @@ enum RecommendationMiniCardMetrics {
     static let avatarSize: CGFloat = 42
     static let imageBoxSize = TokenBoxSize.large
     static let imageFallbackIconSize = TBIcon.Size.extraLarge
-    static let borderOpacity = 0.18
 }
 
 struct RecommendationMiniCardLayout<Visual: View>: View {
@@ -1729,7 +1925,7 @@ struct RecommendationMiniCardLayout<Visual: View>: View {
                 cornerRadius: RecommendationMiniCardMetrics.radius,
                 style: .continuous
             )
-            .stroke(axis.mainColor.opacity(RecommendationMiniCardMetrics.borderOpacity))
+            .stroke(axis.borderDefaultColor)
         }
         .platingLayoutFrame("home-card", when: title == TDCategory.experience.rawValue)
     }
@@ -1846,7 +2042,7 @@ struct TasteTintCard: View {
         .overlay {
             if cardBordersVisible {
                 RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
-                    .stroke(axis.tintSoftBorderColor, lineWidth: 1)
+                    .stroke(axis.borderDefaultColor, lineWidth: 1)
             }
         }
     }
@@ -2040,8 +2236,8 @@ struct ProfileConfidenceCard: View {
                             .font(TBFont.regular(11))
                             .foregroundStyle(TBColor.textSubtle)
                         HStack(spacing: 8) {
-                            TasteChip(axis: strongestAxis, value: "우선 반영", size: .sm)
-                            TasteChip(axis: weakestAxis, value: "더 확인 중", size: .sm)
+                            Chip(title: strongestAxis.label, value: "우선 반영", tasteAxis: strongestAxis, size: .small)
+                            Chip(title: weakestAxis.label, value: "더 확인 중", tasteAxis: weakestAxis, size: .small)
                         }
                         .padding(.top, 4)
                     }

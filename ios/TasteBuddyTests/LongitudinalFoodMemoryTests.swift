@@ -276,6 +276,155 @@ final class LongitudinalFoodMemoryTests: XCTestCase {
 final class LongitudinalMemoryLifecycleTests: XCTestCase {
     private let accountA = BackendAuthUserSummary(id: "11111111-1111-4111-8111-111111111111", email: "synthetic-a@example.com", isAnonymous: false)
     private let accountB = BackendAuthUserSummary(id: "22222222-2222-4222-8222-222222222222", email: "synthetic-b@example.com", isAnonymous: false)
+
+    func testIntegratedRecordInfoPreservesFoodSourceAcrossRestoreAccountsAndDeletion() async throws {
+        let repository = MemoryLifecycleAccountRepository(), store = defaults()
+        let app = AppModel(defaults: store, authRepository: FixtureBackendAuthRepository(), accountDataRepository: repository,
+                           accountPhotoRepository: UnavailableNativeAccountPhotoRepository())
+        app.completeVerifiedEmailAuthEntry(user: accountA)
+        let record = DiningEntry(restaurant: "보존할 식당", menu: "집에서 만든 파스타", rating: 0, note: "보존할 원문",
+                                 foodSource: .init(kind: "unknown"))
+        app.addDiningEntry(record)
+        try await wait(app)
+        let original = try XCTUnwrap(app.diningEntry(id: record.id))
+        let source = DiningFoodSource(kind: "homeCooked", homeCookingID: "fixed-recipe-identity", version: 7)
+        let context = DiningRecordContext(restaurant: original.restaurant, restaurantID: original.restaurantID,
+                                          mealTime: original.mealTime, foodSource: source)
+        XCTAssertTrue(app.updateDiningEntry(DiningRecordFieldUpdate.recordInfo(context, in: original), expected: original))
+        try await wait(app)
+        let saved = try XCTUnwrap(app.diningEntry(id: record.id))
+        XCTAssertEqual(saved.foodSource, source)
+        XCTAssertEqual(saved.observedAt, original.observedAt)
+        XCTAssertEqual(saved.mealTime, original.mealTime)
+        XCTAssertEqual(saved.note, original.note)
+        XCTAssertFalse(app.updateDiningEntry(original, expected: original), "오래된 편집이 출처를 덮어쓰지 않는다")
+        await app.syncAccountData()
+        XCTAssertNil(app.accountDataSyncError)
+        let backup = try XCTUnwrap(repository.rows[accountA.id]?.payload.values["tastebuddy.ios.dining-entries.v1"])
+        XCTAssertEqual(try JSONDecoder().decode([DiningEntry].self, from: backup).first?.foodSource, source)
+        app.completeVerifiedEmailAuthEntry(user: accountB)
+        try await wait(app)
+        XCTAssertTrue(app.diningEntries.isEmpty)
+        app.completeVerifiedEmailAuthEntry(user: accountA)
+        try await wait(app)
+        XCTAssertEqual(app.diningEntry(id: record.id)?.foodSource, source)
+        XCTAssertTrue(app.deleteDiningEntry(id: record.id))
+        try await wait(app)
+        await app.syncAccountData()
+        let empty = try XCTUnwrap(repository.rows[accountA.id]?.payload.values["tastebuddy.ios.dining-entries.v1"])
+        XCTAssertEqual(try JSONDecoder().decode([DiningEntry].self, from: empty), [])
+    }
+
+    func testRecordDetailLabelsRespectSourceAndLocalCalendar() throws {
+        let date = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-21T00:30:00Z"))
+        var seoul = Calendar(identifier: .gregorian)
+        seoul.timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Seoul"))
+        var losAngeles = Calendar(identifier: .gregorian)
+        losAngeles.timeZone = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        var context = DiningRecordContext(restaurant: "  정식당  ", mealTime: .init(source: .confirmed, start: date))
+        XCTAssertEqual(context.dateTimeSummary(calendar: seoul), "10.21 · 시간 미확인")
+        XCTAssertEqual(context.dateTimeSummary(calendar: losAngeles), "10.20 · 시간 미확인")
+        XCTAssertEqual(context.locationSummary, "정식당")
+
+        for source in [DiningMealTime.Source.recordedOnly, .photoCandidate, .approximate, .unknown, .init(rawValue: "future_source")] {
+            context.mealTime = .init(source: source, start: date)
+            XCTAssertEqual(context.dateTimeSummary(calendar: seoul), "날짜·시간 미확인")
+        }
+        context.mealTime = nil
+        context.restaurant = " \n "
+        context.foodSource = .init(kind: "homeCooked")
+        XCTAssertEqual(context.dateTimeSummary(calendar: seoul), "날짜·시간 미확인")
+        XCTAssertEqual(context.locationSummary, "위치 미확인", "음식 출처를 실제 위치로 만들지 않는다")
+        context.mealTime = .init(source: .confirmed)
+        XCTAssertEqual(context.dateTimeSummary(calendar: seoul), "날짜·시간 미확인")
+    }
+
+    func testRecordDetailLabelsFollowRestoredAndClearedOriginalFields() throws {
+        let date = LongitudinalMemoryFixture.date("2026-10-21")
+        let original = DiningEntry(restaurant: "이전 식당", menu: "기록", date: date, rating: 0, note: "원문")
+        let context = DiningRecordContext(restaurant: "새 식당", restaurantID: "restaurant-2",
+                                          mealTime: .init(source: .confirmed, start: date))
+        let updated = context.applying(to: original)
+        let restored = try JSONDecoder().decode(DiningEntry.self, from: JSONEncoder().encode(updated))
+        let restoredContext = DiningRecordContext(restaurant: restored.restaurant, restaurantID: restored.restaurantID,
+                                                  mealTime: restored.mealTime, foodSource: restored.foodSource)
+        XCTAssertEqual(restoredContext.dateTimeSummary(), context.dateTimeSummary())
+        XCTAssertEqual(restoredContext.locationSummary, "새 식당")
+        XCTAssertEqual(restored.note, "원문")
+        let cleared = DiningRecordContext(restaurant: "", mealTime: .init(source: .unknown)).applying(to: restored)
+        let clearedContext = DiningRecordContext(restaurant: cleared.restaurant, mealTime: cleared.mealTime)
+        XCTAssertEqual(clearedContext.locationSummary, "위치 미확인")
+        XCTAssertEqual(clearedContext.dateTimeSummary(), "날짜·시간 미확인", "남아 있는 저장 날짜를 대신 표시하지 않는다")
+    }
+
+    func testRecordContextRequiresConfirmedDateAndChosenIdentity() throws {
+        let date = Date.now.addingTimeInterval(-86400)
+        var context = DiningRecordContext(restaurant: "같은 이름", mealTime: .init(source: .recordedOnly))
+        XCTAssertFalse(context.hasConfirmedContext)
+        context.mealTime = .init(source: .photoCandidate, start: date)
+        context.selectRestaurant(name: "같은 이름 · A 지점", id: "kakao-fixture-a")
+        XCTAssertFalse(context.hasConfirmedContext, "사진 날짜는 확인 없이 식사일이 되지 않는다")
+        context.mealTime = .init(source: .confirmed, start: date, confirmedAt: .now)
+        XCTAssertTrue(context.hasConfirmedContext)
+        let original = DiningEntry(restaurant: "같은 이름", restaurantID: "kakao-fixture-b", menu: "국물",
+            menuItemID: "b-menu", rating: 0, note: "원문", overallEvaluation: .init(response: .liked),
+            reflectionPhotoFilename: "existing.jpg", feedbackStatus: .captured)
+        let changed = context.applying(to: original)
+        XCTAssertEqual(changed.id, original.id)
+        XCTAssertEqual(changed.mealID, original.mealID)
+        XCTAssertEqual(changed.observedAt, date)
+        XCTAssertNil(changed.menuItemID, "다른 식당의 메뉴 ID는 남기지 않는다")
+        XCTAssertEqual(changed.note, original.note)
+        XCTAssertEqual(changed.overallEvaluation, original.overallEvaluation)
+        XCTAssertEqual(changed.feedbackStatus, .captured)
+        XCTAssertEqual(changed.reflectionPhotoFilename, original.reflectionPhotoFilename)
+        XCTAssertEqual(changed.foodSource?.kind, "restaurant")
+        let home = DiningRecordContext(restaurant: "", mealTime: context.mealTime,
+            foodSource: .init(kind: "homeCooked", homeCookingID: "fixture-recipe"))
+        XCTAssertTrue(home.hasConfirmedContext, "직접 만든 요리에 식당 연결을 강요하지 않는다")
+    }
+
+    func testContextCorrectionRestoresArchiveAndSurvivesBackupAccountSwitchAndDeletion() async throws {
+        let repository = MemoryLifecycleAccountRepository()
+        let store = defaults()
+        let app = AppModel(defaults: store, authRepository: FixtureBackendAuthRepository(), accountDataRepository: repository,
+                           accountPhotoRepository: UnavailableNativeAccountPhotoRepository())
+        app.completeVerifiedEmailAuthEntry(user: accountA)
+        let day = Date.now.addingTimeInterval(-86400)
+        let record = DiningEntry(restaurant: "연결 전 식당", menu: "국물", observedAt: day, rating: 0, note: "원문", feedbackStatus: .captured)
+        app.addDiningEntry(record)
+        let original = try XCTUnwrap(app.diningEntry(id: record.id))
+        try await wait(app)
+        XCTAssertTrue(try XCTUnwrap(app.homeArchivePresentation).gastronomyInput.records.allSatisfy { $0.date == nil && $0.restaurant == nil })
+        var context = DiningRecordContext(restaurant: original.restaurant, mealTime: .init(source: .confirmed, start: day, confirmedAt: .now))
+        context.selectRestaurant(name: original.restaurant, id: "kakao-fixture-place")
+        XCTAssertTrue(app.updateDiningEntry(context.applying(to: original), expected: original))
+        try await wait(app)
+        let saved = try XCTUnwrap(app.diningEntry(id: record.id))
+        XCTAssertEqual(saved.memoryRevisionNumber, original.memoryRevisionNumber + 1)
+        XCTAssertTrue(saved.memoryCorrections?.last?.fields.contains("mealTime") == true)
+        let archive = try XCTUnwrap(app.homeArchivePresentation)
+        let cards = archive.sections.flatMap(\.cards).filter { ["meals", "menus", "restaurants"].contains($0.id) }
+        XCTAssertEqual(cards.count, 3)
+        XCTAssertTrue(cards.allSatisfy { $0.data.archiveChart?.hasData == true })
+        XCTAssertFalse(app.updateDiningEntry(original, expected: original), "이미 바뀐 원본을 오래된 편집이 덮어쓰지 않는다")
+        await app.syncAccountData()
+        XCTAssertNil(app.accountDataSyncError)
+        let data = try XCTUnwrap(repository.rows[accountA.id]?.payload.values["tastebuddy.ios.dining-entries.v1"])
+        XCTAssertEqual(try JSONDecoder().decode([DiningEntry].self, from: data).first, saved)
+        app.completeVerifiedEmailAuthEntry(user: accountB)
+        try await wait(app)
+        XCTAssertTrue(app.diningEntries.isEmpty)
+        XCTAssertFalse(app.updateDiningEntry(context.applying(to: original), expected: original))
+        app.completeVerifiedEmailAuthEntry(user: accountA)
+        try await wait(app)
+        XCTAssertEqual(app.diningEntry(id: record.id), saved)
+        XCTAssertTrue(app.deleteDiningEntry(id: record.id))
+        try await wait(app)
+        await app.syncAccountData()
+        let deleted = try XCTUnwrap(repository.rows[accountA.id]?.payload.values["tastebuddy.ios.dining-entries.v1"])
+        XCTAssertEqual(try JSONDecoder().decode([DiningEntry].self, from: deleted), [])
+    }
     private func defaults() -> UserDefaults {
         let name = "tastebuddy.memory.tests.\(UUID().uuidString)"
         addTeardownBlock { UserDefaults.standard.removePersistentDomain(forName: name) }

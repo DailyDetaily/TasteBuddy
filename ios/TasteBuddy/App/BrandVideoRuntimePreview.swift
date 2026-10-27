@@ -26,7 +26,7 @@ enum BrandVideoCaptureRuntime {
 
     static var screen: Screen? { Screen(rawValue: requestedScreen) }
     static var token: String { ProcessInfo.processInfo.environment["TB_BRAND_VIDEO_TOKEN"] ?? "" }
-    static let photoFilename = "brand-video-01.jpg"
+    static let photoFilename = "brand-video-butter-pasta.jpg"
 
     @MainActor
     static func makeAppModel() -> AppModel {

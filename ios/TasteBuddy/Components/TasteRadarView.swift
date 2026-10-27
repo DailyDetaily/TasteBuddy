@@ -97,6 +97,9 @@ struct HexRadarChart: View {
     private var reportedValues: [TasteAxis: Double]? = nil
     private var referenceValues: [TasteAxis: Double] = [:]
     private var reportedMaximum: Double = 4
+    private var showsLikingRates = false
+    private var selectedAxis: TasteAxis? = nil
+    private var onSelectAxis: ((TasteAxis) -> Void)? = nil
     var shouldAnimate = true
 
     init(myTasteData: [RadarTasteEntry], shouldAnimate: Bool = true) {
@@ -108,7 +111,7 @@ struct HexRadarChart: View {
         self.init(myTasteData: entries, shouldAnimate: shouldAnimate)
     }
 
-    init(reportedValues: [TasteAxis: Double], maximum: Double, referenceValues: [TasteAxis: Double] = [:]) {
+    init(reportedValues: [TasteAxis: Double], maximum: Double, referenceValues: [TasteAxis: Double] = [:], showsLikingRates: Bool = false, selectedAxis: TasteAxis? = nil, onSelectAxis: ((TasteAxis) -> Void)? = nil) {
         self.entries = TasteAxis.allCases.map { axis in
             let value = reportedValues[axis].flatMap { $0.isFinite && $0 >= 0 && $0 <= maximum ? $0 : nil } ?? 0
             return RadarTasteEntry(axis: axis, score: maximum > 0 ? Int(value / maximum * 100) : 0, averageScore: 0)
@@ -116,6 +119,9 @@ struct HexRadarChart: View {
         self.referenceValues = referenceValues.filter { $0.value.isFinite && $0.value >= 0 && $0.value <= maximum }
         self.reportedValues = reportedValues.filter { $0.value.isFinite && $0.value >= 0 && $0.value <= maximum }
         self.reportedMaximum = maximum
+        self.showsLikingRates = showsLikingRates
+        self.selectedAxis = selectedAxis
+        self.onSelectAxis = onSelectAxis
     }
 
     init(profile: TasteProfile, shouldAnimate: Bool = true) {
@@ -128,23 +134,50 @@ struct HexRadarChart: View {
     }
 
     var body: some View {
-        Canvas(opaque: false, colorMode: .nonLinear, rendersAsynchronously: false) { context, size in
-            drawChart(context: &context, size: size, profileProgress: 1)
+        ZStack {
+            Canvas(opaque: false, colorMode: .nonLinear, rendersAsynchronously: false) { context, size in
+                drawChart(context: &context, size: size, profileProgress: 1)
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("여섯 가지 미각 축을 보여주는 미각 반응 차트")
+            .accessibilityValue(accessibilitySummary)
+            .accessibilityHidden(onSelectAxis != nil)
+            if let onSelectAxis {
+                GeometryReader { proxy in
+                    let geometry = RadarGeometry(size: proxy.size)
+                    ForEach(Array(TasteAxis.allCases.enumerated()), id: \.element) { index, axis in
+                        let value = reportedValues?[axis] ?? 0
+                        let radius = reportedMaximum > 0 ? CGFloat(value / reportedMaximum) * TasteRadarContract.maximumRadius : 0
+                        let node = geometry.point(index: index, radius: max(TasteRadarContract.centerMaskRadius + TasteRadarContract.nodeRadius, radius))
+                        let label = geometry.point(index: index, radius: TasteRadarContract.maximumRadius + 10)
+                        let labelX = label.x + geometry.scaled(index == 5 ? -14 : index == 2 ? 14 : 0)
+                        let labelY = label.y + geometry.scaled(index < 2 ? -6 : index == 3 || index == 4 ? 6 : 0)
+                        Button { onSelectAxis(axis) } label: {
+                            Color.clear.frame(width: geometry.scaled(24), height: geometry.scaled(24)).contentShape(Circle())
+                        }
+                        .buttonStyle(.plain).position(node)
+                        .accessibilityHidden(true)
+                        Button { onSelectAxis(axis) } label: {
+                            Color.clear.frame(width: 44, height: 44).contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain).position(x: labelX, y: labelY)
+                        .accessibilityLabel("\(axis.label) 비율 비교")
+                        .accessibilityValue(reportedValues?[axis].map { "좋아한 비율 \(Int($0.rounded()))%" } ?? "미측정")
+                        .accessibilityAddTraits(selectedAxis == axis ? .isSelected : [])
+                        .accessibilityHint("선택하면 이전 비율과 현재 비율을 비교해요. 다시 선택하면 해제해요.")
+                        .accessibilityIdentifier("radar-select-\(axis.rawValue)")
+                    }
+                }
+            }
         }
-        .aspectRatio(
-            TasteRadarContract.canvasSize.width / TasteRadarContract.canvasSize.height,
-            contentMode: .fit
-        )
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("여섯 가지 미각 축을 보여주는 미각 반응 차트")
-        .accessibilityValue(accessibilitySummary)
+        .aspectRatio(TasteRadarContract.canvasSize.width / TasteRadarContract.canvasSize.height, contentMode: .fit)
         .tasteBloomChartReveal(from: .center, enabled: shouldAnimate)
     }
 
     private var accessibilitySummary: String {
         if let reportedValues {
             return TasteAxis.allCases.map { axis in
-                reportedValues[axis].map { "\(axis.label) 강도 \($0), \(reportedMaximum)단계 척도" } ?? "\(axis.label) 기록 없음"
+                reportedValues[axis].map { showsLikingRates ? "\(axis.label) 좋아한 비율 \(Int($0.rounded()))%" : "\(axis.label) 강도 \($0), \(reportedMaximum)단계 척도" } ?? "\(axis.label) 미측정"
             }.joined(separator: ", ")
         }
         return entries
@@ -158,7 +191,7 @@ struct HexRadarChart: View {
         profileProgress: CGFloat
     ) {
         let geometry = RadarGeometry(size: size)
-        let gridColor = Color(hex: 0xF8F8F8)
+        let gridColor = TBDataVizColor.radarRenderedGridColor
         let outerPoints = entries.indices.map {
             geometry.point(index: $0, value: 1)
         }
@@ -198,7 +231,7 @@ struct HexRadarChart: View {
                     : CGFloat(referenceValues[entry.axis] ?? 0) / CGFloat(reportedMaximum))
             }
             context.stroke(RadarGeometry.roundedClosedPath(points: averagePoints, cornerRadius: geometry.scaled(8)),
-                           with: .color(Color(hex: 0xD0D0D0)), lineWidth: geometry.scaled(1.5))
+                           with: .color(TBDataVizColor.radarAverageStroke), lineWidth: geometry.scaled(1.5))
         }
 
         let profilePoints = entries.enumerated().map { index, entry in
@@ -263,7 +296,7 @@ struct HexRadarChart: View {
                 center: geometry.center,
                 outerRadius: geometry.scaled(TasteRadarContract.centerMaskRadius)
             ),
-            with: .color(.white)
+            with: .color(TBDataVizColor.radarCenterMask)
         )
 
         let segments = RadarGeometry.profileSegments(
@@ -349,7 +382,7 @@ struct HexRadarChart: View {
                 center: geometry.center,
                 outerRadius: geometry.scaled(TasteRadarContract.centerMaskRadius)
             ),
-            with: .color(.white)
+            with: .color(TBDataVizColor.radarCenterMask)
         )
         let segments = RadarGeometry.profileSegments(
             centers: displayedPoints,
@@ -389,6 +422,11 @@ struct HexRadarChart: View {
             let p = displayedPoints[index]
             let radius = geometry.scaled(TasteRadarContract.nodeRadius)
             context.fill(Path(ellipseIn: CGRect(x: p.x-radius, y: p.y-radius, width: radius*2, height: radius*2)), with: .color(axis.mainColor))
+            if selectedAxis == axis {
+                let ringRadius = geometry.scaled(12)
+                context.stroke(Path(ellipseIn: CGRect(x: p.x-ringRadius, y: p.y-ringRadius, width: ringRadius*2, height: ringRadius*2)),
+                               with: .color(axis.radarOutlineColor), lineWidth: geometry.scaled(1))
+            }
             let text = axis.label + (values[axis] == 0 ? " 0" : "")
             context.draw(context.resolve(Text(text).font(TBFont.medium(10)).foregroundStyle(TBColor.textHint)),
                          at: geometry.point(index: index, radius: TasteRadarContract.maximumRadius + 10), anchor: labelAnchor(index: index))
@@ -417,8 +455,8 @@ struct TasteRadarView: View {
         chart = HexRadarChart(profile: profile, shouldAnimate: shouldAnimate)
     }
 
-    init(reportedValues: [TasteAxis: Double], maximum: Double, referenceValues: [TasteAxis: Double] = [:]) {
-        chart = HexRadarChart(reportedValues: reportedValues, maximum: maximum, referenceValues: referenceValues)
+    init(reportedValues: [TasteAxis: Double], maximum: Double, referenceValues: [TasteAxis: Double] = [:], showsLikingRates: Bool = false, selectedAxis: TasteAxis? = nil, onSelectAxis: ((TasteAxis) -> Void)? = nil) {
+        chart = HexRadarChart(reportedValues: reportedValues, maximum: maximum, referenceValues: referenceValues, showsLikingRates: showsLikingRates, selectedAxis: selectedAxis, onSelectAxis: onSelectAxis)
     }
 
     var body: some View {
@@ -765,30 +803,6 @@ private struct RadarGeometry {
     }
 }
 
-private extension TasteAxis {
-    var radarSpokeColor: Color {
-        switch self {
-        case .sweet: Color(hex: 0xFFE1B3)
-        case .sour: Color(hex: 0xFEEABD)
-        case .bitter: Color(hex: 0xE1F0B7)
-        case .salty: Color(hex: 0xD7E2FF)
-        case .umami: Color(hex: 0xE8D7E9)
-        case .fat: Color(hex: 0xE0DBD8)
-        }
-    }
-
-    var radarOutlineColor: Color {
-        switch self {
-        case .sweet: Color(hex: 0xFFCC80)
-        case .sour: Color(hex: 0xFDE096)
-        case .bitter: Color(hex: 0xCAE480)
-        case .salty: Color(hex: 0xB9CCFF)
-        case .umami: Color(hex: 0xD9B9DA)
-        case .fat: Color(hex: 0xCAC2BD)
-        }
-    }
-}
-
 private extension Collection {
     subscript(safe index: Index) -> Element? {
         indices.contains(index) ? self[index] : nil
@@ -800,6 +814,6 @@ private extension Collection {
         HexRadarChart(profile: .sample, shouldAnimate: false)
             .padding(20)
             .frame(width: 360)
-            .background(Color.white)
+            .background(TBColor.surface)
     }
 #endif

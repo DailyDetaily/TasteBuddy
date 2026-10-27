@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct HomeArchiveChartView: View {
+    @Environment(\.colorScheme) private var colorScheme
     let chart: HomeArchiveChart
     let axis: TasteAxis
     var compact = true
@@ -12,10 +13,24 @@ struct HomeArchiveChartView: View {
         VStack(alignment: .leading, spacing: 6) {
             if chart.hasData && chart.kind == .composition && compact {
                 composition
-            } else if chart.hasData && !compact && chart.segments.count > 12 {
-                ScrollView(.horizontal) {
-                    bars.frame(width: CGFloat(chart.segments.count) * 44)
-                }
+            } else if chart.hasData && compact {
+                TBMiniChart(values: chart.segments.map { Double($0.count) }, axis: axis,
+                            onSelect: onSelect.map { select in { index in select(chart.segments[index].id) } },
+                            highlightsEachValue: chart.kind == .distribution)
+            } else if chart.hasData && !compact && chart.kind == .composition {
+                TasteDetailCompositionChart(items: chart.segments.map { segment in
+                    let taste: TasteAxis = segment.id == "once" ? .umami : .sweet
+                    return .init(id: segment.id, label: segment.label, value: Double(segment.count),
+                                 color: TBMiniChartColor.color(taste, tint: 40, mode: TBColorMode(colorScheme)), axis: taste)
+                }, style: .bubbles, unit: chart.unit, onSelect: onSelect)
+            } else if chart.hasData && !compact {
+                TasteDetailCartesianChart(
+                    labels: chart.segments.map(\.label),
+                    series: [.init(id: "archive", label: "", values: chart.segments.map { Double($0.count) }, color: axis.mainColor,
+                                   axis: axis, highlightsEachValue: chart.kind == .distribution)],
+                    unit: chart.unit, height: max(232, plotHeight),
+                    onSelect: onSelect.map { select in { index in select(chart.segments[index].id) } }
+                )
             } else if chart.hasData {
                 bars
             }
@@ -29,18 +44,9 @@ struct HomeArchiveChartView: View {
     }
 
     private var composition: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 0) {
-                ForEach(chart.segments) { segment in
-                    TasteChartTrackMark(axis: axis)
-                        .opacity(segment.id == "once" ? 0.42 : 1)
-                        .frame(width: geometry.size.width * HomeArchiveChart.heightFraction(segment.count, maximum: chart.total))
-                        .onTapGesture { onSelect?(segment.id) }
-                }
-            }
-        }
-        .frame(height: TasteLineChartMetrics.trackLineWidth)
-        .tasteBloomChartReveal()
+        TBMiniBubbleChart(items: chart.segments.map {
+            .init(value: Double($0.count), axis: $0.id == "once" ? .umami : .sweet)
+        })
     }
 
     private var bars: some View {
@@ -98,22 +104,51 @@ struct HomeArchiveMetricDetailView: View {
         }
     }
     private var metric: HomeArchiveMetric? {
-        HomeArchiveVisualizationEngine.sections(entries: periodEntries, snapshot: appModel.sensoryAnalysis,
-                                                referenceDate: referenceDate, calendar: .current)
+        guard let archive = appModel.homeArchivePresentation else { return nil }
+        // Filter after validation so an unknown sibling cannot become a confirmed meal
+        // merely because the period picker removed that sibling from the raw array.
+        let records = archive.gastronomyState.records.filter { record in
+            selectedPeriod == .all || record.date.map {
+                selectedPeriod.contains($0, referenceDate: referenceDate, calendar: .current)
+            } == true
+        }
+        let state = TDDataEngine.prepare(records: records, observations: archive.gastronomyState.observations,
+                                         window: .all, now: referenceDate, calendar: .current,
+                                         issues: archive.gastronomyState.issues)
+        let sources = HomeArchiveSources(validated: archive.gastronomyInput, state: state)
+        return HomeArchiveVisualizationEngine.sections(sources: sources, referenceDate: referenceDate)
             .flatMap(\.cards).first { $0.id == metricID }
     }
 
     var body: some View {
+        if let kind = HomeArchiveMenuMetricKind(rawValue: metricID) {
+            HomeArchiveMenuMetricDetailView(kind: kind)
+        } else {
+            legacyDetail
+        }
+    }
+
+    private var legacyDetail: some View {
         TasteDetailPage(title: metric?.label ?? "기록") {
             TasteDetailPeriodPicker(
                 selection: $selectedPeriod,
                 axis: metric.map { $0.data.accentAxis ?? $0.data.kind.cardAxis }
             )
         } content: {
-            if let metric, let chart = metric.data.archiveChart {
-                let displayChart = HomeArchiveChart(kind: chart.kind, unit: chart.unit, period: selectedPeriod.title,
-                                                    segments: chart.segments, supplements: chart.supplements)
-                VStack(alignment: .leading, spacing: TBSpacing.x20) {
+            let currentMetric = metric
+            let chart = currentMetric?.data.archiveChart
+            VStack(alignment: .leading, spacing: TBSpacing.x20) {
+                if appModel.sensoryAnalysisIsUpdating || appModel.backendSessionStatus == .restoring {
+                    ProgressView("현재 계정의 기록을 불러오고 있어요").frame(maxWidth: .infinity, minHeight: 232)
+                } else if let error = appModel.sensoryAnalysisError {
+                    VStack(alignment: .leading, spacing: TBSpacing.x12) {
+                        SensoryAnalysisStatusCard(state: .failed(error))
+                        Button("다시 시도") { Task { await appModel.syncAccountData(); appModel.refreshSensoryAnalysis() } }.frame(minHeight: 44)
+                    }.padding(.horizontal, TBSpacing.page)
+                } else if let metric = currentMetric, let chart {
+                    let displayChart = HomeArchiveChart(kind: chart.kind, unit: chart.unit, period: selectedPeriod.title,
+                                                        segments: chart.segments, supplements: chart.supplements,
+                                                        responseScale: chart.responseScale)
                     TasteDetailChartPanel {
                         TasteDetailScope(text: selectedPeriod.title + " · " + displayChart.unit).frame(maxWidth: .infinity)
                         Text(metric.data.title)
@@ -129,21 +164,33 @@ struct HomeArchiveMetricDetailView: View {
                                 .frame(maxWidth: .infinity, minHeight: 180)
                         }
                     }
-                    if !displayChart.segments.isEmpty || !displayChart.supplements.isEmpty {
+                } else if appModel.sensoryAnalysisIsUpdating {
+                    ProgressView("불러오는 중").frame(maxWidth: .infinity, minHeight: 180)
+                } else {
+                    Text("현재 기록이 없어요").tbTextStyle(.body).padding(TBSpacing.page)
+                }
+
+                VStack(alignment: .leading, spacing: TBSpacing.x20) {
+                    AccountDataSyncNotice()
+                    if metricID == "meals" {
+                        RecordChartsPanel(
+                            data: appModel.homeArchivePresentation.map { TBRecordChartData.make(state: $0.gastronomyState) },
+                            loading: appModel.sensoryAnalysisIsUpdating || appModel.backendSessionStatus == .restoring,
+                            error: appModel.sensoryAnalysisError,
+                            onRetry: { Task { await appModel.syncAccountData(); appModel.refreshSensoryAnalysis() } }
+                        )
+                    }
+                    if let chart, !chart.segments.isEmpty || !chart.supplements.isEmpty {
                         TasteDetailGroup {
-                            ForEach(Array((displayChart.segments + displayChart.supplements).enumerated()), id: \.element.id) { index, segment in
-                                TasteDetailValueRow(title: segment.label, value: "\(segment.count)\(displayChart.unit)",
+                            ForEach(Array((chart.segments + chart.supplements).enumerated()), id: \.element.id) { index, segment in
+                                TasteDetailValueRow(title: segment.label, value: "\(segment.count)\(chart.unit)",
                                                     showsDivider: index > 0)
                                     .accessibilityIdentifier("archive-segment-\(segment.id)")
                             }
-                        }.padding(.horizontal, TBSpacing.page)
+                        }
                     }
-                }.padding(.bottom, TBSpacing.page)
-            } else if appModel.sensoryAnalysisIsUpdating {
-                ProgressView("불러오는 중").frame(maxWidth: .infinity, minHeight: 180)
-            } else {
-                Text("현재 기록이 없어요").tbTextStyle(.body).padding(TBSpacing.page)
-            }
+                }.padding(.horizontal, TBSpacing.page)
+            }.padding(.bottom, TBSpacing.page)
         }
 
     }

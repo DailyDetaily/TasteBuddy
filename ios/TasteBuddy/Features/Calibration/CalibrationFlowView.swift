@@ -157,16 +157,44 @@ private struct TasteSurveyFlowView: View {
                 .tasteBloomMotion(.content, value: questionIndex)
             }
 
-            TBFlowStepCTA(
-                actionLabel: buttonTitle,
-                currentIndex: ctaCurrentIndex,
-                total: ctaTotal,
-                isEnabled: isContinueEnabled,
-                activeColor: ctaActiveColor,
-                backgroundColor: screenBackground,
-                showsIndicator: showsCtaIndicator,
-                secondaryActionView: introSkipAction,
-                action: continueFlow
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+                if showsCtaIndicator {
+                    TBStepIndicator(
+                        currentIndex: ctaCurrentIndex,
+                        total: ctaTotal,
+                        activeColor: ctaActiveColor
+                    )
+                    .padding(.bottom, FlowBottomCtaMetrics.stepIndicatorBottomMargin)
+                }
+
+                PrimaryButton(
+                    title: buttonTitle,
+                    isEnabled: isContinueEnabled,
+                    action: continueFlow
+                )
+
+                if let introSkipAction {
+                    introSkipAction
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+            }
+            .padding(.horizontal, FlowBottomCtaMetrics.horizontalPadding)
+            .padding(.bottom, FlowBottomCtaMetrics.bottomPadding)
+            .frame(maxWidth: .infinity)
+            .frame(height: FlowBottomCtaMetrics.minHeight)
+            .background(
+                LinearGradient(
+                    stops: [
+                        .init(color: screenBackground.opacity(0), location: 0),
+                        .init(color: screenBackground.opacity(0.8), location: 0.45),
+                        .init(color: screenBackground, location: 1),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea(edges: .bottom)
+                .allowsHitTesting(false)
             )
         }
         .tbScreenTopChrome(isEnabled: phase != .result)
@@ -816,9 +844,11 @@ private struct SurveyReviewView: View {
                                 HStack(alignment: .top, spacing: 12) {
                                     VStack(alignment: .leading, spacing: 7) {
                                         HStack(spacing: 6) {
-                                            TasteChip(
-                                                axis: item.tasteId,
-                                                value: "느낀 강도"
+                                            Chip(
+                                                title: item.tasteId.label,
+                                                value: "느낀 강도",
+                                                tasteAxis: item.tasteId,
+                                                size: .extraSmall
                                             )
                                             if item.exploratoryMetadata != nil {
                                                 NeutralChip(title: "탐색")

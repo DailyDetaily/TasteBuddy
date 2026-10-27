@@ -25,6 +25,8 @@ struct TasteBuddyApp: App {
 }
 
 private struct RootView: View {
+    @AppStorage(TBThemePreference.storageKey) private var appearance: TBThemePreference = .system
+    @Environment(\.colorScheme) private var systemColorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var appModel: AppModel
     @Environment(\.scenePhase) private var scenePhase
@@ -118,8 +120,6 @@ private struct RootView: View {
         "--reset-app-state"
     )
     @State private var hasAppliedLaunchReset = false
-    @State private var usesAuthEntryDarkStatusBar = false
-    @State private var usesStagedSheetDarkStatusBar = false
 
     private var sensoryRuntimePreview: AnyView? {
         #if DEBUG || targetEnvironment(simulator)
@@ -181,20 +181,16 @@ private struct RootView: View {
             } else if showsDesignSystemPreview {
                 DesignSystemPreviewView()
             } else if showsShellPreview {
-                AppShellView(
-                    onStagedSheetPresentationChange: setStagedSheetPresentation
-                )
+                AppShellView()
                     .environmentObject(shellPreviewModel)
             } else if showsDiningPreview {
                 AppShellView(
-                    initialTab: .dining,
-                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                    initialTab: .dining
                 )
                     .environmentObject(shellPreviewModel)
             } else if showsDiningLoadingPreview {
                 AppShellView(
                     initialTab: .dining,
-                    onStagedSheetPresentationChange: setStagedSheetPresentation,
                     diningContentState: .loading
                 )
                     .environmentObject(shellPreviewModel)
@@ -231,48 +227,42 @@ private struct RootView: View {
                     .environmentObject(shellPreviewModel)
             } else if showsCommentsPreview {
                 AppShellView(
-                    initialRoute: .comments(id: "following-mina-broth"),
-                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                    initialRoute: .comments(id: "following-mina-broth")
                 )
                     .environmentObject(shellPreviewModel)
             } else if showsDishFeedbackDetailPreview {
                 AppShellView(
-                    initialRoute: .dishFeedback(id: "following-mina-broth"),
-                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                    initialRoute: .dishFeedback(id: "following-mina-broth")
                 )
                     .environmentObject(shellPreviewModel)
             } else if showsConnectionListPreview {
                 AppShellView(
-                    initialRoute: .connectionList(.followers),
-                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                    initialRoute: .connectionList(.followers)
                 )
                     .environmentObject(shellPreviewModel)
             } else if showsPublicProfilePreview {
                 AppShellView(
-                    initialRoute: .publicProfile(id: "mina"),
-                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                    initialRoute: .publicProfile(id: "mina")
                 )
                     .environmentObject(shellPreviewModel)
             } else if showsTasteChangePreview {
                 AppShellView(
-                    initialRoute: .tasteChange,
-                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                    initialRoute: .tasteChange
                 )
                     .environmentObject(shellPreviewModel)
             } else if showsRestaurantDetailPreview {
                 AppShellView(
-                    initialRoute: .restaurant(id: "mingles"),
-                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                    initialRoute: .restaurant(id: "mingles")
                 )
                     .environmentObject(shellPreviewModel)
             } else if showsSavedListPreview {
                 AppShellView(
-                    initialRoute: .savedRestaurants,
-                    onStagedSheetPresentationChange: setStagedSheetPresentation
+                    initialRoute: .savedRestaurants
                 )
                     .environmentObject(shellPreviewModel)
             } else if showsDiningFeedbackPreview {
                 DiningFeedbackPreviewHost()
+                    .environmentObject(shellPreviewModel)
             } else if showsCalibrationPreview {
                 CalibrationFlowView()
             } else {
@@ -281,7 +271,8 @@ private struct RootView: View {
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .scrollBounceBehavior(.basedOnSize)
-        .preferredColorScheme(usesDarkStatusBar ? .dark : .light)
+        .environment(\.tbSystemColorScheme, appearance.colorScheme ?? systemColorScheme)
+        .preferredColorScheme(appearance.colorScheme)
         .onAppear(perform: applyLaunchResetIfNeeded)
         .onOpenURL { url in
             guard !BrandVideoCaptureRuntime.isEnabled, !LayoutDocumentationRuntime.isEnabled else { return }
@@ -310,8 +301,7 @@ private struct RootView: View {
             AuthEntryGateView(
                 onContinueAsGuest: completeAuthEntry,
                 onVerifiedEmailLogin: { result in completeVerifiedEmailAuthEntry(publishCurrentProfile: false, user: result.user) },
-                onLinkedCurrentProfile: { completeVerifiedEmailAuthEntry(publishCurrentProfile: true) },
-                onSheetPresentationChange: setAuthEntrySheetPresentation
+                onLinkedCurrentProfile: { completeVerifiedEmailAuthEntry(publishCurrentProfile: true) }
             )
         case .onboarding:
             OnboardingView {
@@ -328,12 +318,8 @@ private struct RootView: View {
         case .calibration:
             CalibrationFlowView(onExit: exitCalibration)
         case .main:
-            MainTabView(onStagedSheetPresentationChange: setStagedSheetPresentation)
+            MainTabView()
         }
-    }
-
-    private var usesDarkStatusBar: Bool {
-        usesAuthEntryDarkStatusBar || usesStagedSheetDarkStatusBar
     }
 
     private var currentPhase: AppPhase {
@@ -386,16 +372,10 @@ private struct RootView: View {
         }
     }
 
-    private func setAuthEntrySheetPresentation(_ isPresented: Bool) {
-        usesAuthEntryDarkStatusBar = isPresented
-    }
-
-    private func setStagedSheetPresentation(_ isPresented: Bool) {
-        usesStagedSheetDarkStatusBar = isPresented
-    }
 }
 
 private struct AuthEntryGateView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isSheetPresented = false
     @State private var sheetDragTranslation: CGFloat = 0
@@ -404,14 +384,13 @@ private struct AuthEntryGateView: View {
     let onContinueAsGuest: () -> Void
     let onVerifiedEmailLogin: (BackendAuthResult) -> Void
     let onLinkedCurrentProfile: () -> Void
-    let onSheetPresentationChange: (Bool) -> Void
 
     var body: some View {
         GeometryReader { proxy in
             ZStack {
                 ZStack {
                     TBColor.page
-                    Color.black.opacity(sheetProgress)
+                    (colorScheme == .dark ? Color.black : TBColor.page).opacity(sheetProgress)
                 }
                 .ignoresSafeArea()
                 .animation(
@@ -451,9 +430,6 @@ private struct AuthEntryGateView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(edges: [.horizontal, .bottom])
         .ignoresSafeArea(.keyboard, edges: .bottom)
-        .onDisappear {
-            onSheetPresentationChange(false)
-        }
     }
 
     private var sheetProgress: CGFloat {
@@ -527,7 +503,6 @@ private struct AuthEntryGateView: View {
             sheetDragTranslation = 0
             isDraggingSheet = false
             isSheetPresented = true
-            onSheetPresentationChange(true)
         }
     }
 
@@ -536,7 +511,6 @@ private struct AuthEntryGateView: View {
             isSheetPresented = false
             sheetDragTranslation = 0
             isDraggingSheet = false
-            onSheetPresentationChange(false)
         }
     }
 
@@ -545,7 +519,6 @@ private struct AuthEntryGateView: View {
             sheetDragTranslation = sheetHeight
             isSheetPresented = false
             isDraggingSheet = false
-            onSheetPresentationChange(false)
         }
 
         DispatchQueue.main.asyncAfter(
@@ -565,7 +538,6 @@ private struct AuthEntryGateView: View {
         }
 
         didComplete = true
-        onSheetPresentationChange(false)
         onContinueAsGuest()
     }
 
@@ -575,7 +547,6 @@ private struct AuthEntryGateView: View {
         }
 
         didComplete = true
-        onSheetPresentationChange(false)
         onVerifiedEmailLogin(result)
     }
 
@@ -585,17 +556,31 @@ private struct AuthEntryGateView: View {
         }
 
         didComplete = true
-        onSheetPresentationChange(false)
         onLinkedCurrentProfile()
     }
 }
 
 private struct DiningFeedbackPreviewHost: View {
     @State private var isPresented = true
+    private let showsRecordDetails = ProcessInfo.processInfo.arguments.contains("--record-details-preview")
+
+    private static var recordDetailsSample: DiningEntry {
+        let date = ISO8601DateFormatter().date(from: "2026-10-21T12:00:00+09:00")!
+        let experience = TasteExperienceCatalog.experiences.first { $0.label == "퍼지는 달콤함" }
+        return DiningEntry(
+            restaurant: "정식당", restaurantID: "record-details-design-fixture",
+            menu: "유자 코지 굴 타르트", date: date, rating: 0, note: "",
+            tasteExperienceIDs: experience.map { [$0.id] } ?? [],
+            sensorySelections: experience.map { [.init(id: $0.id, type: .bubble, labelSnapshot: $0.label)] } ?? [],
+            mealTime: .init(source: .confirmed, start: date, confirmedAt: date)
+        )
+    }
 
     var body: some View {
         if isPresented {
             DiningFeedbackSheet(
+                entry: showsRecordDetails ? Self.recordDetailsSample : nil,
+                startMode: showsRecordDetails ? .details : .menu,
                 onClose: { isPresented = false },
                 onSave: { _ in isPresented = false }
             )

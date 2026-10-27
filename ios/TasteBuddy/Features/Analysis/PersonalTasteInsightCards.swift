@@ -139,11 +139,13 @@ struct PersonalTasteInsightDetailView: View {
         } content: {
             VStack(alignment: .leading, spacing: TBSpacing.x20) {
                 if section == .overview {
-                    TasteDetailChartPanel {
+                    SectionCard(showsBorder: false) {
+                        VStack(alignment: .leading, spacing: TBSpacing.x16) {
                         Text(group.title).font(TBFont.bold(18)).foregroundStyle(TBColor.textPrimary)
                             .fixedSize(horizontal: false, vertical: true)
                         TasteDetailScope(text: "식사 \(group.mealIDs.count)회 · \(group.kind == .fit ? "알맞음" : "전체·감각 평가")")
-                    }
+                        }
+                    }.padding(.horizontal, TBSpacing.page)
                     TasteDetailGroup {
                         ForEach(Array(group.rows.enumerated()), id: \.element.id) { index, row in
                             VStack(alignment: .leading, spacing: TBSpacing.x8) {
@@ -162,11 +164,15 @@ struct PersonalTasteInsightDetailView: View {
                             let mealEntries = entries.filter { $0.mealID.uuidString.lowercased() == mealID.lowercased() }
                             let entryIDs = Set(mealEntries.map(\.id)), evidenceIDs = Set(group.evidenceIDs)
                             if let first = mealEntries.sorted(by: { $0.id.uuidString < $1.id.uuidString }).first {
-                                Text("\(first.restaurant) · \(first.observedAt.formatted(date: .abbreviated, time: .omitted))")
-                                    .font(TBFont.semibold(13)).foregroundStyle(TBColor.textPrimary)
+                                SectionCard(showsBorder: false) {
+                                    VStack(alignment: .leading, spacing: TBSpacing.x8) {
+                                        Text("\(first.restaurant) · \(first.observedAt.formatted(date: .abbreviated, time: .omitted))")
+                                            .font(TBFont.semibold(13)).foregroundStyle(TBColor.textPrimary)
+                                        if group.mixedMealIDs.contains(mealID) { TasteDetailScope(text: "응답 나뉨") }
+                                    }
+                                }
                             }
-                            if group.mixedMealIDs.contains(mealID) { TasteDetailScope(text: "응답 나뉨") }
-                            SensoryEvidenceList(observations: observations.filter { evidenceIDs.contains($0.id) && entryIDs.contains($0.experienceID) }, unresolved: [])
+                            SensoryEvidenceList(observations: observations.filter { evidenceIDs.contains($0.id) && entryIDs.contains($0.experienceID) }, unresolved: [], groupsActionsInCard: true)
                         }
                     }.padding(.horizontal, TBSpacing.page)
                 }

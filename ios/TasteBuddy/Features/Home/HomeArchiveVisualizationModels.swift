@@ -2,6 +2,7 @@ import Foundation
 
 /// 계정/원본 revision에 맞춰 분석 작업에서 한 번 만들고 홈 렌더에서는 읽기만 한다.
 struct HomeArchivePresentation {
+    let menuInsights: HomeArchiveMenuInsights
     let summaries: [HomeArchiveCard]
     let sections: [HomeArchiveMetricSection]
     let discoveries: [HomeDiscoveryCard]
@@ -11,12 +12,28 @@ struct HomeArchivePresentation {
     let sourceEntries: [DiningEntry]
     let sourceSnapshot: SensoryAnalysisSnapshot
     let sourceTimeZone: String
+
+    /// The recent card uses the same validated daily dish counts as record charts.
+    /// Undated records remain in the cumulative archive, never in this seven-day series.
+    func recentRecordSummary(calendar: Calendar = .current) -> HomePeriodInsightCardData {
+        let data = TBRecordChartData.make(state: gastronomyState, calendar: calendar)
+        let firstDay = calendar.date(byAdding: .day, value: -6, to: calendar.startOfDay(for: gastronomyState.now))!
+        let records = gastronomyState.records.filter { record in
+            record.date.map { $0 >= firstDay && $0 <= gastronomyState.now } ?? false
+        }
+        let ids = Set(records.map(\.id))
+        let completed = Set(sourceEntries.filter { ids.contains($0.id.uuidString) && $0.hasCompletedTasteFeedback }.map(\.id)).count
+        return .init(kind: .recordFlow, title: "요리 기록 \(data.current.reduce(0, +))개",
+                     detail: "피드백 완료 \(completed)개\n최근 7일", supportingText: nil, stats: [],
+                     chartValues: data.current.map(Double.init), accentAxis: .umami, state: .populated)
+    }
     static func make(entries: [DiningEntry], snapshot: SensoryAnalysisSnapshot, referenceDate: Date) -> Self {
         let input = TDNativeAdapter.inputs(entries: entries, snapshot: snapshot, now: referenceDate)
         let state = TDDataEngine.prepare(records: input.records, observations: input.observations, window: .all,
                                          now: referenceDate, calendar: .current, issues: input.issues)
         let sources = HomeArchiveSources(validated: input, state: state)
         return .init(
+            menuInsights: .make(input: input, state: state),
             summaries: HomeArchiveSummaryEngine.cards(entries: sources.entries, snapshot: snapshot, referenceDate: referenceDate),
             sections: HomeArchiveVisualizationEngine.sections(sources: sources, referenceDate: referenceDate),
             discoveries: HomeDiscoveryEngine.gastronomyCards(input: input, state: state, calendar: .current),
@@ -41,6 +58,7 @@ struct HomeArchiveChart: Equatable {
     let period: String
     let segments: [Segment]
     var supplements: [Segment] = []
+    var responseScale: String? = nil
     var total: Int { segments.reduce(0) { $0 + $1.count } }
     var hasData: Bool { total > 0 }
     var summary: String {
@@ -120,14 +138,17 @@ struct HomeArchiveSources {
             $0.observedAt == $1.observedAt ? $0.id.uuidString < $1.id.uuidString : $0.observedAt > $1.observedAt
         }
         let allRecordMap = state.recordMap
-        let issuesByMeal = Dictionary(grouping: state.issues) { allRecordMap[$0.entryID]?.mealID ?? "" }
+        let starIDs = Set(input.overallStarObservations.map(\.id))
+        let issuesByMeal = Dictionary(grouping: state.issues.filter { !starIDs.contains($0.id) }) { allRecordMap[$0.entryID]?.mealID ?? "" }
         let observationIDs = Set(state.observations.filter { observation in
             let meal = allRecordMap[observation.entryID]?.mealID ?? ""
             return !(issuesByMeal[meal] ?? []).contains { issue in
                 (issue.facet == nil || issue.facet == observation.facet) && (issue.senseKey == nil || issue.senseKey == observation.senseKey)
             }
         }.map(\.id))
-        observations = input.nativeObservations.filter { recordMap[$0.experienceID.uuidString] != nil && observationIDs.contains($0.id) }
+        observations = (input.nativeObservations + input.overallStarObservations).filter {
+            recordMap[$0.experienceID.uuidString] != nil && (observationIDs.contains($0.id) || starIDs.contains($0.id))
+        }
         menus = Dictionary(grouping: entries.filter { recordMap[$0.id.uuidString]?.menu != nil }) { recordMap[$0.id.uuidString]!.menu!.id }
         restaurants = Dictionary(grouping: entries.filter { recordMap[$0.id.uuidString]?.restaurant != nil }) { recordMap[$0.id.uuidString]!.restaurant!.id }
         menuKeyByEntry = Dictionary(uniqueKeysWithValues: entries.compactMap { entry in recordMap[entry.id.uuidString]?.menu.map { (entry.id, $0.id) } })
@@ -159,66 +180,61 @@ enum HomeArchiveVisualizationEngine {
                 .init(id: "repeated", label: repeatedLabel, count: repeated.count, entryIDs: Set(repeated.flatMap { $0.map(\.id) }))
             ])
         }
-        let menuChart = composition(menus, unit: "가지", onceLabel: "새롭게 기록", repeatedLabel: "다시 기록")
-        let restaurantChart = composition(restaurants, unit: "곳", onceLabel: "한 번만 기록", repeatedLabel: "재방문")
+        let menuChart = composition(menus, unit: "가지", onceLabel: "한 번 기록", repeatedLabel: "반복 기록")
+        let restaurantChart = composition(restaurants, unit: "곳", onceLabel: "한 번 기록", repeatedLabel: "반복 기록")
+        let knownMenuIDs = Set(menus.values.flatMap { $0.map(\.id) })
+        let knownRestaurantIDs = Set(restaurants.values.flatMap { $0.map(\.id) })
+        let unknownMenus = entries.filter { !knownMenuIDs.contains($0.id) }.count
+        let unknownRestaurants = entries.filter { !knownRestaurantIDs.contains($0.id) && $0.foodSource?.kind != "homeCooked" }.count
         let mealChart = timeline(entries: entries, referenceDate: referenceDate, calendar: calendar)
         let overallChart = overall(entries: entries, observations: observations)
         func metric(_ id: String, label: String, title: String, detail: String, chart: HomeArchiveChart,
                     kind: HomePeriodInsightKind, records: [DiningEntry],
-                    defaultEntryIDs: Set<UUID>? = nil, isPopulated: Bool? = nil) -> HomeArchiveMetric {
+                    defaultEntryIDs: Set<UUID>? = nil, isPopulated: Bool? = nil,
+                    unknownCount: Int = 0) -> HomeArchiveMetric {
             .init(id: id, label: label,
                   data: .init(kind: kind, title: title, detail: detail, supportingText: nil, stats: [], chartValues: [],
                               accentAxis: nil,
-                              state: (isPopulated ?? !records.isEmpty) ? .populated : .empty,
-                              archiveChart: chart),
+                              state: (isPopulated ?? !records.isEmpty) ? .populated : unknownCount > 0 ? .insufficient : .empty,
+                              archiveChart: chart, category: id == "overall" ? .preference : .experience),
                   entryIDs: defaultEntryIDs ?? Set(records.map(\.id)),
                   evidenceIDs: Set((chart.segments + chart.supplements).flatMap(\.evidenceIDs)))
         }
         let mealCount = Set(entries.map(\.mealID)).count
         let unknownMealCount = mealChart.supplements.first { $0.id == "unknown" }?.count ?? 0
-        let futureMealCount = mealChart.supplements.first { $0.id == "future" }?.count ?? 0
         let mealDetail: String
         if entries.isEmpty {
             mealDetail = "첫 기록을 남겨보세요"
         } else if mealChart.hasData {
-            var timing = [mealChart.period]
-            if unknownMealCount > 0 { timing.append("식사 시점 미확인 \(unknownMealCount)번") }
-            if futureMealCount > 0 { timing.append("현재 이후 식사일 \(futureMealCount)번 제외") }
-            mealDetail = "디시 기록 \(entries.count)개\n" + timing.joined(separator: " · ")
+            mealDetail = "요리 기록 \(entries.count)개\n" + (unknownMealCount > 0 ? "식사일 미확인 \(unknownMealCount)번" : "전체 기간")
         } else {
-            mealDetail = "디시 기록 \(entries.count)개 · 식사 시점 미확인"
+            mealDetail = "요리 기록 \(entries.count)개\n식사일 미확인"
         }
-        func compositionDetail(_ chart: HomeArchiveChart, empty: String,
-                               singularOnce: String, singularRepeated: String) -> String {
+        func compositionDetail(_ chart: HomeArchiveChart, empty: String) -> String {
             guard chart.total > 0 else { return empty }
-            if chart.total == 1 { return chart.segments[1].count == 1 ? singularRepeated : singularOnce }
-            return "\(chart.segments[0].label) \(chart.segments[0].count)\(chart.unit) · \(chart.segments[1].label) \(chart.segments[1].count)\(chart.unit)\n\(chart.period)"
+            return "한 번 \(chart.segments[0].count)\(chart.unit) · 반복 \(chart.segments[1].count)\(chart.unit)\n\(chart.period)"
         }
         let overallEntryIDs = Set(overallChart.segments.flatMap(\.entryIDs))
         let overallDetail: String
         if overallChart.total == 0 {
-            overallDetail = "음식 전체에 남긴 평가가 여기에 모여요"
+            overallDetail = "직접 응답 없음\n전체 기간"
+        } else if overallChart.responseScale == DiningOverallEvaluation.starScale {
+            let previousCount = overallChart.supplements.filter { $0.id.hasPrefix("category:") }.reduce(0) { $0 + $1.count }
+            overallDetail = "0.5~5점 · 0.5점 단위\n" + (previousCount > 0 ? "이전 5단계 응답 \(previousCount)개 별도" : "전체 기간")
         } else {
-            let shortLabels = ["매우 좋음", "좋음", "보통", "아쉬움", "많이 아쉬움"]
-            let parts = zip(shortLabels, overallChart.segments).map { "\($0) \($1.count)" }
-            overallDetail = parts.prefix(3).joined(separator: " · ") + "\n"
-                + parts.suffix(2).joined(separator: " · ") + " · 전체 기간"
+            overallDetail = "직접 남긴 5단계 응답\n전체 기간"
         }
         return [.init(id: "archive", title: "아카이브", cards: [
             metric("meals", label: "기록한 식사", title: mealCount == 0 ? "0번" : "\(mealCount)번의 식사",
                    detail: mealDetail,
                    chart: mealChart, kind: .recordFlow, records: entries),
-            metric("menus", label: "경험한 메뉴", title: "\(menus.count)가지",
-                   detail: compositionDetail(menuChart, empty: "첫 기록을 남겨보세요",
-                                             singularOnce: "다시 기록한 메뉴는 아직 없어요\n전체 기간 · 식당별로 구분",
-                                             singularRepeated: "다른 식사에서도 다시 기록했어요\n전체 기간 · 식당별로 구분"),
-                   chart: menuChart, kind: .experienceBreadth, records: menus.values.flatMap { $0 }),
-            metric("restaurants", label: "기록한 식당", title: "\(restaurants.count)곳",
-                   detail: compositionDetail(restaurantChart, empty: "첫 기록을 남겨보세요",
-                                             singularOnce: "다시 기록한 식당은 아직 없어요\n전체 기간",
-                                             singularRepeated: "다른 식사에서도 다시 기록했어요\n전체 기간"),
-                   chart: restaurantChart, kind: .experienceBreadth, records: restaurants.values.flatMap { $0 }),
-            metric("overall", label: "음식 전체 평가", title: overallChart.total == 0 ? "아직 평가 없음" : "\(overallChart.total)개의 음식 평가",
+            metric("menus", label: "경험한 메뉴", title: menus.isEmpty && unknownMenus > 0 ? "연결 확인 필요" : "\(menus.count)가지",
+                   detail: unknownMenus > 0 ? "미연결 요리 \(unknownMenus)개\n식당별 메뉴 기준" : compositionDetail(menuChart, empty: "첫 기록을 남겨보세요\n식당별 메뉴 기준"),
+                   chart: menuChart, kind: .experienceBreadth, records: menus.values.flatMap { $0 }, unknownCount: unknownMenus),
+            metric("restaurants", label: "기록한 식당", title: restaurants.isEmpty && unknownRestaurants > 0 ? "연결 확인 필요" : "\(restaurants.count)곳",
+                   detail: unknownRestaurants > 0 ? "미연결 요리 \(unknownRestaurants)개\n전체 기간" : compositionDetail(restaurantChart, empty: "첫 기록을 남겨보세요\n전체 기간"),
+                   chart: restaurantChart, kind: .experienceBreadth, records: restaurants.values.flatMap { $0 }, unknownCount: unknownRestaurants),
+            metric("overall", label: "음식 전체 평가", title: overallChart.total == 0 ? "아직 평가 없음" : "\(overallChart.responseScale == DiningOverallEvaluation.starScale ? "별점" : "음식 평가") \(overallChart.total)개",
                    detail: overallDetail, chart: overallChart, kind: .tasteClue,
                    records: entries, defaultEntryIDs: overallEntryIDs, isPopulated: overallChart.hasData)
         ])]
@@ -233,7 +249,7 @@ enum HomeArchiveVisualizationEngine {
             let dates = Set(rows.compactMap(\.confirmedMealDate).map { calendar.startOfDay(for: $0) })
             if dates.count == 1, rows.allSatisfy({ $0.confirmedMealDate != nil }), let date = dates.first, date <= referenceDate {
                 dated.append((date, rows))
-            } else if dates.count == 1 {
+            } else if dates.count == 1, rows.allSatisfy({ $0.confirmedMealDate != nil }) {
                 future.append(rows)
             }
             else { unknown.append(rows) }
@@ -271,24 +287,41 @@ enum HomeArchiveVisualizationEngine {
     }
 
     static func overall(entries: [DiningEntry], observations: [SensoryObservation]) -> HomeArchiveChart {
-        let ratings = observations.filter { $0.kind == "overall_liking" && $0.scale == "overall-five-category-v1" && $0.selectionEvidence?.type == "overallEvaluation" }
+        let ratings = observations.filter {
+            $0.kind == "overall_liking" && ["overall-five-category-v1", DiningOverallEvaluation.starScale].contains($0.scale)
+                && $0.selectionEvidence?.type == "overallEvaluation"
+        }
         let grouped = Dictionary(grouping: ratings, by: \.experienceID)
-        let conflicting = grouped.filter { Set($0.value.map { $0.value.text }).count > 1 }
+        let conflicting = grouped.filter { Set($0.value.map { $0.scale + ":" + $0.value.text }).count > 1 }
         let conflicts = Set(conflicting.keys)
-        let segments = DiningOverallEvaluation.Response.allCases.map { response -> HomeArchiveChart.Segment in
-            let rows = ratings.filter { !conflicts.contains($0.experienceID) && $0.value.text == response.semanticValue }
+        let stars = ratings.filter { !conflicts.contains($0.experienceID) && $0.scale == DiningOverallEvaluation.starScale }
+        let categories = ratings.filter { !conflicts.contains($0.experienceID) && $0.scale == "overall-five-category-v1" }
+        let categorySegments = DiningOverallEvaluation.Response.allCases.map { response -> HomeArchiveChart.Segment in
+            let rows = categories.filter { $0.value.text == response.semanticValue }
             return .init(id: response.rawValue, label: response.label, count: Set(rows.map(\.experienceID)).count,
                          entryIDs: Set(rows.map(\.experienceID)), evidenceIDs: Set(rows.map(\.id)))
         }
-        let counted = Set(segments.flatMap(\.entryIDs)).union(conflicts)
+        let segments: [HomeArchiveChart.Segment] = stars.isEmpty ? categorySegments : (1...10).map { step in
+            let value = DiningOverallEvaluation.starText(Double(step) / 2)
+            let rows = stars.filter { $0.value.text == value }
+            return .init(id: "stars:" + value, label: value + "점", count: Set(rows.map(\.experienceID)).count,
+                         entryIDs: Set(rows.map(\.experienceID)), evidenceIDs: Set(rows.map(\.id)))
+        }
+        let counted = Set(ratings.map(\.experienceID))
         let notes = observations.filter { $0.kind == "overall_liking" && $0.selectionEvidence == nil && ["overall-three-category-v1", "overall-five-category-v1"].contains($0.scale) }
-        return .init(kind: .distribution, unit: "개", period: "전체 기간 · 음식 경험별 직접 응답 5단계", segments: segments, supplements: [
-            .init(id: "unanswered", label: "5단계 미응답", count: entries.filter { !counted.contains($0.id) }.count,
+        let previousScale = stars.isEmpty ? [] : categorySegments.filter { $0.count > 0 }.map {
+            HomeArchiveChart.Segment(id: "category:" + $0.id, label: "이전 5단계 · " + $0.label,
+                                     count: $0.count, entryIDs: $0.entryIDs, evidenceIDs: $0.evidenceIDs)
+        }
+        return .init(kind: .distribution, unit: "개",
+                     period: stars.isEmpty ? "전체 기간 · 음식 경험별 직접 응답 5단계" : "전체 기간 · 직접 별점 0.5~5점 · 0.5점 단위",
+                     segments: segments, supplements: previousScale + [
+            .init(id: "unanswered", label: "전체 평가 미응답", count: entries.filter { !counted.contains($0.id) }.count,
                   entryIDs: Set(entries.filter { !counted.contains($0.id) }.map(\.id))),
             .init(id: "conflict", label: "현재 응답 충돌", count: conflicts.count, entryIDs: conflicts,
                   evidenceIDs: Set(conflicting.values.flatMap { $0.map(\.id) })),
             .init(id: "note", label: "원문 전체 평가", count: Set(notes.map(\.experienceID)).count,
                   entryIDs: Set(notes.map(\.experienceID)), evidenceIDs: Set(notes.map(\.id)))
-        ])
+        ], responseScale: stars.isEmpty ? "overall-five-category-v1" : DiningOverallEvaluation.starScale)
     }
 }

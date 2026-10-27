@@ -163,7 +163,7 @@ enum PersonalTasteModelBuilder {
             if duplicates.count > 1 && duplicates.contains(where: { canonical($0) != canonical(r) }) { reason = "conflicting_record_identity" }
             else if r.userId != userID { reason = "different_user" }
             else if userID.isEmpty || id.isEmpty || r.experienceId.isEmpty || r.mealId.isEmpty { reason = "missing_record_identity" }
-            if r.knownAt == nil { missingKnownAtCount += 1 }
+            if reason == nil && r.knownAt == nil { missingKnownAtCount += 1 }
             if reason == nil, let asOf {
                 if date(r.observedAt) == nil { reason = "observed_time_unknown" }
                 else if date(r.knownAt) == nil { reason = "known_time_unknown" }
@@ -239,10 +239,10 @@ enum PersonalTasteModelBuilder {
         }
         candidates.sort { $0.id < $1.id }
         let fitPatterns = buildFitPatterns(included, userID: userID, policy: policy, includeEvidence: includeEvidence, validatedIntensityLinks: validatedIntensityLinks)
-        let overallPatterns = buildOverallPatterns(included, userID: userID, includeEvidence: includeEvidence)
-        let overallByExperience = Dictionary(grouping: included.filter { $0.kind == "overall_liking" && $0.scale == "overall-five-category-v1" }, by: \.experienceId)
+        let overallPatterns = buildOverallPatterns(included, userID: userID, includeEvidence: includeEvidence, validatedIntensityLinks: validatedIntensityLinks)
+        let overallByExperience = Dictionary(grouping: included.filter { $0.kind == "overall_liking" && $0.scale == "overall-five-category-v1" && overallValues.contains($0.value.text) }, by: \.experienceId)
         let overallAssociations: [PersonalTasteOverallAssociation] = (includeEvidence ? units : []).compactMap { unit in
-            let overall = unit.experienceIDs.flatMap { overallByExperience[$0] ?? [] }
+            let overall = unit.experienceIDs.flatMap { overallByExperience[$0] ?? [] }.filter { $0.mealId == unit.mealID }
             guard !overall.isEmpty else { return nil }
             return .init(unitID: unit.id, mealID: unit.mealID, attribute: unit.attribute, individualValue: unit.liking, overallValues: unique(overall.map { $0.value.text }), evidenceIDs: unique(unit.evidenceIDs + overall.map(\.observationId)), causalClaim: nil)
         }
@@ -263,7 +263,7 @@ enum PersonalTasteModelBuilder {
                 questions.append(.init(attribute: u.attribute, reference: u.reference, label: u.label, facet: facet, reason: unstable ? "unstable_context_comparison" : "\(facet)_not_reported", score: unstable ? 90 : score, evidenceIDs: u.evidenceIDs, mealIDs: [u.mealID], target: u.target, phase: u.phase))
             }
         }
-        questions += fitQuestions(included, patterns: fitPatterns)
+        questions += fitQuestions(included, patterns: fitPatterns, validatedIntensityLinks: validatedIntensityLinks)
         for key in attributes.keys.sorted() {
             let rows = attributes[key]!, known = unique(rows.compactMap(\.intensity))
             guard known.contains(where: { level in vote(rows.filter { $0.intensity == level }).1.mealCount >= policy.minConditionMeals }), let proposed = ["weak", "medium", "strong"].first(where: { !known.contains($0) }) else { continue }

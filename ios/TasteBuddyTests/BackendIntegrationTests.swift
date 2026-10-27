@@ -1,6 +1,207 @@
 import XCTest
 @testable import TasteBuddy
 
+final class GooglePlaceEnrichmentTests: XCTestCase {
+    private func client(response: @escaping (URLRequest) throws -> (Int, Data)) -> RestaurantPlaceAPIClient {
+        let host = "places-\(UUID().uuidString.lowercased()).invalid"
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [GooglePlacesHTTPProtocol.self]
+        let session = URLSession(configuration: config)
+        GooglePlacesHTTPProtocol.register(host: host, response: response)
+        addTeardownBlock { GooglePlacesHTTPProtocol.unregister(host: host); session.invalidateAndCancel() }
+        let backend = BackendConfiguration(environment: .local, supabaseURL: URL(string: "https://\(host)")!,
+            supabasePublishableKey: "sb_publishable_test", publicMediaBaseURL: nil, authRedirectURL: URL(string: "tastebuddy://auth/callback")!)
+        return RestaurantPlaceAPIClient(configuration: .init(kakaoRestAPIKey: nil, backend: backend),
+                                        session: session, googleAccessToken: { "existing-user-session" })
+    }
+
+    private var base: RestaurantPlaceInfo {
+        .init(address: "서울 강남구 선릉로158길 11", kakaoPlaceID: "existing-kakao", lat: 37.5257, lng: 127.0413,
+              phone: "02-existing-phone", sourceByRow: [.address: .kakao, .phone: .kakao])
+    }
+
+    private func payload(name: String = "검증 식당", lat: Double = 37.5257, lng: Double = 127.0413) throws -> Data {
+        try JSONSerialization.data(withJSONObject: ["place": [
+            "name": name, "address": "대한민국 서울특별시 강남구 선릉로158길 11", "placeId": "google-place-test",
+            "lat": lat, "lng": lng, "hours": "월 12:00~22:00", "phone": "02-google-phone",
+            "googleMapsUrl": "https://maps.google.com/?cid=123", "website": "https://restaurant.example/",
+            "rating": 4.5, "userRatingCount": 37, "priceLevel": "PRICE_LEVEL_EXPENSIVE",
+            "photo": ["url": "https://images.example/photo.jpg", "attributions": [["displayName": "검증 제공자"]]]
+        ]])
+    }
+
+    func testConfirmedGoogleIDResolvesTranslatedNameButRejectsDifferentIdentity() async throws {
+        var known = base
+        known.googlePlaceID = "google-place-test"
+        let data = try payload(name: "Test Kitchen")
+        let client = client { request in
+            let body = try XCTUnwrap(JSONSerialization.jsonObject(with: request.placesBody) as? [String: Any])
+            XCTAssertEqual(body["placeId"] as? String, "google-place-test")
+            return (200, data)
+        }
+        let loaded = await client.loadPlaceInfo(restaurantName: "검증 식당", basePlaceInfo: known)
+        XCTAssertEqual(loaded.googleState, .available)
+        XCTAssertEqual(loaded.info.googleRating, 4.5)
+        known.googlePlaceID = "a-different-confirmed-place"
+        let mismatchClient = self.client { _ in (200, data) }
+        let wrong = await mismatchClient.loadPlaceInfo(restaurantName: "검증 식당", basePlaceInfo: known)
+        XCTAssertEqual(wrong.googleState, .unmatched)
+        XCTAssertNil(wrong.info.googleRating)
+    }
+
+    func testMissingHoursAndFailedLookupHaveDifferentPresentationStates() async throws {
+        let empty = client { _ in (200, Data(#"{"place":null}"#.utf8)) }
+        let failed = client { _ in (502, Data("{}".utf8)) }
+        let noMatch = await empty.loadPlaceInfo(restaurantName: "검증 식당", basePlaceInfo: base)
+        let unavailable = await failed.loadPlaceInfo(restaurantName: "검증 식당", basePlaceInfo: base)
+        XCTAssertEqual(noMatch.googleState, .unmatched)
+        XCTAssertEqual(unavailable.googleState, .failed)
+        XCTAssertEqual(noMatch.info.address, base.address)
+        XCTAssertEqual(unavailable.info.kakaoPlaceID, base.kakaoPlaceID)
+        XCTAssertNotEqual(noMatch.googleState.missingHoursLabel, unavailable.googleState.missingHoursLabel)
+        XCTAssertNotEqual(RestaurantPlaceLookupState.available.missingHoursLabel, noMatch.googleState.missingHoursLabel)
+    }
+
+    func testRecordDestinationUsesItsIdentityAndExcludesHomeCooking() throws {
+        let original = DiningEntry.sample
+        var context = DiningRecordContext(restaurant: "기존 기록 상호", restaurantID: "google-confirmed-id",
+            foodSource: .init(kind: "restaurant", restaurantPlace: .init(name: "Verified English Name",
+                address: "확인한 주소", googlePlaceID: "confirmed-id", latitude: 37.5, longitude: 127)))
+        let entry = context.applying(to: original)
+        let restored = try JSONDecoder().decode(DiningEntry.self, from: JSONEncoder().encode(entry))
+        let target = try XCTUnwrap(restored.linkedRestaurantSummary)
+        XCTAssertEqual(target.id, "google-confirmed-id")
+        XCTAssertEqual(target.name, "기존 기록 상호")
+        XCTAssertEqual(RestaurantDetailModel(summary: target).fallbackPlaceInfo.googlePlaceID, "confirmed-id")
+        XCTAssertEqual(restored.note, original.note)
+        XCTAssertEqual(restored.sensorySelections, original.sensorySelections)
+        XCTAssertEqual(restored.allReflectionPhotoFilenames, original.allReflectionPhotoFilenames)
+        context.foodSource = .init(kind: "homeCooked", homeCookingID: "home")
+        XCTAssertNil(context.applying(to: original).linkedRestaurantSummary)
+        context.foodSource = nil; context.restaurantID = nil
+        XCTAssertNil(context.applying(to: original).linkedRestaurantSummary)
+    }
+
+    func testConfigurationUsesBackendAndIgnoresObsoleteGoogleKey() throws {
+        let config = RestaurantPlaceAPIConfiguration.from(infoDictionary: [
+            "TBGoogleMapsAPIKey": "obsolete-invalid-local-value", "TBKakaoRestAPIKey": "kakao-test",
+            "TBSupabaseURL": "https://places.example", "TBSupabasePublishableKey": "sb_publishable_test"
+        ])
+        XCTAssertEqual(config.backend?.supabaseURL.host, "places.example")
+        XCTAssertEqual(config.kakaoRestAPIKey, "kakao-test")
+        XCTAssertNil(RestaurantPlaceAPIConfiguration.from(infoDictionary: ["TBGoogleMapsAPIKey": "obsolete"]).backend)
+    }
+
+    func testAuthenticatedProxyRequestMapsSourceFieldsAndKeepsKakaoIdentity() async throws {
+        let data = try payload()
+        let client = client { request in
+            XCTAssertEqual(request.url?.path, "/functions/v1/google-place-enrich")
+            XCTAssertNil(request.url?.query)
+            XCTAssertEqual(request.httpMethod, "POST")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "apikey"), "sb_publishable_test")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer existing-user-session")
+            XCTAssertNil(request.value(forHTTPHeaderField: "X-Goog-Api-Key"))
+            let body = try XCTUnwrap(JSONSerialization.jsonObject(with: request.placesBody) as? [String: Any])
+            XCTAssertEqual(body["query"] as? String, "검증 식당")
+            XCTAssertEqual(body["address"] as? String, "서울 강남구 선릉로158길 11")
+            XCTAssertEqual(body["lat"] as? Double, 37.5257)
+            return (200, data)
+        }
+        let result = await client.hydratePlaceInfo(restaurantName: "검증 식당", basePlaceInfo: base)
+        XCTAssertEqual(result.kakaoPlaceID, base.kakaoPlaceID)
+        XCTAssertEqual(result.address, base.address)
+        XCTAssertEqual(result.phone, base.phone)
+        XCTAssertEqual(result.sourceByRow[.phone], .kakao)
+        XCTAssertEqual(result.googlePlaceID, "google-place-test")
+        XCTAssertEqual(result.googleRating, 4.5)
+        XCTAssertEqual(result.googleUserRatingCount, 37)
+        XCTAssertEqual(result.sourceByRow[.hours], .google)
+        XCTAssertEqual(result.sourceByRow[.website], .google)
+        XCTAssertEqual(result.googlePhotoAttribution, "검증 제공자")
+        XCTAssertEqual(result.googlePhotoURL?.host, "images.example")
+    }
+
+    func testWrongRestaurantAndDifferentBranchCannotSupplyGoogleMetadata() async throws {
+        for data in [try payload(name: "다른 식당"), try payload(lat: 37.6, lng: 127.1)] {
+            let client = client { _ in (200, data) }
+            let result = await client.hydratePlaceInfo(restaurantName: "검증 식당", basePlaceInfo: base)
+            XCTAssertEqual(result, base)
+        }
+    }
+
+    func testProxyErrorsStayErrorsAndRetainKnownPlaceOnHydration() async throws {
+        for status in [401, 502] {
+            let client = client { _ in (status, Data("{}".utf8)) }
+            do {
+                _ = try await client.lookupGooglePlaceEnrichment(restaurantName: "검증 식당", basePlaceInfo: base)
+                XCTFail("A failed read must not become an empty success")
+            } catch {
+                XCTAssertEqual(error as? RestaurantPlaceAPIError, .providerFailed("Google place enrichment returned \(status)"))
+            }
+            let result = await client.hydratePlaceInfo(restaurantName: "검증 식당", basePlaceInfo: base)
+            XCTAssertEqual(result, base)
+        }
+    }
+
+    func testDisabledProviderAndKnownEmptyResultRemainDifferent() async throws {
+        let disabled = client { _ in (200, Data(#"{"disabled":true,"place":null}"#.utf8)) }
+        do {
+            _ = try await disabled.lookupGooglePlaceEnrichment(restaurantName: "검증 식당", basePlaceInfo: base)
+            XCTFail("Missing server setup must be distinguishable from no matching place")
+        } catch { XCTAssertEqual(error as? RestaurantPlaceAPIError, .googleProviderDisabled) }
+        let empty = client { _ in (200, Data(#"{"place":null}"#.utf8)) }
+        let result = try await empty.lookupGooglePlaceEnrichment(restaurantName: "검증 식당", basePlaceInfo: base)
+        XCTAssertNil(result)
+    }
+
+    func testMissingSessionDoesNotSendARequest() async throws {
+        var client = client { _ in XCTFail("No request may be sent without a session"); return (401, Data()) }
+        client.googleAccessToken = { "" }
+        do {
+            _ = try await client.lookupGooglePlaceEnrichment(restaurantName: "검증 식당", basePlaceInfo: base)
+            XCTFail("Expected authentication failure")
+        } catch { XCTAssertEqual(error as? RestaurantPlaceAPIError, .googleAuthenticationRequired) }
+    }
+}
+
+private final class GooglePlacesHTTPProtocol: URLProtocol {
+    private static let lock = NSLock()
+    private static var responses: [String: (URLRequest) throws -> (Int, Data)] = [:]
+    static func register(host: String, response: @escaping (URLRequest) throws -> (Int, Data)) {
+        lock.lock(); defer { lock.unlock() }; responses[host] = response
+    }
+    static func unregister(host: String) { lock.lock(); defer { lock.unlock() }; responses.removeValue(forKey: host) }
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() {
+        Self.lock.lock(); let response = Self.responses[request.url?.host ?? ""]; Self.lock.unlock()
+        do {
+            guard let response else { throw URLError(.unsupportedURL) }
+            let (status, data) = try response(request)
+            let http = HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!
+            client?.urlProtocol(self, didReceive: http, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: data)
+            client?.urlProtocolDidFinishLoading(self)
+        } catch { client?.urlProtocol(self, didFailWithError: error) }
+    }
+    override func stopLoading() {}
+}
+
+private extension URLRequest {
+    var placesBody: Data {
+        if let httpBody { return httpBody }
+        guard let stream = httpBodyStream else { return Data() }
+        stream.open(); defer { stream.close() }
+        var result = Data(), bytes = [UInt8](repeating: 0, count: 4096)
+        while stream.hasBytesAvailable {
+            let count = stream.read(&bytes, maxLength: bytes.count)
+            guard count > 0 else { break }
+            result.append(contentsOf: bytes.prefix(count))
+        }
+        return result
+    }
+}
+
 final class BackendIntegrationTests: XCTestCase {
     func testBackendConfigurationDecodesStagingPublishableValues() throws {
         let configuration = try BackendConfiguration.from(infoDictionary: [

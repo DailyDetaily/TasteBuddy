@@ -11,9 +11,9 @@ struct TasteIntensityLikingMatrixView: View {
     private var axis: TasteAxis? { TastePerceptionEngine.axis(for: attribute) }
 
     var body: some View {
-        TBPageSection(title: "강도와 호감", titleSize: .medium) {
-            SectionCard {
-                VStack(alignment: .leading, spacing: TBSpacing.x12) {
+        TasteDetailChartPanel {
+            Text("강도와 호감").font(TBFont.bold(18)).foregroundStyle(TBColor.textPrimary)
+            VStack(alignment: .leading, spacing: TBSpacing.x12) {
                     Grid(horizontalSpacing: 8, verticalSpacing: 8) {
                         GridRow {
                             Text("호감 / 강도")
@@ -54,7 +54,6 @@ struct TasteIntensityLikingMatrixView: View {
                                        evidenceIDs: Set(observations.filter { matrix.unknownEntryIDs.union(matrix.conflictEntryIDs).contains($0.experienceID) }.map(\.id))))
                         }.font(TBFont.regular(12)).frame(minHeight: 44)
                     }
-                }
             }
         }
         .tasteDetail($selectedDetail)

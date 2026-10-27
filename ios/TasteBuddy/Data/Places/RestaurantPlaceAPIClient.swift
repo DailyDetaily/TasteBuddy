@@ -1,13 +1,20 @@
 import Foundation
+#if canImport(Supabase)
+import Supabase
+#endif
 
 struct RestaurantPlaceAPIConfiguration: Equatable {
     let kakaoRestAPIKey: String?
-    let googleMapsAPIKey: String?
+    let backend: BackendConfiguration?
 
     static func load(bundle: Bundle = .main) -> RestaurantPlaceAPIConfiguration {
+        from(infoDictionary: bundle.infoDictionary ?? [:])
+    }
+
+    static func from(infoDictionary: [String: Any]) -> RestaurantPlaceAPIConfiguration {
         RestaurantPlaceAPIConfiguration(
-            kakaoRestAPIKey: normalizedAPIKey(bundle.infoDictionary?["TBKakaoRestAPIKey"]),
-            googleMapsAPIKey: normalizedAPIKey(bundle.infoDictionary?["TBGoogleMapsAPIKey"])
+            kakaoRestAPIKey: normalizedAPIKey(infoDictionary["TBKakaoRestAPIKey"]),
+            backend: try? BackendConfiguration.from(infoDictionary: infoDictionary)
         )
     }
 
@@ -26,6 +33,9 @@ struct RestaurantPlaceAPIConfiguration: Equatable {
 enum RestaurantPlaceAPIError: Error, Equatable {
     case invalidResponse
     case providerFailed(String)
+    case googleBackendNotConfigured
+    case googleAuthenticationRequired
+    case googleProviderDisabled
 }
 
 struct KakaoRestaurantPlace: Identifiable, Equatable {
@@ -43,14 +53,20 @@ struct KakaoRestaurantPlace: Identifiable, Equatable {
         placeID ?? [name, displayAddress].compactMap(\.self).joined(separator: "|")
     }
 
-    var displayAddress: String? {
-        roadAddress ?? address
+    var displayAddress: String? { roadAddress ?? address }
+
+    var recordReference: DiningRestaurantPlaceReference {
+        .init(name: name, address: displayAddress ?? "", kakaoPlaceID: placeID,
+              latitude: latitude, longitude: longitude, phone: phone)
     }
 }
 
 struct RestaurantPlaceAPIClient {
     var configuration = RestaurantPlaceAPIConfiguration.load()
     var session: URLSession = .shared
+    /// Test injection uses a scoped token; production reads the existing Supabase session.
+    var googleAccessToken: (() async throws -> String)? = nil
+
 
     func searchKakaoRestaurantPlaces(
         query: String,
@@ -108,34 +124,39 @@ struct RestaurantPlaceAPIClient {
         return documents.compactMap(\.restaurantPlace)
     }
 
-    func hydratePlaceInfo(
-        restaurantName: String,
-        basePlaceInfo: RestaurantPlaceInfo
-    ) async -> RestaurantPlaceInfo {
-        let kakaoInfo = await lookupKakaoPlaceInfo(restaurantName: restaurantName)
-        let base = kakaoInfo ?? basePlaceInfo
-        let googleInfo = await lookupGooglePlaceEnrichment(
-            restaurantName: restaurantName,
-            basePlaceInfo: base
-        )
-
-        return base.merging(googleInfo)
+    func hydratePlaceInfo(restaurantName: String, basePlaceInfo: RestaurantPlaceInfo) async -> RestaurantPlaceInfo {
+        await loadPlaceInfo(restaurantName: restaurantName, basePlaceInfo: basePlaceInfo).info
     }
 
-    private func lookupKakaoPlaceInfo(restaurantName: String) async -> RestaurantPlaceInfo? {
-        guard configuration.kakaoRestAPIKey != nil else {
-            return nil
+    func loadPlaceInfo(restaurantName: String, basePlaceInfo: RestaurantPlaceInfo) async -> RestaurantPlaceLoadResult {
+        var base = basePlaceInfo
+        var identityReadFailed = false
+        if base.googlePlaceID == nil, configuration.kakaoRestAPIKey != nil {
+            do {
+                let documents = try await requestKakaoRestaurantDocuments(query: restaurantName, size: 15)
+                let candidate: KakaoPlaceDocument?
+                if let expectedID = base.kakaoPlaceID {
+                    candidate = documents.first { $0.id == expectedID }
+                } else {
+                    candidate = documents.first { document in
+                        guard RestaurantPlaceIdentity.namesMatch(restaurantName, document.placeName ?? "") else { return false }
+                        return base.address.isEmpty || RestaurantPlaceIdentity.sameLocation(base: base, latitude: document.latitude, longitude: document.longitude, address: document.roadAddressName ?? document.addressName)
+                    }
+                }
+                if let candidate { base = base.merging(candidate.placeInfo) }
+            } catch { identityReadFailed = true }
         }
-
+        guard !Task.isCancelled else { return .init(info: base, googleState: .failed) }
+        guard base.googlePlaceID != nil || !base.address.isEmpty || (base.lat != nil && base.lng != nil) else {
+            return .init(info: base, googleState: identityReadFailed ? .failed : .unmatched)
+        }
         do {
-            let documents = try await requestKakaoRestaurantDocuments(query: restaurantName, size: 10)
-            guard let document = KakaoLocalSearchResponse(documents: documents).bestRestaurantDocument else {
-                return nil
+            guard let google = try await lookupGooglePlaceEnrichment(restaurantName: restaurantName, basePlaceInfo: base) else {
+                return .init(info: base, googleState: .unmatched)
             }
-
-            return document.placeInfo
+            return .init(info: base.merging(google), googleState: .available)
         } catch {
-            return nil
+            return .init(info: base, googleState: .failed)
         }
     }
 
@@ -239,138 +260,71 @@ struct RestaurantPlaceAPIClient {
         return decoded.documents
     }
 
-    private func lookupGooglePlaceEnrichment(
+    /// Google credentials stay in the existing server function. No Google key is shipped in the app.
+    func lookupGooglePlaceEnrichment(
         restaurantName: String,
         basePlaceInfo: RestaurantPlaceInfo
-    ) async -> RestaurantPlaceInfo? {
-        guard let apiKey = configuration.googleMapsAPIKey,
-              let url = URL(string: "https://places.googleapis.com/v1/places:searchText") else {
-            return nil
+    ) async throws -> RestaurantPlaceInfo? {
+        guard let backend = configuration.backend else {
+            throw RestaurantPlaceAPIError.googleBackendNotConfigured
         }
-
-        let textQuery = [restaurantName, basePlaceInfo.address]
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
-            .joined(separator: " ")
-        guard !textQuery.isEmpty else {
-            return nil
+        let query = restaurantName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return nil }
+        try Task.checkCancellation()
+        let token: String
+        if let googleAccessToken {
+            token = try await googleAccessToken()
+        } else {
+            #if canImport(Supabase)
+            let client = SupabaseClientProvider(configuration: backend).makeClient()
+            token = try await client.auth.session.accessToken
+            #else
+            throw RestaurantPlaceAPIError.googleAuthenticationRequired
+            #endif
         }
-
-        var payload: [String: Any] = [
-            "includedType": "restaurant",
-            "languageCode": "ko",
-            "maxResultCount": 5,
-            "regionCode": "KR",
-            "textQuery": textQuery
-        ]
-
-        if let lat = basePlaceInfo.lat, let lng = basePlaceInfo.lng {
-            payload["locationBias"] = [
-                "circle": [
-                    "center": [
-                        "latitude": lat,
-                        "longitude": lng
-                    ],
-                    "radius": 500
-                ]
-            ]
+        guard !token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw RestaurantPlaceAPIError.googleAuthenticationRequired
         }
+        try Task.checkCancellation()
+        let url = backend.supabaseURL.appendingPathComponent("functions/v1/google-place-enrich")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(backend.supabasePublishableKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONEncoder().encode(GooglePlaceEnrichmentRequest(
+            query: query, placeId: basePlaceInfo.googlePlaceID, address: basePlaceInfo.address.nilIfEmpty,
+            lat: basePlaceInfo.lat, lng: basePlaceInfo.lng, phone: basePlaceInfo.phone))
 
-        do {
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.httpBody = try JSONSerialization.data(withJSONObject: payload)
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.setValue(apiKey, forHTTPHeaderField: "X-Goog-Api-Key")
-            request.setValue(GooglePlaceTextSearchResponse.fieldMask, forHTTPHeaderField: "X-Goog-FieldMask")
-
-            let (data, response) = try await session.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200..<300).contains(httpResponse.statusCode) else {
-                return nil
-            }
-
-            let decoded = try JSONDecoder().decode(GooglePlaceTextSearchResponse.self, from: data)
-            guard let place = decoded.places.first else {
-                return nil
-            }
-
-            let googlePhotoURL = await lookupGooglePlacePhotoURL(
-                photoName: place.photos?.first?.name,
-                apiKey: apiKey
-            )
-            var sourceByRow: [RestaurantInfoRowID: RestaurantInfoSource] = [:]
-            let hours = place.regularOpeningHours?.weekdayDescriptions?.formattedOpeningHours
-            if hours != nil {
-                sourceByRow[.hours] = .google
-            }
-
-            if place.websiteURI != nil {
-                sourceByRow[.website] = .google
-            }
-
-            let googlePhone = place.nationalPhoneNumber ?? place.internationalPhoneNumber
-            if basePlaceInfo.phone == nil, googlePhone?.isEmpty == false {
-                sourceByRow[.phone] = .google
-            }
-
-            return RestaurantPlaceInfo(
-                address: "",
-                googlePhotoAttribution: place.photos?.first?.authorAttributions?.attributionText,
-                googlePhotoURL: googlePhotoURL,
-                googlePlaceID: place.id,
-                googleMapsURL: place.googleMapsURI.flatMap(URL.init(string:)),
-                googlePriceLevel: place.priceLevel,
-                googleRating: place.rating,
-                googleUserRatingCount: place.userRatingCount,
-                lat: place.location?.latitude,
-                lng: place.location?.longitude,
-                mapURL: nil,
-                phone: basePlaceInfo.phone == nil ? googlePhone?.nilIfEmpty : nil,
-                website: place.websiteURI?.nilIfEmpty,
-                hours: hours,
-                sourceByRow: sourceByRow
-            )
-        } catch {
-            return nil
+        let (data, response) = try await session.data(for: request)
+        try Task.checkCancellation()
+        guard let http = response as? HTTPURLResponse else { throw RestaurantPlaceAPIError.invalidResponse }
+        guard (200..<300).contains(http.statusCode) else {
+            throw RestaurantPlaceAPIError.providerFailed("Google place enrichment returned \(http.statusCode)")
         }
+        let result = try JSONDecoder().decode(GooglePlaceEnrichmentResponse.self, from: data)
+        guard result.disabled != true else { throw RestaurantPlaceAPIError.googleProviderDisabled }
+        guard let place = result.place, place.matches(restaurantName: query, base: basePlaceInfo),
+              let placeID = place.placeId?.nilIfEmpty else { return nil }
+        var sourceByRow: [RestaurantInfoRowID: RestaurantInfoSource] = [:]
+        let hours = place.hours?.nilIfEmpty
+        let website = place.website?.nilIfEmpty
+        let phone = basePlaceInfo.phone?.nilIfEmpty == nil ? place.phone?.nilIfEmpty : nil
+        if hours != nil { sourceByRow[.hours] = .google }
+        if website != nil { sourceByRow[.website] = .google }
+        if phone != nil { sourceByRow[.phone] = .google }
+        let authors = (place.photo?.attributions ?? []).compactMap { $0.displayName?.nilIfEmpty }.prefix(2)
+        return RestaurantPlaceInfo(
+            address: "", googlePhotoAttribution: authors.isEmpty ? nil : authors.joined(separator: ", "),
+            googlePhotoURL: place.photo?.url.flatMap(URL.init(string:)), googlePlaceID: placeID,
+            googleMapsURL: place.googleMapsUrl.flatMap(URL.init(string:)),
+            googlePriceLevel: place.priceLevel, googleRating: place.rating,
+            googleUserRatingCount: place.userRatingCount, lat: place.lat, lng: place.lng,
+            phone: phone, website: website, hours: hours, sourceByRow: sourceByRow
+        )
     }
 
-    private func lookupGooglePlacePhotoURL(
-        photoName: String?,
-        apiKey: String
-    ) async -> URL? {
-        guard let photoName = photoName?.nilIfEmpty else {
-            return nil
-        }
-
-        var components = URLComponents()
-        components.scheme = "https"
-        components.host = "places.googleapis.com"
-        components.path = "/v1/\(photoName)/media"
-        components.queryItems = [
-            URLQueryItem(name: "key", value: apiKey),
-            URLQueryItem(name: "maxWidthPx", value: "720"),
-            URLQueryItem(name: "skipHttpRedirect", value: "true")
-        ]
-
-        guard let url = components.url else {
-            return nil
-        }
-
-        do {
-            let (data, response) = try await session.data(from: url)
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200..<300).contains(httpResponse.statusCode) else {
-                return nil
-            }
-
-            let decoded = try JSONDecoder().decode(GooglePlacePhotoMediaResponse.self, from: data)
-            return decoded.photoURI.flatMap(URL.init(string:))
-        } catch {
-            return nil
-        }
-    }
 }
 
 private struct KakaoLocalSearchResponse: Decodable {
@@ -459,117 +413,99 @@ private struct KakaoPlaceDocument: Decodable {
     }
 }
 
-private struct GooglePlaceTextSearchResponse: Decodable {
-    static let fieldMask = [
-        "places.displayName",
-        "places.formattedAddress",
-        "places.googleMapsUri",
-        "places.id",
-        "places.internationalPhoneNumber",
-        "places.location",
-        "places.nationalPhoneNumber",
-        "places.photos",
-        "places.priceLevel",
-        "places.rating",
-        "places.regularOpeningHours",
-        "places.userRatingCount",
-        "places.websiteUri"
-    ].joined(separator: ",")
-
-    let places: [GooglePlace]
+private struct GooglePlaceEnrichmentRequest: Encodable {
+    let query: String
+    let placeId: String?
+    let address: String?
+    let lat: Double?
+    let lng: Double?
+    let phone: String?
 }
 
-private struct GooglePlace: Decodable {
-    struct DisplayName: Decodable {
-        let text: String?
-    }
+private struct GooglePlaceEnrichmentResponse: Decodable {
+    let disabled: Bool?
+    let place: GoogleEnrichedPlace?
+}
 
-    struct Location: Decodable {
-        let latitude: Double?
-        let longitude: Double?
-    }
-
-    struct OpeningHours: Decodable {
-        let weekdayDescriptions: [String]?
-    }
-
+private struct GoogleEnrichedPlace: Decodable {
     struct Photo: Decodable {
-        struct AuthorAttribution: Decodable {
-            let displayName: String?
-            let uri: String?
-        }
-
-        let authorAttributions: [AuthorAttribution]?
-        let name: String?
+        struct Attribution: Decodable { let displayName: String? }
+        let attributions: [Attribution]?
+        let url: String?
     }
-
-    let displayName: DisplayName?
-    let formattedAddress: String?
-    let googleMapsURI: String?
-    let id: String?
-    let internationalPhoneNumber: String?
-    let location: Location?
-    let nationalPhoneNumber: String?
-    let photos: [Photo]?
+    let name: String?
+    let address: String?
+    let googleMapsUrl: String?
+    let hours: String?
+    let lat: Double?
+    let lng: Double?
+    let phone: String?
+    let photo: Photo?
+    let placeId: String?
     let priceLevel: String?
     let rating: Double?
-    let regularOpeningHours: OpeningHours?
     let userRatingCount: Int?
-    let websiteURI: String?
+    let website: String?
 
-    enum CodingKeys: String, CodingKey {
-        case displayName
-        case formattedAddress
-        case googleMapsURI = "googleMapsUri"
-        case id
-        case internationalPhoneNumber
-        case location
-        case nationalPhoneNumber
-        case photos
-        case priceLevel
-        case rating
-        case regularOpeningHours
-        case userRatingCount
-        case websiteURI = "websiteUri"
+    func matches(restaurantName: String, base: RestaurantPlaceInfo) -> Bool {
+        if let expectedID = base.googlePlaceID { return expectedID == placeId }
+        let sameName = RestaurantPlaceIdentity.namesMatch(restaurantName, name ?? "")
+        let samePhone = RestaurantPlaceIdentity.phonesMatch(base.phone, phone)
+        guard sameName || samePhone else { return false }
+        return RestaurantPlaceIdentity.sameLocation(base: base, latitude: lat, longitude: lng,
+                                                    address: address, maxDistance: sameName ? 500 : 100)
     }
-}
 
-private struct GooglePlacePhotoMediaResponse: Decodable {
-    let photoURI: String?
-
-    enum CodingKeys: String, CodingKey {
-        case photoURI = "photoUri"
-    }
-}
-
-private extension Array where Element == GooglePlace.Photo.AuthorAttribution {
-    var attributionText: String? {
-        let names = compactMap { $0.displayName?.nilIfEmpty }
-
-        guard !names.isEmpty else {
-            return nil
-        }
-
-        return names.prefix(2).joined(separator: ", ")
-    }
-}
-
-private extension Array where Element == String {
-    var formattedOpeningHours: String? {
-        let lines = map {
-            $0
-                .replacingOccurrences(of: "요일", with: "")
-                .replacingOccurrences(of: ":\\s*", with: " ", options: .regularExpression)
-        }
-        .filter { !$0.isEmpty }
-
-        return lines.isEmpty ? nil : lines.joined(separator: " / ")
-    }
 }
 
 private extension String {
     var nilIfEmpty: String? {
         let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed
+    }
+}
+
+enum RestaurantPlaceLookupState: Equatable {
+    case loading, available, unmatched, failed
+    var missingHoursLabel: String {
+        switch self {
+        case .loading: "영업시간 확인 중"
+        case .available: "Google에서 영업시간을 제공하지 않아요"
+        case .unmatched: "영업시간 미확인"
+        case .failed: "영업시간을 불러오지 못했어요"
+        }
+    }
+}
+
+struct RestaurantPlaceLoadResult: Equatable {
+    var info: RestaurantPlaceInfo
+    var googleState: RestaurantPlaceLookupState
+}
+
+enum RestaurantPlaceIdentity {
+    static func normalized(_ value: String) -> String {
+        String(String.UnicodeScalarView(value.precomposedStringWithCanonicalMapping.lowercased().unicodeScalars
+            .filter { CharacterSet.alphanumerics.contains($0) }))
+    }
+    static func namesMatch(_ lhs: String, _ rhs: String) -> Bool {
+        let a = normalized(lhs), b = normalized(rhs)
+        return !a.isEmpty && !b.isEmpty && (a == b || (a.count >= 2 && b.count >= 2 && (a.contains(b) || b.contains(a))))
+    }
+    static func phonesMatch(_ lhs: String?, _ rhs: String?) -> Bool {
+        func phone(_ value: String?) -> String {
+            let digits = (value ?? "").filter(\.isNumber)
+            return digits.hasPrefix("82") ? "0" + digits.dropFirst(2) : digits
+        }
+        let a = phone(lhs), b = phone(rhs)
+        return a.count >= 8 && a == b
+    }
+    static func sameLocation(base: RestaurantPlaceInfo, latitude: Double?, longitude: Double?, address: String?, maxDistance: Double = 500) -> Bool {
+        if let baseLat = base.lat, let baseLng = base.lng, let latitude, let longitude {
+            guard [baseLat, baseLng, latitude, longitude].allSatisfy(\.isFinite) else { return false }
+            return hypot((latitude - baseLat) * 111_320,
+                         (longitude - baseLng) * 111_320 * cos(baseLat * .pi / 180)) <= maxDistance
+        }
+        let street = base.address.split(separator: " ").suffix(2).joined()
+        return !street.isEmpty && normalized(address ?? "").contains(normalized(street))
     }
 }

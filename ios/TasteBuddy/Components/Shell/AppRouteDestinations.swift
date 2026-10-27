@@ -51,11 +51,18 @@ struct AppRouteDestinationView: View {
                 topChrome: collapsingTopChrome,
                 contentOffset: contentOffset
             )
+            .environment(\.tasteDetailChrome, .init(
+                header: collapsingTopChrome, contentOffset: contentOffset,
+                onBack: onBack, bottomContentInset: bottomContentInset
+            ))
         case .homeInsight(let kind):
             HomeArchiveDetailView(kind: kind, bottomContentInset: bottomContentInset)
         case .cardDetail(let detail):
             TasteCardDetailDestination(route: detail)
-                .environment(\.tasteDetailChrome, .init(header: collapsingTopChrome, contentOffset: contentOffset, onBack: onBack))
+                .environment(\.tasteDetailChrome, .init(
+                    header: collapsingTopChrome, contentOffset: contentOffset,
+                    onBack: onBack, bottomContentInset: bottomContentInset
+                ))
         case .savedRestaurants:
             SavedRestaurantListView(topChrome: collapsingTopChrome, contentOffset: contentOffset) { restaurantID in
                 navigate(.restaurant(id: restaurantID))
@@ -576,22 +583,13 @@ struct RestaurantBookmarkNativeSheet: View {
                 Text("리스트 이름")
                     .font(TBFont.semibold(16))
                     .foregroundStyle(TBColor.textPrimary)
-                Text("직접 입력")
-                    .font(TBFont.semibold(12))
-                    .foregroundStyle(TBColor.textTertiary)
-                TextField("예: 부모님과 가볼 곳", text: $customListName)
-                    .font(TBFont.medium(13))
-                    .foregroundStyle(TBColor.textPrimary)
-                    .padding(.horizontal, 16)
-                    .frame(height: SearchOverlayShellMetrics.fieldHeight)
-                    .background(TBColor.mutedSurface)
-                    .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous)
-                            .stroke(TBColor.border)
-                    }
-                    .submitLabel(.done)
-                    .onSubmit(saveCreatedList)
+                TBTextInput(
+                    text: $customListName,
+                    placeholder: "예: 부모님과 가볼 곳",
+                    label: "직접 입력",
+                    accessibilityName: "리스트 이름",
+                    onSubmit: saveCreatedList
+                )
             }
 
             VStack(alignment: .leading, spacing: 8) {
@@ -666,36 +664,8 @@ struct RestaurantBookmarkNativeSheet: View {
 
         return AnyView(
             HStack(spacing: 8) {
-                Button {
-                    cancelCreate()
-                } label: {
-                    Text("취소")
-                        .font(TBFont.bold(14))
-                        .foregroundStyle(TBColor.textSecondary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 48)
-                        .background(TBColor.surface)
-                        .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous)
-                                .stroke(TBColor.border)
-                        }
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    saveCreatedList()
-                } label: {
-                    Text("저장")
-                        .font(TBFont.bold(14))
-                        .foregroundStyle(canSave ? TBColor.textInverse : TBColor.textDisabled)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 48)
-                        .background(canSave ? TBColor.textPrimary : TBColor.disabledSurface)
-                        .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
-                }
-                .buttonStyle(TBTokenButtonStyle())
-                .disabled(!canSave)
+                TBUIButton(title: "취소", variant: .outline, action: cancelCreate)
+                PrimaryButton(title: "저장", isEnabled: canSave, action: saveCreatedList)
             }
         )
     }
@@ -1037,7 +1007,7 @@ private struct SavedRestaurantListView: View {
             TBCapsuleTabs(options: ["전체", "파인다이닝", "한식", "디저트"], selection: $selectedCategory,
                           selectedForeground: TasteAxis.bitter.tintSurfaceTextColor,
                           selectedBackground: TasteAxis.bitter.tintColor,
-                          selectedBorder: TasteAxis.bitter.tintSoftBorderColor) { "\($0) 1" }
+                          selectedBorder: TasteAxis.bitter.borderDefaultColor) { "\($0) 1" }
         } content: {
             Button {
                 let restaurantID = appModel.savedRestaurantIDs.first ?? "mingles"
@@ -1051,8 +1021,8 @@ private struct SavedRestaurantListView: View {
                             strokeWidth: TBIcon.Stroke.regular
                         )
                             .frame(width: 38, height: 38)
-                            .foregroundStyle(Color(hex: 0x86A51E))
-                            .background(Color(hex: 0xF1F7C8))
+                            .foregroundStyle(TasteAxis.bitter.tintSurfaceTextColor)
+                            .background(TasteAxis.bitter.tintSurfaceColor)
                             .clipShape(RoundedRectangle(cornerRadius: TBRadius.control, style: .continuous))
 
                         VStack(alignment: .leading, spacing: 4) {
@@ -1148,6 +1118,7 @@ private struct ConnectionListView: View {
 }
 
 private struct PublicProfileView: View {
+    @EnvironmentObject private var appModel: AppModel
     let profileID: String
     @State private var isFollowing = false
     @State private var publicIdentity: BackendPublicProfileIdentity?
@@ -1181,22 +1152,13 @@ private struct PublicProfileView: View {
                 } headerAction: {
                     EmptyView()
                 } footerAction: {
-                    Button {
+                    TBCapsuleButton(
+                        title: isFollowing ? "팔로잉" : "팔로우",
+                        appearance: isFollowing ? .outlined : .tonal,
+                        accentAxis: appModel.profile?.strongestAxis ?? .sweet
+                    ) {
                         isFollowing.toggle()
-                    } label: {
-                        Text(isFollowing ? "팔로잉" : "팔로우")
-                            .contentTransition(.opacity)
-                            .font(TBFont.semibold(12))
-                            .foregroundStyle(TBColor.textPrimary)
-                            .padding(.horizontal, 14)
-                            .frame(height: 36)
-                            .background(TBColor.surface)
-                            .clipShape(Capsule())
-                            .overlay {
-                                Capsule().stroke(TBColor.border, lineWidth: 1)
-                            }
                     }
-                    .buttonStyle(TBTokenButtonStyle())
                     .tasteBloomMotion(.feedback, value: isFollowing)
                 }
 
@@ -1544,8 +1506,10 @@ struct TasteChangeFocusView: View {
                     if let selected, !selected.details.isEmpty {
                         TasteDetailDisclosure("조건") { ForEach(selected.details, id: \.self) { Text($0) } }
                     }
-                    Button("경험 비교") { showsMemoryComparison = true }
-                        .font(TBFont.medium(12)).frame(minHeight: 44).tint(TBColor.textPrimary)
+                    TasteDetailGroup {
+                        Button("경험 비교") { showsMemoryComparison = true }
+                            .font(TBFont.medium(12)).frame(maxWidth: .infinity, minHeight: 52).tint(TBColor.textPrimary)
+                    }
                 }.padding(.horizontal, TBSpacing.page)
             }.padding(.bottom, TBSpacing.page)
         }
@@ -1656,13 +1620,22 @@ private struct TasteTrendChart: View {
                     var grid = Path(); grid.move(to: CGPoint(x: plot.minX, y: y)); grid.addLine(to: CGPoint(x: plot.maxX, y: y))
                     context.stroke(grid, with: .color(TBColor.borderSubtle), style: StrokeStyle(lineWidth: 1, dash: [3, 4]))
                 }
-                var line = Path()
-                for (index, point) in positions.enumerated() {
-                    if index == 0 { line.move(to: point) } else { line.addLine(to: point) }
+                let layout = TasteDetailLineAlignment.layout(positions, radius: TasteLineChartMetrics.cornerRadius)
+                let line = TasteLineRounding.path(layout.controls, radius: layout.radius)
+                let shading = GraphicsContext.Shading.linearGradient(
+                    Gradient(colors: [axis.lineChartStartColor, axis.lineChartEndColor]),
+                    startPoint: CGPoint(x: plot.minX, y: 0), endPoint: CGPoint(x: plot.maxX, y: 0))
+                if positions.count > 1 {
+                    context.stroke(line, with: .color(axis.lineChartTrackColor),
+                                   style: StrokeStyle(lineWidth: TasteLineChartMetrics.trackLineWidth, lineCap: .round, lineJoin: .round))
+                    context.stroke(line, with: shading,
+                                   style: StrokeStyle(lineWidth: TasteLineChartMetrics.coreLineWidth, lineCap: .round, lineJoin: .round))
                 }
-                context.stroke(line, with: .color(axis.mainColor), style: StrokeStyle(lineWidth: 2.2, lineCap: .round, lineJoin: .round))
                 for (index, point) in positions.enumerated() {
-                    context.fill(Path(ellipseIn: CGRect(x: point.x - 4, y: point.y - 4, width: 8, height: 8)), with: .color(axis.mainColor))
+                    let latest = index == positions.count - 1
+                    let diameter = latest ? TasteLineChartMetrics.currentNodeDiameter : TasteLineChartMetrics.historyNodeDiameter
+                    context.fill(Path(ellipseIn: CGRect(x: point.x - diameter / 2, y: point.y - diameter / 2, width: diameter, height: diameter)),
+                                 with: latest ? .color(axis.lineChartEndColor) : shading)
                     context.draw(Text(points[index].id).font(TBFont.regular(11)).foregroundColor(TBColor.textHint), at: CGPoint(x: point.x, y: plot.maxY + 16))
                 }
                 if points.isEmpty {

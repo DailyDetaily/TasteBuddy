@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.categoryPlaybackDuration = exports.sensoryIdleSpeed = exports.categoryIntroDuration = exports.categoryLoopDuration = exports.responseLabels = exports.polar = exports.stateText = exports.LOOP = exports.INTRO = exports.COLORS = void 0;
 exports.categoryFrame = categoryFrame;
 const designTokens_1 = require("src/constants/designTokens.ts");
+const colors_1 = require("brand-launch/src/TasteDataCategoryMotion/colors.ts");
 const change_1 = require("brand-launch/src/TasteDataCategoryMotion/change.ts");
 const context_1 = require("brand-launch/src/TasteDataCategoryMotion/context.ts");
 const sensory_1 = require("brand-launch/src/TasteDataCategoryMotion/sensory.ts");
@@ -91,13 +92,14 @@ function baseCategoryFrame(data, time, options = {}) {
             const category = colors[(i % 6) * 21 + Math.floor(i / 6)], key = category === undefined ? "" : String(category);
             f.dots.push({
                 id: "proportion-" + i,
-                x: 320 + (dot.x - 320) * 0.84,
-                y: 320 + (dot.y - 320) * 0.84,
-                r: dot.radius * 0.84,
+                x: 320 + (dot.x - 320) * 0.92,
+                y: 320 + (dot.y - 320) * 0.92,
+                r: dot.radius,
                 color: category === undefined ? "#e4e0da" : exports.COLORS[category],
-                // Stable decorative tone levels remain visibly distinct at the preview scale.
+                // Decorative pale points share the opaque surface role, not a background-dependent alpha.
+                tintColor: category === undefined ? "#e4e0da" : (0, colors_1.motionTint)(designTokens_1.TASTE_TOKENS[designTokens_1.TASTE_IDS[category]].palette),
+                tint: category !== undefined && (i * 7 + Math.floor(i / 6)) % 4 !== 0 ? 1 : 0,
                 opacity: dot.progress *
-                    [1, 0.84, 0.68, 0.52][(i * 7 + Math.floor(i / 6)) % 4] *
                     (options.selected && options.selected !== key ? 0.35 : 1),
                 group: key,
             });
@@ -166,6 +168,30 @@ exports.sensoryIdleSpeed = sensoryIdleSpeed;
 function categoryFrame(data, time, options = {}) {
     var _a, _b, _c;
     const frame = baseCategoryFrame(data, time, options);
+    // Reuse only presentation geometry. No records, responses, periods or denominators are fabricated.
+    // A partially available comparison keeps the genuine period already drawn by its base frame.
+    if (frame.state === "noData" && (data.state === "noData" || !frame.dots.length)) {
+        const layered = data.kind === "contextLayers" || data.kind === "changeRipples";
+        const scale = 0.92;
+        const dots = layered
+            ? (0, context_1.dotRingMotion)(data.kind === "contextLayers" ? 3 : 2, 0, { playback: "reduced" }).layers.flat()
+            : (0, taste_motion_1.insightFrame)(taste_motion_1.insightIntroDuration, true, data.kind === "sensoryRays" ? 1 : 0).dots.map(dot => ({
+                x: 320 + (dot.x - 320) * scale,
+                y: 320 + (dot.y - 320) * scale,
+                r: dot.radius,
+            }));
+        frame.dots = dots.map((dot, i) => ({
+            id: `empty-${data.kind}-${i}`, x: dot.x, y: dot.y, r: dot.r,
+            color: colors_1.EMPTY_RING_COLOR, opacity: 1, data: false, group: "",
+        }));
+        frame.lines = [];
+        frame.bridges = [];
+        frame.labels = [];
+        frame.summaryOpacity = 1;
+        frame.motionPhase = "자료 없음";
+        frame.legend = "연한 뉴트럴 점은 빈 상태의 기본 형태이며 기록·평가·조건 수를 나타내지 않음";
+        return frame;
+    }
     if (frame.state === "held") {
         const neutral = designTokens_1.COLOR_TOKENS.border.subtle;
         // A missing data shape gets a decorative neutral ring, never synthetic records.
@@ -244,7 +270,9 @@ exports.categoryPlaybackDuration = categoryPlaybackDuration;
 "src/constants/designTokens.ts":function(module,exports,require){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DESIGN_TOKENS = exports.NEUTRAL_TASTE_TOKENS = exports.TASTE_COLORS = exports.TASTE_LABEL_TO_ID = exports.TASTE_LABELS = exports.TASTE_TOKENS = exports.TASTE_IDS = exports.COMPONENT_TOKENS = exports.LAYOUT_TOKENS = exports.COLOR_TOKENS = exports.DATA_VIZ_TOKENS = exports.BOX_TOKENS = exports.ICON_TOKENS = exports.MOTION_TOKENS = exports.SHADOW_TOKENS = exports.TYPOGRAPHY_TOKENS = exports.RADIUS_TOKENS = exports.SPACING_TOKENS = exports.DESIGN_SYSTEM = void 0;
+exports.DESIGN_TOKENS = exports.SHEET_PRESENTATION_TOKENS = exports.NEUTRAL_TASTE_TOKENS = exports.TASTE_COLORS = exports.TASTE_LABEL_TO_ID = exports.TASTE_LABELS = exports.TASTE_TOKENS = exports.TASTE_COLOR_ROLE_STEPS = exports.TASTE_TINTS = exports.TASTE_TINTS_BY_MODE = exports.TASTE_MAIN_COLORS_BY_MODE = exports.DARK_TASTE_MAIN_COLORS = exports.TASTE_MAIN_COLORS = exports.TASTE_TINT_BASES = exports.TASTE_TINT_STEPS = exports.TASTE_IDS = exports.COMPONENT_TOKENS = exports.LAYOUT_TOKENS = exports.COLOR_TOKENS = exports.DATA_VIZ_TOKENS = exports.BOX_TOKENS = exports.ICON_TOKENS = exports.MOTION_TOKENS = exports.SHADOW_TOKENS = exports.TYPOGRAPHY_TOKENS = exports.RADIUS_TOKENS = exports.SPACING_TOKENS = exports.DESIGN_SYSTEM = void 0;
+exports.mixTasteWithBase = mixTasteWithBase;
+exports.mixTasteWithWhite = mixTasteWithWhite;
 exports.DESIGN_SYSTEM = {
     name: '플레이팅',
     englishName: 'Plating',
@@ -429,13 +457,16 @@ exports.COLOR_TOKENS = {
         elevated: '#FCFCFC',
         disabled: '#EFEFEF',
         overlay: 'rgba(255, 255, 255, 0.8)',
+        placeholder: '#EFEFEF',
+        inverse: '#0F0F0F',
     },
     text: {
         primary: '#0F0F0F',
         secondary: '#3F3F3F',
         tertiary: '#535353',
         body: '#666666',
-        hint: '#888888',
+        action: '#666666',
+        hint: '#6F6F6F',
         disabled: '#AFAFAF',
         inverse: '#FFFFFF',
         subtle: 'rgba(15, 15, 15, 0.6)',
@@ -457,11 +488,36 @@ exports.COLOR_TOKENS = {
         muted: '#AFAFAF',
     },
     state: {
+        neutral: '#3F3F3F',
+        neutralSoft: '#EFEFEF',
+        informative: '#3F3F3F',
+        informativeSoft: '#F7F7F7',
         success: '#2F8F5B',
+        successText: '#236B45',
+        successStrong: '#236B45',
         successSoft: '#E6F4EC',
         warning: '#A8661A',
+        warningText: '#875014',
+        warningStrong: '#875014',
         warningSoft: '#FFF1DE',
         destructive: '#D4183D',
+        destructiveText: '#B31333',
+        destructiveSoft: '#FCEDEF',
+    },
+    interaction: {
+        primary: '#0F0F0F',
+        onPrimary: '#FFFFFF',
+        selected: '#0F0F0F',
+        onSelected: '#FFFFFF',
+        focus: '#3F3F3F',
+        hoverOverlay: 'rgba(0, 0, 0, 0.04)',
+        pressedOverlay: 'rgba(0, 0, 0, 0.06)',
+        pressedInverseOverlay: 'rgba(255, 255, 255, 0.1)',
+    },
+    scrim: {
+        subtle: 'rgba(0, 0, 0, 0.35)',
+        default: 'rgba(0, 0, 0, 0.5)',
+        strong: 'rgba(0, 0, 0, 0.6)',
     },
     shadow: exports.SHADOW_TOKENS,
 };
@@ -488,6 +544,20 @@ exports.LAYOUT_TOKENS = {
     tasteLoopStepCount: 10,
 };
 exports.COMPONENT_TOKENS = {
+    miniChart: {
+        lineStartTint: 70,
+        stackedBarTint: 20,
+        compactLine: { rowHeight: 26, rowGap: 4, trackWidth: 12, lineWidth: 2, currentDiameter: 12, historyDiameter: 4 },
+        width: 132,
+        height: 56,
+        gap: 3,
+        weeklyGap: 8,
+        groupGap: 8,
+        intraGroupGap: 2,
+        maximumBarWidth: 12,
+        zeroHeightRatio: 0.5,
+        examplePadding: 16,
+    },
     card: {
         background: exports.COLOR_TOKENS.surface.card,
         hoverBackground: exports.COLOR_TOKENS.surface.cardHover,
@@ -628,17 +698,50 @@ exports.COMPONENT_TOKENS = {
     },
 };
 exports.TASTE_IDS = ['sweet', 'sour', 'bitter', 'salty', 'umami', 'fat'];
+/** Steps name the mode's base-color percentage, not alpha or remaining taste color. */
+exports.TASTE_TINT_STEPS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95];
+exports.TASTE_TINT_BASES = { light: '#FFFFFF', dark: '#1C1C1C' };
+exports.TASTE_MAIN_COLORS = {
+    sweet: '#FF9900', sour: '#FFD600', bitter: '#95C900',
+    salty: '#7299FF', umami: '#B372B4', fat: '#95867A',
+};
+/** Both appearances share the vivid taste identity; surfaces and chart roles adapt. */
+exports.DARK_TASTE_MAIN_COLORS = exports.TASTE_MAIN_COLORS;
+exports.TASTE_MAIN_COLORS_BY_MODE = { light: exports.TASTE_MAIN_COLORS, dark: exports.DARK_TASTE_MAIN_COLORS };
+function mixTasteWithBase(main, basePercent, mode) {
+    return '#' + [1, 3, 5].map(offset => {
+        const channel = parseInt(main.slice(offset, offset + 2), 16);
+        const base = parseInt(exports.TASTE_TINT_BASES[mode].slice(offset, offset + 2), 16);
+        return Math.floor((channel * (100 - basePercent) + base * basePercent + 50) / 100).toString(16).padStart(2, '0');
+    }).join('').toUpperCase();
+}
+function mixTasteWithWhite(main, whitePercent) {
+    return mixTasteWithBase(main, whitePercent, 'light');
+}
+exports.TASTE_TINTS_BY_MODE = Object.fromEntries(['light', 'dark'].map(mode => [mode,
+    Object.fromEntries(exports.TASTE_IDS.map(id => [id,
+        Object.fromEntries(exports.TASTE_TINT_STEPS.map(step => [step, mixTasteWithBase(exports.TASTE_MAIN_COLORS_BY_MODE[mode][id], step, mode)])),
+    ])),
+]));
+/** Existing unthemed consumers retain the Light palette. */
+exports.TASTE_TINTS = exports.TASTE_TINTS_BY_MODE.light;
+exports.TASTE_COLOR_ROLE_STEPS = { tintSoft: 80, tintSoftBorder: 80, borderSubtle: 80, borderDefault: 70, borderStrong: 60, tintSurface: 80, chartTrack: 80 };
 exports.TASTE_TOKENS = {
     sweet: {
         label: '단맛',
         palette: {
-            main: '#FF9900',
+            main: exports.TASTE_MAIN_COLORS.sweet,
+            chartTrack: exports.TASTE_TINTS.sweet[exports.TASTE_COLOR_ROLE_STEPS.chartTrack],
             dark: '#CC7A00',
             light: '#FFCC80',
             bg: '#FFD699',
-            tintSoft: 'rgba(255, 153, 0, 0.05)',
-            tintSoftBorder: 'rgba(255, 153, 0, 0.18)',
-            tintSurface: '#FFEBCC',
+            tintSoft: exports.TASTE_TINTS.sweet[exports.TASTE_COLOR_ROLE_STEPS.tintSoft],
+            tintSoftBorder: exports.TASTE_TINTS.sweet[exports.TASTE_COLOR_ROLE_STEPS.tintSoftBorder],
+            borderSubtle: exports.TASTE_TINTS.sweet[exports.TASTE_COLOR_ROLE_STEPS.borderSubtle],
+            borderDefault: exports.TASTE_TINTS.sweet[exports.TASTE_COLOR_ROLE_STEPS.borderDefault],
+            borderStrong: exports.TASTE_TINTS.sweet[exports.TASTE_COLOR_ROLE_STEPS.borderStrong],
+            borderAccent: '#FF9900',
+            tintSurface: exports.TASTE_TINTS.sweet[exports.TASTE_COLOR_ROLE_STEPS.tintSurface],
             tintSurfaceSubText: '#896735',
             tintSurfaceText: '#6F4609',
             gradient: 'linear-gradient(135deg, #FF9900, #FFB84D)',
@@ -668,17 +771,23 @@ exports.TASTE_TOKENS = {
     },
     sour: {
         label: '신맛',
+        // UI roles alias the white-mix scale. Measurement keeps its dedicated ramp.
         palette: {
-            main: '#FBC02D',
+            main: exports.TASTE_MAIN_COLORS.sour,
+            chartTrack: exports.TASTE_TINTS.sour[exports.TASTE_COLOR_ROLE_STEPS.chartTrack],
             dark: '#C99A00',
             light: '#FDD835',
             bg: '#FFEF99',
-            tintSoft: 'rgba(251, 192, 45, 0.05)',
-            tintSoftBorder: 'rgba(251, 192, 45, 0.18)',
-            tintSurface: '#FFF7CC',
+            tintSoft: exports.TASTE_TINTS.sour[exports.TASTE_COLOR_ROLE_STEPS.tintSoft],
+            tintSoftBorder: exports.TASTE_TINTS.sour[exports.TASTE_COLOR_ROLE_STEPS.tintSoftBorder],
+            borderSubtle: exports.TASTE_TINTS.sour[exports.TASTE_COLOR_ROLE_STEPS.borderSubtle],
+            borderDefault: exports.TASTE_TINTS.sour[exports.TASTE_COLOR_ROLE_STEPS.borderDefault],
+            borderStrong: exports.TASTE_TINTS.sour[exports.TASTE_COLOR_ROLE_STEPS.borderStrong],
+            borderAccent: '#FFD600',
+            tintSurface: exports.TASTE_TINTS.sour[exports.TASTE_COLOR_ROLE_STEPS.tintSurface],
             tintSurfaceSubText: '#897C35',
             tintSurfaceText: '#6F5F09',
-            gradient: 'linear-gradient(135deg, #FBC02D, #FFD54F)',
+            gradient: 'linear-gradient(135deg, #FFD600, #FFD54F)',
         },
         measurement: {
             accent: '#FFD600',
@@ -706,13 +815,18 @@ exports.TASTE_TOKENS = {
     bitter: {
         label: '쓴맛',
         palette: {
-            main: '#95C900',
+            main: exports.TASTE_MAIN_COLORS.bitter,
+            chartTrack: exports.TASTE_TINTS.bitter[exports.TASTE_COLOR_ROLE_STEPS.chartTrack],
             dark: '#6E9600',
             light: '#E6EE9C',
             bg: '#E0EBB4',
-            tintSoft: 'rgba(149, 201, 0, 0.05)',
-            tintSoftBorder: 'rgba(149, 201, 0, 0.18)',
-            tintSurface: '#EAF4CC',
+            tintSoft: exports.TASTE_TINTS.bitter[exports.TASTE_COLOR_ROLE_STEPS.tintSoft],
+            tintSoftBorder: exports.TASTE_TINTS.bitter[exports.TASTE_COLOR_ROLE_STEPS.tintSoftBorder],
+            borderSubtle: exports.TASTE_TINTS.bitter[exports.TASTE_COLOR_ROLE_STEPS.borderSubtle],
+            borderDefault: exports.TASTE_TINTS.bitter[exports.TASTE_COLOR_ROLE_STEPS.borderDefault],
+            borderStrong: exports.TASTE_TINTS.bitter[exports.TASTE_COLOR_ROLE_STEPS.borderStrong],
+            borderAccent: '#95C900',
+            tintSurface: exports.TASTE_TINTS.bitter[exports.TASTE_COLOR_ROLE_STEPS.tintSurface],
             tintSurfaceSubText: '#70794B',
             tintSurfaceText: '#505B24',
             gradient: 'linear-gradient(135deg, #95C900, #AED581)',
@@ -743,13 +857,18 @@ exports.TASTE_TOKENS = {
     salty: {
         label: '짠맛',
         palette: {
-            main: '#7299FF',
+            main: exports.TASTE_MAIN_COLORS.salty,
+            chartTrack: exports.TASTE_TINTS.salty[exports.TASTE_COLOR_ROLE_STEPS.chartTrack],
             dark: '#4A70CC',
             light: '#90CAF9',
             bg: '#C6D6FF',
-            tintSoft: 'rgba(114, 153, 255, 0.05)',
-            tintSoftBorder: 'rgba(114, 153, 255, 0.18)',
-            tintSurface: '#E3EBFF',
+            tintSoft: exports.TASTE_TINTS.salty[exports.TASTE_COLOR_ROLE_STEPS.tintSoft],
+            tintSoftBorder: exports.TASTE_TINTS.salty[exports.TASTE_COLOR_ROLE_STEPS.tintSoftBorder],
+            borderSubtle: exports.TASTE_TINTS.salty[exports.TASTE_COLOR_ROLE_STEPS.borderSubtle],
+            borderDefault: exports.TASTE_TINTS.salty[exports.TASTE_COLOR_ROLE_STEPS.borderDefault],
+            borderStrong: exports.TASTE_TINTS.salty[exports.TASTE_COLOR_ROLE_STEPS.borderStrong],
+            borderAccent: '#7299FF',
+            tintSurface: exports.TASTE_TINTS.salty[exports.TASTE_COLOR_ROLE_STEPS.tintSurface],
             tintSurfaceSubText: '#5A6789',
             tintSurfaceText: '#36466F',
             gradient: 'linear-gradient(135deg, #7299FF, #9FBFFF)',
@@ -780,13 +899,18 @@ exports.TASTE_TOKENS = {
     umami: {
         label: '감칠맛',
         palette: {
-            main: '#B372B4',
+            main: exports.TASTE_MAIN_COLORS.umami,
+            chartTrack: exports.TASTE_TINTS.umami[exports.TASTE_COLOR_ROLE_STEPS.chartTrack],
             dark: '#8A5490',
             light: '#CE93D8',
             bg: '#E1C7E1',
-            tintSoft: 'rgba(179, 114, 180, 0.05)',
-            tintSoftBorder: 'rgba(179, 114, 180, 0.18)',
-            tintSurface: '#F0E3F0',
+            tintSoft: exports.TASTE_TINTS.umami[exports.TASTE_COLOR_ROLE_STEPS.tintSoft],
+            tintSoftBorder: exports.TASTE_TINTS.umami[exports.TASTE_COLOR_ROLE_STEPS.tintSoftBorder],
+            borderSubtle: exports.TASTE_TINTS.umami[exports.TASTE_COLOR_ROLE_STEPS.borderSubtle],
+            borderDefault: exports.TASTE_TINTS.umami[exports.TASTE_COLOR_ROLE_STEPS.borderDefault],
+            borderStrong: exports.TASTE_TINTS.umami[exports.TASTE_COLOR_ROLE_STEPS.borderStrong],
+            borderAccent: '#B372B4',
+            tintSurface: exports.TASTE_TINTS.umami[exports.TASTE_COLOR_ROLE_STEPS.tintSurface],
             tintSurfaceSubText: '#705B70',
             tintSurfaceText: '#513751',
             gradient: 'linear-gradient(135deg, #B372B4, #CE93D8)',
@@ -817,13 +941,18 @@ exports.TASTE_TOKENS = {
     fat: {
         label: '지방맛',
         palette: {
-            main: '#95867A',
+            main: exports.TASTE_MAIN_COLORS.fat,
+            chartTrack: exports.TASTE_TINTS.fat[exports.TASTE_COLOR_ROLE_STEPS.chartTrack],
             dark: '#6B5E54',
             light: '#BCAAA4',
             bg: '#D5CFCA',
-            tintSoft: 'rgba(149, 134, 122, 0.05)',
-            tintSoftBorder: 'rgba(149, 134, 122, 0.18)',
-            tintSurface: '#EAE7E4',
+            tintSoft: exports.TASTE_TINTS.fat[exports.TASTE_COLOR_ROLE_STEPS.tintSoft],
+            tintSoftBorder: exports.TASTE_TINTS.fat[exports.TASTE_COLOR_ROLE_STEPS.tintSoftBorder],
+            borderSubtle: exports.TASTE_TINTS.fat[exports.TASTE_COLOR_ROLE_STEPS.borderSubtle],
+            borderDefault: exports.TASTE_TINTS.fat[exports.TASTE_COLOR_ROLE_STEPS.borderDefault],
+            borderStrong: exports.TASTE_TINTS.fat[exports.TASTE_COLOR_ROLE_STEPS.borderStrong],
+            borderAccent: '#95867A',
+            tintSurface: exports.TASTE_TINTS.fat[exports.TASTE_COLOR_ROLE_STEPS.tintSurface],
             tintSurfaceSubText: '#66625D',
             tintSurfaceText: '#453F3A',
             gradient: 'linear-gradient(135deg, #95867A, #B0A49A)',
@@ -859,7 +988,21 @@ exports.NEUTRAL_TASTE_TOKENS = {
     label: '모든맛',
     palette: {
         main: '#7A7A7A',
+        tint80: mixTasteWithBase('#7A7A7A', 80, 'light'),
         tintSurface: '#E4E4E4',
+    },
+};
+/** Sheet surface and the presenting screen. Keep the current platform geometry. */
+exports.SHEET_PRESENTATION_TOKENS = {
+    native: {
+        background: { scale: 0.9, offsetY: 10, radius: 20, dimOpacity: 0.6, shadowY: 0, shadowBlur: 0, shadowOpacity: 0 },
+        surface: { heightRatio: 0.98, topInset: 12, radius: 32, grabberWidth: 36, grabberHeight: 5 },
+        drag: { minimumDistance: 6, dismissProgress: 0.32 },
+    },
+    web: {
+        background: { scale: 0.9, offsetY: 30, radius: 24, dimOpacity: 0.6, shadowY: 20, shadowBlur: 60, shadowOpacity: 0.24 },
+        surface: { heightRatio: 0.95, topInset: 12, radius: 20, grabberWidth: 40, grabberHeight: 6 },
+        motion: { durationMs: exports.MOTION_TOKENS.durationMs.slow, radiusDurationMs: exports.MOTION_TOKENS.durationMs.slowest, easing: exports.MOTION_TOKENS.easing.entrance },
     },
 };
 exports.DESIGN_TOKENS = {
@@ -869,12 +1012,24 @@ exports.DESIGN_TOKENS = {
     radius: exports.RADIUS_TOKENS,
     typography: exports.TYPOGRAPHY_TOKENS,
     motion: exports.MOTION_TOKENS,
+    sheetPresentation: exports.SHEET_PRESENTATION_TOKENS,
     icon: exports.ICON_TOKENS,
     dataViz: exports.DATA_VIZ_TOKENS,
     layout: exports.LAYOUT_TOKENS,
     components: exports.COMPONENT_TOKENS,
     taste: exports.TASTE_TOKENS,
 };
+
+},
+"brand-launch/src/TasteDataCategoryMotion/colors.ts":function(module,exports,require){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.EMPTY_RING_COLOR = exports.motionTint = void 0;
+/** Source role marker; product renderers resolve Light tint/60 and Dark tint/70 on page backgrounds. */
+const motionTint = ({ tintSurface }) => tintSurface;
+exports.motionTint = motionTint;
+/** Presentation-only empty ring; renderers resolve the mode-specific empty foreground. */
+exports.EMPTY_RING_COLOR = '#E4E4E4';
 
 },
 "brand-launch/src/TasteDataCategoryMotion/change.ts":function(module,exports,require){
@@ -971,25 +1126,10 @@ function changeFrame(data, time, options = {}) {
 }
 
 },
-"brand-launch/src/TasteDataCategoryMotion/colors.ts":function(module,exports,require){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.motionTint = exports.MOTION_TINT_PIGMENT = void 0;
-/** Shared filled-dot tint: retain the surface tone with a gentle amount of its own pigment. */
-exports.MOTION_TINT_PIGMENT = 0.16;
-const motionTint = ({ main, tintSurface }) => {
-    const base = parseInt(tintSurface.slice(1), 16);
-    const pigment = parseInt(main.slice(1), 16);
-    return "#" + [16, 8, 0].map((shift) => Math.round(((base >> shift) & 255) * (1 - exports.MOTION_TINT_PIGMENT) + ((pigment >> shift) & 255) * exports.MOTION_TINT_PIGMENT)
-        .toString(16).padStart(2, "0")).join("");
-};
-exports.motionTint = motionTint;
-
-},
 "brand-launch/src/TasteDataCategoryMotion/context.ts":function(module,exports,require){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.contextIdleZigzag = exports.CONTEXT_IDLE = exports.CONTEXT_INTRO = exports.contextRingRadius = exports.contextRingSlots = exports.CONTEXT_ZIGZAG = exports.CONTEXT_DOT_PITCH = exports.CONTEXT_DOT_RADIUS = void 0;
+exports.contextIdleZigzag = exports.CONTEXT_IDLE = exports.CONTEXT_INTRO = exports.contextRingScale = exports.contextRingRadius = exports.contextRingSlots = exports.CONTEXT_ZIGZAG = exports.CONTEXT_DOT_PITCH = exports.CONTEXT_DOT_RADIUS = void 0;
 exports.contextPhase = contextPhase;
 exports.dotRingMotion = dotRingMotion;
 exports.contextFrame = contextFrame;
@@ -1000,7 +1140,7 @@ const designTokens_1 = require("src/constants/designTokens.ts");
 exports.CONTEXT_DOT_RADIUS = 9.5;
 exports.CONTEXT_DOT_PITCH = 26;
 exports.CONTEXT_ZIGZAG = 6;
-// The approved settled zigzag and the animated radial travel now both use ±6.
+// Base settled zigzag and radial travel are ±6, before fitting the whole multi-ring layout.
 const CONTEXT_LAYOUT_OFFSET = 6;
 // Even slot counts close the alternating inward/outward pattern at every seam.
 const contextRingSlots = (layer) => 12 + layer * 4;
@@ -1013,6 +1153,11 @@ const contextRingRadius = (layer) => {
         (2 * Math.sin(halfStep)));
 };
 exports.contextRingRadius = contextRingRadius;
+/** Match the ~303px envelope of the other rings in a 340px view without enlarging dots. */
+const contextRingScale = (layerCount) => layerCount > 0
+    ? (285 - exports.CONTEXT_DOT_RADIUS) / ((0, exports.contextRingRadius)(layerCount - 1) + exports.CONTEXT_ZIGZAG)
+    : 1;
+exports.contextRingScale = contextRingScale;
 exports.CONTEXT_INTRO = 1.8;
 exports.CONTEXT_IDLE = 8;
 const TAU = Math.PI * 2;
@@ -1059,12 +1204,13 @@ function dotRingMotion(layerCount, time, options = {}) {
     const phase = contextPhase(time, options);
     const entrance = (0, context_entry_1.contextEntry)(Array.from({ length: layerCount }, (_, i) => (0, exports.contextRingSlots)(i) * 3).reduce((a, b) => a + b, 0), (phase.entry / exports.CONTEXT_INTRO) * taste_motion_1.insightIntroDuration);
     let entryIndex = 0;
+    const scale = (0, exports.contextRingScale)(layerCount);
     const zigzagPhase = phase.reduced ? 1 : (0, exports.contextIdleZigzag)(phase.idle);
     const layers = Array.from({ length: layerCount }, (_, layer) => {
         const count = (0, exports.contextRingSlots)(layer) * 3, radius = (0, exports.contextRingRadius)(layer);
         return Array.from({ length: count }, (_, slot) => {
             const angle = -Math.PI / 2 + (TAU * (slot + 0.5)) / count;
-            const target = polar(angle, radius + (slot % 2 === 0 ? 1 : -1) * exports.CONTEXT_ZIGZAG * zigzagPhase);
+            const target = polar(angle, (radius + (slot % 2 === 0 ? 1 : -1) * exports.CONTEXT_ZIGZAG * zigzagPhase) * scale);
             const source = entrance.dots[entryIndex++];
             return {
                 x: source.x + (target.x - source.x) * entrance.expansion,
@@ -1188,7 +1334,7 @@ function contextFrame(data, time, options = {}) {
             f.dots.push(motion.seed);
         labels.forEach((label, c) => f.labels.push({
             id: "response:" + c,
-            ...polar(-Math.PI / 2 + ((c + 0.5) * TAU) / 3, 286),
+            ...polar(-Math.PI / 2 + ((c + 0.5) * TAU) / 3, 308),
             text: label,
             anchor: "middle",
         }));
@@ -1284,7 +1430,7 @@ function contextEntry(count, time) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.insightFrame = exports.insightInertia = exports.insightDragDelta = exports.insightAlignment = exports.insightExpansion = exports.insightIntroDuration = exports.insightFillEnd = exports.dotColorIndex = exports.dotOpacity = exports.motionPoints = exports.feedbackEntry = exports.rotationAlignedTime = exports.feedbackPaths = exports.feedbackRings = exports.feedbackMorph = exports.analysisLineColorIndex = exports.analysisLineOpacity = exports.analysisPoints = exports.centeredAnalysisCircle = exports.analysisCircle = exports.analysisTravelDuration = exports.duration = exports.analysisMoveStarts = exports.feedbackEndDuration = exports.feedbackTransitionDuration = exports.rotationTransitionDuration = exports.analysisTimeScale = exports.palette = exports.styles = void 0;
 exports.styles = ["analysis", "detailMatrix", "insightRing", "rotatingLayers", "feedbackRings"];
-exports.palette = ["#FF9900", "#FBC02D", "#95C900", "#7299FF", "#B372B4", "#95867A"];
+exports.palette = ["#FF9900", "#FFD600", "#95C900", "#7299FF", "#B372B4", "#95867A"];
 exports.analysisTimeScale = 1.7;
 exports.rotationTransitionDuration = 1.2;
 exports.feedbackTransitionDuration = 1.7;
@@ -2167,7 +2313,7 @@ function experienceFrame(data, time, options = {}) {
             radius = radii[index];
             const base = mix(scatterFrame.dots[mark.source].opacity, 0.58, ease((t - taste_motion_1.insightIntroDuration) / 0.4));
             if (mark.role === "record") {
-                opacity = mix(base, 0.98, growths[index]);
+                opacity = mix(base, 1, growths[index]);
             }
             else
                 opacity = mix(base, 1, tints[index]);

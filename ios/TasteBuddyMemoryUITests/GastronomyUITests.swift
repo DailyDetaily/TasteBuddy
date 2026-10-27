@@ -54,6 +54,238 @@ final class GastronomyUITests: XCTestCase {
             app.terminate()
         }
     }
+
+    /// Screenshots exercise production presenters against isolated source records. Geometry
+    /// assertions catch horizontal escape; the retained captures are the text-wrap review evidence.
+    func testCopyAllMeasurementCardsAtDefaultSize() {
+        let measurements: [(String, [String])] = [
+            ("경험", ["meals", "measure-메뉴", "measure-식당", "measure-음식 종류", "first", "repeat"]),
+            ("감각", ["presence", "intensity"]),
+            ("취향", ["overall", "liking", "fit"]),
+            ("맥락", ["context-foodKind", "context-target", "context-phase", "context-intensity"]),
+            ("변화", ["change-experience", "change-presence", "change-liking", "change-fit"])
+        ]
+        for (category, ids) in measurements {
+            app.launchArguments = ["--gastronomy-qa", "--gastronomy-reduce-motion", "--gastronomy-copy-comprehensive", "--gastronomy-category=" + category]
+            app.launch()
+            XCTAssertTrue(element("taste-data-card-" + ids[0]).waitForExistence(timeout: 120), app.debugDescription)
+            for id in ids {
+                let identifier = ["first", "repeat"].contains(id) ? "taste-data-" + id : "taste-data-card-" + id
+                let card = element(identifier)
+                reveal(card)
+                positionForCopyCapture(card)
+                assertWithinScreenWidth(card)
+                capture("insight-copy-" + category + "-" + id)
+            }
+            let rail = app.scrollViews.matching(NSPredicate(format: "identifier BEGINSWITH %@", "taste-data-discovery-list-" + category + "-new-")).firstMatch
+            if rail.exists {
+                reveal(rail)
+                let card = rail.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "taste-data-discovery-")).firstMatch
+                XCTAssertTrue(card.exists)
+                assertWithinScreenWidth(card)
+                capture("insight-copy-discovery-" + category)
+            }
+            app.terminate()
+        }
+    }
+
+    /// Captures one real generated card of every active discovery kind, including lower-ranked
+    /// cards behind the existing More button and offscreen cards in each horizontal scope rail.
+    func testCopyEveryDiscoveryKindAtDefaultSize() {
+        let expected: [String: Set<String>] = [
+            "경험": ["restaurantCollection", "menuCooccurrence", "foodKindAcrossRestaurants", "newMenuAtKnownRestaurant"],
+            "감각": ["sensoryCooccurrence"],
+            "취향": ["commonPreference", "repeatedGoodEvaluation", "overallContrast", "familiarTasteInNewMenu", "patternException"],
+            "맥락": ["preferredIntensity", "conditionalContrast"],
+            "변화": ["timeGap", "lastYear", "revisitComparison", "periodChange", "sensoryPeriodChange", "fitPeriodChange"]
+        ]
+        var captured = Set<String>()
+        var inventory: [String] = []
+        for category in ["경험", "감각", "취향", "맥락", "변화"] {
+            app.launchArguments = ["--gastronomy-qa", "--gastronomy-reduce-motion", "--gastronomy-copy-comprehensive", "--gastronomy-category=" + category]
+            app.launch()
+            let firstRail = app.scrollViews.matching(NSPredicate(format: "identifier BEGINSWITH %@", "taste-data-discovery-list-" + category + "-new-")).firstMatch
+            XCTAssertTrue(firstRail.waitForExistence(timeout: 120), app.debugDescription)
+            // Each tap adds 30 candidates. Four bounded expansions are more than the source fixture
+            // needs; keeping this bounded also makes a broken loading state a useful test failure.
+            for _ in 0..<4 {
+                let more = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "발견 더 보기")).firstMatch
+                guard more.exists else { break }
+                revealVerticallyForCopy(more)
+                let oldLabel = more.label
+                more.tap()
+                let changed = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                    !more.exists || more.label != oldLabel
+                }, object: nil)
+                XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 15), .completed)
+            }
+            var seenHere = Set<String>()
+            for scope in ["현재 범위에서 발견", "전체 기록에서 발견", "별도 비교 기간에서 발견"] {
+                let rail = element("taste-data-discovery-list-" + category + "-new-" + scope)
+                guard rail.exists else { continue }
+                revealVerticallyForCopy(rail)
+                positionForCopyCapture(rail)
+                let cards = rail.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "taste-data-discovery-"))
+                // HStack keeps the real offscreen cards in the accessibility tree; select the first
+                // example per kind before moving the rail so ranking and read state stay untouched.
+                var representatives: [(String, String)] = []
+                for card in cards.allElementsBoundByIndex {
+                    guard let kind = discoveryCopyKind(label: card.label), seenHere.insert(kind).inserted else { continue }
+                    representatives.append((kind, card.identifier))
+                }
+                for (kind, identifier) in representatives {
+                    let card = cards.matching(identifier: identifier).firstMatch
+                    bringDiscoveryCardIntoView(card, rail: rail)
+                    assertWithinScreenWidth(card)
+                    XCTAssertTrue(card.isHittable, card.label)
+                    capture("insight-copy-discovery-kind-" + kind)
+                    captured.insert(kind)
+                    inventory.append(category + " / " + kind + " / " + card.label)
+                }
+            }
+            XCTAssertEqual(seenHere, expected[category]!, "Missing discovery kinds for " + category + ": " + expected[category]!.subtracting(seenHere).sorted().joined(separator: ", "))
+            app.terminate()
+        }
+        let expectedAll = expected.values.reduce(into: Set<String>()) { $0.formUnion($1) }
+        XCTAssertEqual(captured, expectedAll)
+        let attachment = XCTAttachment(string: inventory.joined(separator: "\n\n"))
+        attachment.name = "insight-copy-discovery-kind-inventory-18"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    private func discoveryCopyKind(label: String) -> String? {
+        if label.hasPrefix("기억 연결") {
+            if label.contains("지난해") { return "lastYear" }
+            if label.contains("기록 간격") { return "timeGap" }
+        }
+        let headers = [
+            "한 식당, 여러 메뉴": "restaurantCollection", "함께 기록한 메뉴": "menuCooccurrence",
+            "여러 식당의 음식 종류": "foodKindAcrossRestaurants", "익숙한 식당의 새 메뉴": "newMenuAtKnownRestaurant",
+            "함께 느낀 감각": "sensoryCooccurrence", "공통 취향": "commonPreference",
+            "반복된 만족": "repeatedGoodEvaluation", "전체와 부분의 차이": "overallContrast",
+            "새 메뉴와 익숙한 취향": "familiarTasteInNewMenu", "다른 한 번의 경험": "patternException",
+            "강도와 알맞음": "preferredIntensity", "조건별 차이": "conditionalContrast",
+            "두 기록 비교": "revisitComparison", "기간별 평가 차이": "periodChange",
+            "감각 기록 비중의 차이": "sensoryPeriodChange", "기간별 알맞음 차이": "fitPeriodChange"
+        ]
+        return headers.first { label.hasPrefix($0.key) }?.value
+    }
+
+    private func revealVerticallyForCopy(_ target: XCUIElement) {
+        for _ in 0..<20 {
+            let frame = target.frame
+            if frame.maxY > app.frame.minY + 120 && frame.minY < app.frame.maxY - 70 { return }
+            let direction: CGFloat = frame.maxY <= app.frame.minY + 120 ? 0.3 : -0.3
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5))
+                .press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5 + direction)))
+        }
+        XCTFail("Could not reveal " + target.identifier)
+    }
+
+    private func bringDiscoveryCardIntoView(_ card: XCUIElement, rail: XCUIElement) {
+        for _ in 0..<80 {
+            let frame = card.frame, viewport = rail.frame.intersection(app.frame)
+            if frame.minX >= viewport.minX - 1 && frame.maxX <= viewport.maxX + 1 { return }
+            let moveLeft = frame.midX > viewport.midX
+            rail.coordinate(withNormalizedOffset: CGVector(dx: moveLeft ? 0.85 : 0.15, dy: 0.5))
+                .press(forDuration: 0.1, thenDragTo: rail.coordinate(withNormalizedOffset: CGVector(dx: moveLeft ? 0.15 : 0.85, dy: 0.5)))
+        }
+        XCTFail("Could not fit discovery card horizontally: " + card.label)
+    }
+
+    func testCopyEqualRatioRetainsChangedMealCounts() {
+        app.launchArguments = ["--gastronomy-qa", "--gastronomy-reduce-motion", "--gastronomy-discovery-examples",
+                               "--gastronomy-category=변화"]
+        app.launch()
+        let card = element("taste-data-card-change-presence")
+        XCTAssertTrue(card.waitForExistence(timeout: 120), app.debugDescription)
+        reveal(card)
+        positionForCopyCapture(card)
+        assertWithinScreenWidth(card)
+        XCTAssertTrue(card.label.contains("100% 유지"), card.label)
+        XCTAssertTrue(card.label.contains("이전 5/5회 → 최근 8/8회"), card.label)
+        capture("insight-copy-equal-ratio-changing-meal-counts")
+        app.terminate()
+    }
+
+    func testCopyLongNamesAtAccessibilitySize() {
+        for (category, id) in [("맥락", "context-intensity"), ("변화", "change-liking")] {
+            app.launchArguments = ["--gastronomy-qa", "--gastronomy-reduce-motion", "--gastronomy-copy-comprehensive",
+                                   "--gastronomy-copy-long-labels", "--gastronomy-category=" + category,
+                                   "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+            app.launch()
+            let card = element("taste-data-card-" + id)
+            XCTAssertTrue(card.waitForExistence(timeout: 120), app.debugDescription)
+            reveal(card)
+            positionForCopyCapture(card)
+            assertWithinScreenWidth(card)
+            // The accessibility frame can be clipped to the visible scroll viewport.
+            // Retain an earlier overlap as well so a tall card's header is not hidden
+            // behind the navigation bar in the review evidence.
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.4))
+                .press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.55)))
+            capture("insight-copy-long-accessibility-top-" + category)
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.7))
+                .press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.4)))
+            capture("insight-copy-long-accessibility-" + category)
+            // A very tall accessible card may occupy more than a viewport; preserve the lower
+            // portion as well instead of treating a vertically scrollable card as truncation.
+            if card.frame.maxY > app.frame.maxY - 30 {
+                app.swipeUp()
+                capture("insight-copy-long-accessibility-lower-" + category)
+            }
+            app.terminate()
+        }
+    }
+
+    func testCopyResponseMissingAndUnresolvedRemainDifferentStates() {
+        for scenario in ["missing", "unresolved", "unclassified", "partial"] {
+            app.launchArguments = ["--gastronomy-qa", "--gastronomy-reduce-motion", "--gastronomy-copy-" + scenario,
+                                   "--gastronomy-category=취향"]
+            app.launch()
+            let card = element("taste-data-card-liking")
+            XCTAssertTrue(card.waitForExistence(timeout: 120), app.debugDescription)
+            reveal(card)
+            positionForCopyCapture(card)
+            assertWithinScreenWidth(card)
+            if scenario == "missing" {
+                XCTAssertTrue(card.label.contains("미응답") || card.label.contains("응답 없음"), card.label)
+            } else if scenario == "partial" {
+                XCTAssertTrue(card.label.contains("식사 1회 응답"), card.label)
+                XCTAssertTrue(card.label.contains("미응답 1"), card.label)
+                XCTAssertTrue(card.label.contains("응답 확인 필요 1"), card.label)
+            } else {
+                XCTAssertTrue(card.label.contains("확인 필요") || card.label.contains("해석 보류"), card.label)
+            }
+            capture("insight-copy-response-" + scenario)
+            app.terminate()
+        }
+    }
+
+    private func assertWithinScreenWidth(_ card: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertFalse(card.label.isEmpty, file: file, line: line)
+        XCTAssertGreaterThan(card.frame.width, 0, file: file, line: line)
+        XCTAssertGreaterThanOrEqual(card.frame.minX, app.frame.minX, file: file, line: line)
+        XCTAssertLessThanOrEqual(card.frame.maxX, app.frame.maxX, file: file, line: line)
+    }
+
+    private func positionForCopyCapture(_ card: XCUIElement) {
+        let top = app.frame.minY + 110, bottom = app.frame.maxY - 30
+        for _ in 0..<8 {
+            let frame = card.frame
+            let distance: CGFloat
+            if frame.height > bottom - top { distance = frame.minY - top }
+            else if frame.minY < top { distance = frame.minY - top }
+            else if frame.maxY > bottom { distance = frame.maxY - bottom }
+            else { return }
+            if abs(distance) < 5 { return }
+            let fraction = min(0.3, max(-0.3, distance / app.frame.height))
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.55))
+                .press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.55 - fraction)))
+        }
+    }
+
     func testFiveCategoriesOpenFromRealHomeAndKeepCorrectRoutes() throws {
         app.launchArguments = ["--gastronomy-qa", "--gastronomy-reduce-motion"]
         app.launch()

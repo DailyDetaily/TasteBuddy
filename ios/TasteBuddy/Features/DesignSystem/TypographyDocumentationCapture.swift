@@ -241,7 +241,7 @@ enum TypographyDocumentationCapture {
         }
     }
 
-    /// Font recipes from HomeSummaryCard and RecommendationMiniCardTextLayout; synthetic copy.
+    /// Font recipes from CompactSummaryCard and RecommendationMiniCardTextLayout; synthetic copy.
     private static var homeComposition: some View {
         let axis = TasteAxis.sweet
         return VStack(alignment: .leading, spacing: 12) {

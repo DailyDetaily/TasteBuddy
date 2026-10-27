@@ -8,6 +8,9 @@ struct TDNativeInput: Sendable {
     let issues: [TDEvidenceIssue]
     let entries: [DiningEntry]
     let nativeObservations: [SensoryObservation]
+    /// Valid current half-star answers retain their own scale for archive presentation.
+    /// The five-category gastronomy contract must not reinterpret these as liking categories.
+    var overallStarObservations: [SensoryObservation] = []
 }
 
 enum TDNativeAdapter {
@@ -99,6 +102,7 @@ enum TDNativeAdapter {
         let excluded = Set(snapshot.personalModel?.excludedEvidence.map(\.id) ?? [])
         let grouped = Dictionary(grouping: snapshot.observations, by: \.id)
         var valid: [TDObservation] = [], native: [SensoryObservation] = []
+        var overallStars: [SensoryObservation] = []
         var matchedAtoms = Set<String>()
         func atomKey(_ entryID: UUID, _ atom: SensoryRuleAtom) -> String {
             let value = (try? encoder.encode(atom.value))?.base64EncodedString() ?? ""
@@ -121,6 +125,7 @@ enum TDNativeAdapter {
                     && (atom.target ?? "whole_dish") == row.target && (atom.phase ?? "unspecified") == row.phase
                     && atom.selectionEvidence == row.selectionEvidence
             }
+            let isOverallStars = facet == .overall && row.scale == DiningOverallEvaluation.starScale
             let invalid: String?
             if rows.contains(where: { $0 != row }) { invalid = "동일 관찰 ID 충돌" }
             else if excluded.contains(id) { invalid = "제외된 근거" }
@@ -128,11 +133,18 @@ enum TDNativeAdapter {
             else if row.independentMealID != entry.mealID { invalid = "식사 연결 불일치" }
             else if (row.knownAt ?? row.recordedAt) > now || (row.observedAt ?? row.recordedAt) > now { invalid = "현재 이후에 알려진 관찰" }
             else if candidate == nil || row.selectionEvidence == nil { invalid = "현재 직접 응답과 관찰 불일치" }
-            else if row.scale != facet.scale { invalid = "알 수 없는 응답 척도" }
+            else if row.scale != facet.scale && !isOverallStars { invalid = "알 수 없는 응답 척도" }
             else { invalid = nil }
             if let invalid {
                 pending(id, entry: entry.id, facet: facet, attribute: row.attribute, reference: row.reference,
                         reason: invalid, evidence: row.selectionEvidence); continue
+            }
+            if isOverallStars {
+                overallStars.append(row)
+                if let candidate { matchedAtoms.insert(atomKey(entry.id, candidate)) }
+                pending(id, entry: entry.id, facet: facet, attribute: row.attribute, reference: row.reference,
+                        reason: "별점 응답은 5단계 호감과 다른 척도예요", evidence: row.selectionEvidence)
+                continue
             }
             if facet == .presence && row.value != .flag(true) { continue }
             if facet != .overall && (row.attribute == nil || row.attribute!.hasSuffix(".unspecified")) { continue }
@@ -172,6 +184,7 @@ enum TDNativeAdapter {
             let choices = Set((parents[key] ?? []).map(\.selection))
             if choices.count == 1 { valid[index].parentSelection = choices.first }
         }
-        return .init(records: records, observations: valid, issues: issues, entries: originals, nativeObservations: native)
+        return .init(records: records, observations: valid, issues: issues, entries: originals, nativeObservations: native,
+                     overallStarObservations: overallStars)
     }
 }

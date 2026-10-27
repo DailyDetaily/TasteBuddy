@@ -1,8 +1,121 @@
 import XCTest
+import SwiftUI
+import UIKit
 @testable import TasteBuddy
 
 @MainActor
 final class NativeAccountDataTests: XCTestCase {
+    func testMenuArchiveInsightsFollowSaveRestoreEditDeleteAndAccountSwitch() async throws {
+        let repository = MemoryNativeAccountRepository()
+        let app = model(repository: repository)
+        app.completeVerifiedEmailAuthEntry(user: accountA)
+        let reference = Date.now, firstDate = reference.addingTimeInterval(-5 * 86400)
+        func wait(_ model: AppModel) async throws {
+            for _ in 0..<600 {
+                if !model.sensoryAnalysisIsUpdating { XCTAssertNil(model.sensoryAnalysisError); return }
+                try await Task.sleep(for: .milliseconds(50))
+            }
+            XCTFail("Archive analysis did not settle")
+        }
+        let first = DiningEntry(restaurant: "검증 식당", restaurantID: "fixture-archive", menu: "검증 메뉴",
+                               observedAt: firstDate, savedAt: firstDate, rating: 0, note: "",
+                               overallEvaluation: DiningOverallEvaluation(starRating: 4.5),
+                               mealTime: .init(source: .confirmed, start: firstDate, confirmedAt: firstDate))
+        app.addDiningEntry(first)
+        try await wait(app)
+        XCTAssertEqual(app.homeArchivePresentation?.menuInsights.newMenus.count, 1)
+        XCTAssertEqual(app.homeArchivePresentation?.menuInsights.satisfiedMenus.count, 1)
+        await app.syncAccountData()
+        let restored = model(repository: repository, restoredUser: accountA)
+        await restored.restoreBackendSessionIfNeeded()
+        try await wait(restored)
+        XCTAssertEqual(restored.homeArchivePresentation?.menuInsights, app.homeArchivePresentation?.menuInsights)
+        let original = try XCTUnwrap(restored.diningEntries.first)
+        var edited = original
+        edited.overallEvaluation = DiningOverallEvaluation(starRating: 3)
+        XCTAssertTrue(restored.updateDiningEntry(edited, expected: original))
+        try await wait(restored)
+        XCTAssertEqual(restored.homeArchivePresentation?.menuInsights.satisfactionPercent, 0)
+        let nextDate = reference.addingTimeInterval(-2 * 86400)
+        let later = DiningEntry(restaurant: first.restaurant, restaurantID: first.restaurantID, menu: first.menu,
+                               observedAt: nextDate, savedAt: nextDate, rating: 0, note: "",
+                               overallEvaluation: DiningOverallEvaluation(starRating: 5),
+                               mealTime: .init(source: .confirmed, start: nextDate, confirmedAt: nextDate))
+        restored.addDiningEntry(later)
+        try await wait(restored)
+        XCTAssertEqual(restored.homeArchivePresentation?.menuInsights.repeatedMenus.first?.mealCount, 2)
+        XCTAssertEqual(restored.homeArchivePresentation?.menuInsights.satisfactionPercent, 0, "A later five-star answer must not replace the first rating")
+        restored.removeDiningEntry(id: first.id)
+        try await wait(restored)
+        XCTAssertEqual(restored.homeArchivePresentation?.menuInsights.satisfactionPercent, 100)
+        XCTAssertTrue(restored.homeArchivePresentation?.menuInsights.repeatedMenus.isEmpty == true)
+        await restored.syncAccountData()
+        _ = await restored.logout()
+        restored.completeVerifiedEmailAuthEntry(user: accountB)
+        XCTAssertNil(restored.homeArchivePresentation)
+        try await wait(restored)
+        XCTAssertEqual(restored.homeArchivePresentation?.menuInsights.mealCount, 0)
+        restored.completeVerifiedEmailAuthEntry(user: accountA)
+        try await wait(restored)
+        XCTAssertEqual(restored.homeArchivePresentation?.menuInsights.satisfiedMenus.count, 1)
+    }
+
+    func testRestaurantReferenceRoundTripEditDeleteAndAccountIsolation() async throws {
+        let store = defaults(), repository = MemoryNativeAccountRepository()
+        let app = model(defaults: store, repository: repository)
+        app.completeVerifiedEmailAuthEntry(user: accountA)
+        var context = DiningRecordContext(restaurant: "원래 상호", restaurantID: "google-confirmed",
+            foodSource: .init(kind: "restaurant", restaurantPlace: .init(name: "Provider name", address: "확인 주소", googlePlaceID: "confirmed")))
+        app.addDiningEntry(context.applying(to: .sample))
+        await app.syncAccountData()
+        let saved = try XCTUnwrap(app.diningEntries.first)
+        let relaunched = model(defaults: store, repository: repository, restoredUser: accountA)
+        await relaunched.restoreBackendSessionIfNeeded()
+        XCTAssertEqual(relaunched.diningEntries.first?.foodSource?.restaurantPlace, context.foodSource?.restaurantPlace)
+        context.selectRestaurant(name: "다른 지점", id: "kakao-next", place: .init(name: "다른 지점", address: "다른 주소", kakaoPlaceID: "next"))
+        XCTAssertTrue(relaunched.updateDiningEntry(context.applying(to: saved), expected: saved))
+        await relaunched.syncAccountData()
+        XCTAssertEqual(relaunched.diningEntries.first?.linkedRestaurantSummary?.placeReference?.kakaoPlaceID, "next")
+        _ = await relaunched.logout()
+        relaunched.completeVerifiedEmailAuthEntry(user: accountB)
+        XCTAssertTrue(relaunched.diningEntries.isEmpty)
+        relaunched.completeVerifiedEmailAuthEntry(user: accountA)
+        XCTAssertEqual(relaunched.diningEntries.first?.restaurantID, "kakao-next")
+        relaunched.removeDiningEntry(id: saved.id)
+        await relaunched.syncAccountData()
+        XCTAssertTrue(relaunched.diningEntries.isEmpty)
+    }
+
+    func testRecordContextSheetRendersUnknownAndConfirmedStates() async throws {
+        let app = AppModel.preview(authEntryComplete: true, onboardingComplete: true, authRepository: FixtureBackendAuthRepository())
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previousWindow = scene.windows.first { $0.isKeyWindow }
+        let window = UIWindow(windowScene: scene)
+        defer { window.isHidden = true; window.rootViewController = nil; previousWindow?.makeKey() }
+        for confirmed in [false, true] {
+            let date = Date.now.addingTimeInterval(-86400)
+            let context = DiningRecordContext(restaurant: confirmed ? "검증 식당 · A 지점" : "",
+                restaurantID: confirmed ? "fixture-place" : nil,
+                mealTime: confirmed ? .init(source: .confirmed, start: date, confirmedAt: .now) : .init(source: .recordedOnly),
+                foodSource: confirmed ? .init(kind: "restaurant") : nil)
+            let host = UIHostingController(rootView: DiningRecordContextSheet(context: context, suggestedDate: date, onConfirm: { _ in })
+                .environmentObject(app).environment(\.colorScheme, .light))
+            window.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
+            window.rootViewController = host
+            window.makeKeyAndVisible()
+            try await Task.sleep(for: .milliseconds(450))
+            host.view.layoutIfNeeded()
+            let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+                window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+            }
+            XCTAssertEqual(image.size.width, 402)
+            let attachment = XCTAttachment(image: image)
+            attachment.name = confirmed ? "record-context-confirmed" : "record-context-needs-confirmation"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
+    }
+
     private let accountA = BackendAuthUserSummary(id: "11111111-1111-4111-8111-111111111111", email: "a@example.com", isAnonymous: false)
     private let accountB = BackendAuthUserSummary(id: "22222222-2222-4222-8222-222222222222", email: "b@example.com", isAnonymous: false)
     private func defaults() -> UserDefaults {
@@ -72,6 +185,139 @@ final class NativeAccountDataTests: XCTestCase {
         _ = await app.logout()
         app.completeAuthEntry()
         XCTAssertTrue(app.diningEntries.isEmpty, "계정에 귀속한 게스트 기록을 공용 게스트 공간에 남기지 않는다.")
+    }
+
+    func testBackupOutageKeepsReadableAccountAnalysisAcrossRelaunchAndRetry() async throws {
+        let store = defaults(), repository = MemoryNativeAccountRepository()
+        repository.failure = URLError(.notConnectedToInternet)
+        let app = model(defaults: store, repository: repository)
+        app.completeVerifiedEmailAuthEntry(user: accountA)
+        app.addDiningEntry(.sample)
+        let original = app.diningEntries
+        await app.syncAccountData()
+
+        func settle(_ app: AppModel) async throws {
+            for _ in 0..<600 {
+                if !app.sensoryAnalysisIsUpdating { return }
+                try await Task.sleep(for: .milliseconds(50))
+            }
+            XCTFail("Analysis did not settle")
+        }
+        try await settle(app)
+        XCTAssertNotNil(app.accountDataSyncError)
+        XCTAssertNil(app.sensoryAnalysisError, "Backup availability is separate from readable local analysis")
+        XCTAssertEqual(app.sensoryAnalysis.completedExperienceCount, 1)
+        XCTAssertNotNil(app.homeArchivePresentation)
+
+        let restored = model(defaults: store, repository: repository, restoredUser: accountA)
+        await restored.restoreBackendSessionIfNeeded()
+        try await settle(restored)
+        XCTAssertEqual(restored.diningEntries, original)
+        XCTAssertNotNil(restored.accountDataSyncError)
+        XCTAssertNil(restored.sensoryAnalysisError)
+        XCTAssertNotNil(restored.homeArchivePresentation)
+
+        repository.failure = nil
+        await restored.syncAccountData()
+        XCTAssertNil(restored.accountDataSyncError)
+        XCTAssertEqual(restored.diningEntries, original)
+        XCTAssertNotNil(repository.rows[accountA.id])
+    }
+
+    func testBackupErrorCannotReplaceUnreadableAnalysisSourceError() async {
+        let store = defaults(), repository = MemoryNativeAccountRepository()
+        let key = NativeAccountStorageKey.diningEntries
+        let original = Data("unreadable source".utf8)
+        store.set(original, forKey: key)
+        repository.failure = URLError(.notConnectedToInternet)
+        let app = model(defaults: store, repository: repository, restoredUser: accountA)
+        await app.restoreBackendSessionIfNeeded()
+        XCTAssertNotNil(app.accountDataSyncError)
+        app.refreshSensoryAnalysis()
+        XCTAssertEqual(app.sensoryAnalysisError, NativeAccountDataError.invalidSource.localizedDescription)
+        XCTAssertNil(app.homeArchivePresentation)
+        XCTAssertEqual(store.data(forKey: key), original)
+        XCTAssertTrue(app.diningEntries.isEmpty)
+    }
+
+    func testBackupFailureStillRendersLocalSummaryCards() async throws {
+        let repository = MemoryNativeAccountRepository()
+        repository.failure = URLError(.notConnectedToInternet)
+        let app = model(repository: repository)
+        app.completeVerifiedEmailAuthEntry(user: accountA)
+        let date = Date.now
+        app.addDiningEntry(.init(restaurant: "검증 식당", restaurantID: "fixture-restaurant", menu: "국물",
+            date: date, observedAt: date, savedAt: date, rating: 0, note: "",
+            overallEvaluation: .init(response: .liked),
+            mealTime: .init(source: .confirmed, start: date, confirmedAt: date)))
+        await app.syncAccountData()
+        for _ in 0..<600 where app.sensoryAnalysisIsUpdating {
+            try await Task.sleep(for: .milliseconds(50))
+        }
+        let archive = try XCTUnwrap(app.homeArchivePresentation)
+        XCTAssertTrue(archive.sections.flatMap(\.cards).allSatisfy { $0.data.archiveChart?.hasData == true })
+        XCTAssertNil(app.sensoryAnalysisError)
+        XCTAssertNotNil(app.accountDataSyncError)
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previousWindow = scene.windows.first { $0.isKeyWindow }
+        let window = UIWindow(windowScene: scene)
+        defer { window.isHidden = true; window.rootViewController = nil; previousWindow?.makeKey() }
+        let host = UIHostingController(rootView: ScrollView {
+            VStack(spacing: 24) { HomeArchiveMetricsSection() }.padding(20)
+        }.environmentObject(app).background(TBColor.page).environment(\.colorScheme, .light))
+        window.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
+        window.rootViewController = host
+        window.makeKeyAndVisible()
+        try await Task.sleep(for: .milliseconds(400))
+        host.view.layoutIfNeeded()
+        let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+            window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+        }
+        let attachment = XCTAttachment(image: image)
+        attachment.name = "local-summary-during-backup-outage"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    func testSummaryGraphsRestoreOnlyTheirAccountAndLoseDeletedComparisonEvidence() async throws {
+        let repository = MemoryNativeAccountRepository()
+        let app = model(repository: repository)
+        app.completeVerifiedEmailAuthEntry(user: accountA)
+        let start = Date(timeIntervalSince1970: 1_780_000_000)
+        for index in 0..<6 {
+            let day = start.addingTimeInterval(Double(index) * 86400)
+            app.addDiningEntry(.init(restaurant: "합성 식당", menu: "국물", observedAt: day, savedAt: day,
+                rating: 0, note: "", sensorySelections: [.init(id: "salty-broth-salt", type: .bubble, labelSnapshot: "육수의 짠맛",
+                    intensity: index < 3 ? .light : .strong, target: .broth, phase: .firstBite)],
+                mealTime: .init(source: .confirmed, start: day, confirmedAt: day)))
+        }
+        func wait(_ model: AppModel) async throws {
+            for _ in 0..<600 {
+                if !model.sensoryAnalysisIsUpdating { XCTAssertNil(model.sensoryAnalysisError); return }
+                try await Task.sleep(for: .milliseconds(50))
+            }
+            XCTFail("Analysis did not settle")
+        }
+        func comparisons(_ model: AppModel) -> [TasteChangeSeries] {
+            TasteChangeSeries.summary(TasteChangeSeries.build(perception: model.sensoryAnalysis.perception, survey: []))
+        }
+        try await wait(app)
+        XCTAssertEqual(comparisons(app).first?.points.map(\.value), [0, 2])
+        await app.syncAccountData()
+        let restored = model(repository: repository, restoredUser: accountA)
+        await restored.restoreBackendSessionIfNeeded()
+        try await wait(restored)
+        XCTAssertEqual(comparisons(restored).first?.points.map(\.value), [0, 2])
+        XCTAssertEqual(restored.homeArchivePresentation?.sections, app.homeArchivePresentation?.sections)
+        _ = await restored.logout()
+        restored.completeVerifiedEmailAuthEntry(user: accountB)
+        XCTAssertNil(restored.homeArchivePresentation)
+        XCTAssertTrue(comparisons(restored).isEmpty)
+        try await wait(restored)
+        XCTAssertTrue(restored.homeArchivePresentation?.sections.flatMap(\.cards).allSatisfy { $0.data.archiveChart?.hasData == false } ?? false)
+        app.removeDiningEntry(id: try XCTUnwrap(app.diningEntries.first?.id))
+        try await wait(app)
+        XCTAssertTrue(comparisons(app).isEmpty, "Five meals cannot retain the old two-period comparison")
     }
 
     func testSourceRoundTripsThroughServerToANewDevice() async {

@@ -3,14 +3,7 @@ import Foundation
 enum DiningSensoryRecommendationPolicy {
     static func isSupported(_ evaluation: DiningOverallEvaluation?) -> Bool {
         guard let evaluation else { return false }
-        return evaluation.questionID == "overall_liking"
-            && evaluation.questionVersion == DiningOverallEvaluation.version
-            && evaluation.questionLabelSnapshot == DiningOverallEvaluation.question
-            && DiningOverallEvaluation.Response.allCases.contains(evaluation.responseValue)
-            && evaluation.responseLabelSnapshot == evaluation.responseValue.label
-            && evaluation.target == "whole_dish"
-            && evaluation.phase == "unspecified"
-            && evaluation.unparsedPayload == nil
+        return evaluation.starRating != nil
     }
 
     static func firstBubbleID(

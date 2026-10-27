@@ -228,8 +228,8 @@ enum TBDesignColorTokens {
             static let dark = palette("sweet", "dark", "--tb-taste-sweet-dark", "#CC7A00", .hex(0xCC7A00))
             static let light = palette("sweet", "light", "--tb-taste-sweet-light", "#FFCC80", .hex(0xFFCC80))
             static let bg = palette("sweet", "bg", "--tb-taste-sweet-bg", "#FFD699", .hex(0xFFD699))
-            static let tintSoft = palette("sweet", "tintSoft", "--tb-taste-sweet-tint-soft", "rgba(255, 153, 0, 0.05)", .rgba(255, 153, 0, 0.05))
-            static let tintSoftBorder = palette("sweet", "tintSoftBorder", "--tb-taste-sweet-tint-soft-border", "rgba(255, 153, 0, 0.18)", .rgba(255, 153, 0, 0.18))
+            static let tintSoft = palette("sweet", "tintSoft", "--tb-taste-sweet-tint-soft", "#FFFAF2", .hex(0xFFFAF2))
+            static let tintSoftBorder = palette("sweet", "tintSoftBorder", "--tb-taste-sweet-tint-soft-border", "#FFEBCC", .hex(0xFFEBCC))
             static let tintSurface = palette("sweet", "tintSurface", "--tb-taste-sweet-tint-surface", "#FFEBCC", .hex(0xFFEBCC))
             static let tintSurfaceSubText = palette("sweet", "tintSurfaceSubText", "--tb-taste-sweet-tint-surface-sub-text", "#896735", .hex(0x896735))
             static let tintSurfaceText = palette("sweet", "tintSurfaceText", "--tb-taste-sweet-tint-surface-text", "#6F4609", .hex(0x6F4609))
@@ -251,23 +251,29 @@ enum TBDesignColorTokens {
             static let ringGuideBaseColor = loop("sweet", "ringGuideBaseColor", "#FF9900", .hex(0xFF9900))
             static let glowTransparentColor = loop("sweet", "glowTransparentColor", "#FFEBCC08", .hexRGBA(0xFFEBCC08))
 
-            static let paletteTokens = [main, dark, light, bg, tintSoft, tintSoftBorder, tintSurface, tintSurfaceSubText, tintSurfaceText, gradient]
+            static let whiteTints = TBTasteTint.whitePercents.map { white in
+                let hex = TBTasteTint.hex(0xFF9900, white: white)
+                return palette("sweet", "tint/\(white)", "--tb-taste-sweet-tint-\(white)", String(format: "#%06X", hex), .hex(hex))
+            }
+            static let chartTrack = palette("sweet", "chartTrack", "--tb-taste-sweet-chart-track", "#FFEBCC", .hex(0xFFEBCC))
+
+            static let paletteTokens = [main, dark, light, bg, tintSoft, tintSoftBorder, tintSurface, tintSurfaceSubText, tintSurfaceText, gradient] + [chartTrack] + whiteTints
             static let nodeColors = [node1, node2, node3, node4, node5, node6, node7, node8, node9, node10]
             static let measurementTokens = [accent] + nodeColors + [ringBaseColor, ringBaseColorSoft, ringGuideBaseColor, glowTransparentColor]
             static let all = paletteTokens + measurementTokens
         }
 
         enum Sour {
-            static let main = palette("sour", "main", "--tb-taste-sour-main", "#FBC02D", .hex(0xFBC02D))
+            static let main = palette("sour", "main", "--tb-taste-sour-main", "#FFD600", .hex(0xFFD600))
             static let dark = palette("sour", "dark", "--tb-taste-sour-dark", "#C99A00", .hex(0xC99A00))
             static let light = palette("sour", "light", "--tb-taste-sour-light", "#FDD835", .hex(0xFDD835))
             static let bg = palette("sour", "bg", "--tb-taste-sour-bg", "#FFEF99", .hex(0xFFEF99))
-            static let tintSoft = palette("sour", "tintSoft", "--tb-taste-sour-tint-soft", "rgba(251, 192, 45, 0.05)", .rgba(251, 192, 45, 0.05))
-            static let tintSoftBorder = palette("sour", "tintSoftBorder", "--tb-taste-sour-tint-soft-border", "rgba(251, 192, 45, 0.18)", .rgba(251, 192, 45, 0.18))
+            static let tintSoft = palette("sour", "tintSoft", "--tb-taste-sour-tint-soft", "#FFFDF2", .hex(0xFFFDF2))
+            static let tintSoftBorder = palette("sour", "tintSoftBorder", "--tb-taste-sour-tint-soft-border", "#FFF7CC", .hex(0xFFF7CC))
             static let tintSurface = palette("sour", "tintSurface", "--tb-taste-sour-tint-surface", "#FFF7CC", .hex(0xFFF7CC))
             static let tintSurfaceSubText = palette("sour", "tintSurfaceSubText", "--tb-taste-sour-tint-surface-sub-text", "#897C35", .hex(0x897C35))
             static let tintSurfaceText = palette("sour", "tintSurfaceText", "--tb-taste-sour-tint-surface-text", "#6F5F09", .hex(0x6F5F09))
-            static let gradient = palette("sour", "gradient", "--tb-taste-sour-gradient", "linear-gradient(135deg, #FBC02D, #FFD54F)", .linearGradient(degrees: 135, stops: [0xFBC02D, 0xFFD54F], raw: "linear-gradient(135deg, #FBC02D, #FFD54F)"))
+            static let gradient = palette("sour", "gradient", "--tb-taste-sour-gradient", "linear-gradient(135deg, #FFD600, #FFD54F)", .linearGradient(degrees: 135, stops: [0xFFD600, 0xFFD54F], raw: "linear-gradient(135deg, #FFD600, #FFD54F)"))
 
             static let accent = measurement("sour", "accent", "--tb-taste-sour-accent", "#FFD600", .hex(0xFFD600))
             static let node1 = loop("sour", "nodeColors.0", "#FFF7CC", .hex(0xFFF7CC))
@@ -285,7 +291,13 @@ enum TBDesignColorTokens {
             static let ringGuideBaseColor = loop("sour", "ringGuideBaseColor", "#FFD600", .hex(0xFFD600))
             static let glowTransparentColor = loop("sour", "glowTransparentColor", "#FFF7CC08", .hexRGBA(0xFFF7CC08))
 
-            static let paletteTokens = [main, dark, light, bg, tintSoft, tintSoftBorder, tintSurface, tintSurfaceSubText, tintSurfaceText, gradient]
+            static let whiteTints = TBTasteTint.whitePercents.map { white in
+                let hex = TBTasteTint.hex(0xFFD600, white: white)
+                return palette("sour", "tint/\(white)", "--tb-taste-sour-tint-\(white)", String(format: "#%06X", hex), .hex(hex))
+            }
+            static let chartTrack = palette("sour", "chartTrack", "--tb-taste-sour-chart-track", "#FFF7CC", .hex(0xFFF7CC))
+
+            static let paletteTokens = [main, dark, light, bg, tintSoft, tintSoftBorder, tintSurface, tintSurfaceSubText, tintSurfaceText, gradient] + [chartTrack] + whiteTints
             static let nodeColors = [node1, node2, node3, node4, node5, node6, node7, node8, node9, node10]
             static let measurementTokens = [accent] + nodeColors + [ringBaseColor, ringBaseColorSoft, ringGuideBaseColor, glowTransparentColor]
             static let all = paletteTokens + measurementTokens
@@ -296,8 +308,8 @@ enum TBDesignColorTokens {
             static let dark = palette("bitter", "dark", "--tb-taste-bitter-dark", "#6E9600", .hex(0x6E9600))
             static let light = palette("bitter", "light", "--tb-taste-bitter-light", "#E6EE9C", .hex(0xE6EE9C))
             static let bg = palette("bitter", "bg", "--tb-taste-bitter-bg", "#E0EBB4", .hex(0xE0EBB4))
-            static let tintSoft = palette("bitter", "tintSoft", "--tb-taste-bitter-tint-soft", "rgba(149, 201, 0, 0.05)", .rgba(149, 201, 0, 0.05))
-            static let tintSoftBorder = palette("bitter", "tintSoftBorder", "--tb-taste-bitter-tint-soft-border", "rgba(149, 201, 0, 0.18)", .rgba(149, 201, 0, 0.18))
+            static let tintSoft = palette("bitter", "tintSoft", "--tb-taste-bitter-tint-soft", "#FAFCF2", .hex(0xFAFCF2))
+            static let tintSoftBorder = palette("bitter", "tintSoftBorder", "--tb-taste-bitter-tint-soft-border", "#EAF4CC", .hex(0xEAF4CC))
             static let tintSurface = palette("bitter", "tintSurface", "--tb-taste-bitter-tint-surface", "#EAF4CC", .hex(0xEAF4CC))
             static let tintSurfaceSubText = palette("bitter", "tintSurfaceSubText", "--tb-taste-bitter-tint-surface-sub-text", "#70794B", .hex(0x70794B))
             static let tintSurfaceText = palette("bitter", "tintSurfaceText", "--tb-taste-bitter-tint-surface-text", "#505B24", .hex(0x505B24))
@@ -319,7 +331,13 @@ enum TBDesignColorTokens {
             static let ringGuideBaseColor = loop("bitter", "ringGuideBaseColor", "#95C900", .hex(0x95C900))
             static let glowTransparentColor = loop("bitter", "glowTransparentColor", "#EAF4CC08", .hexRGBA(0xEAF4CC08))
 
-            static let paletteTokens = [main, dark, light, bg, tintSoft, tintSoftBorder, tintSurface, tintSurfaceSubText, tintSurfaceText, gradient]
+            static let whiteTints = TBTasteTint.whitePercents.map { white in
+                let hex = TBTasteTint.hex(0x95C900, white: white)
+                return palette("bitter", "tint/\(white)", "--tb-taste-bitter-tint-\(white)", String(format: "#%06X", hex), .hex(hex))
+            }
+            static let chartTrack = palette("bitter", "chartTrack", "--tb-taste-bitter-chart-track", "#EAF4CC", .hex(0xEAF4CC))
+
+            static let paletteTokens = [main, dark, light, bg, tintSoft, tintSoftBorder, tintSurface, tintSurfaceSubText, tintSurfaceText, gradient] + [chartTrack] + whiteTints
             static let nodeColors = [node1, node2, node3, node4, node5, node6, node7, node8, node9, node10]
             static let measurementTokens = [accent] + nodeColors + [ringBaseColor, ringBaseColorSoft, ringGuideBaseColor, glowTransparentColor]
             static let all = paletteTokens + measurementTokens
@@ -330,8 +348,8 @@ enum TBDesignColorTokens {
             static let dark = palette("salty", "dark", "--tb-taste-salty-dark", "#4A70CC", .hex(0x4A70CC))
             static let light = palette("salty", "light", "--tb-taste-salty-light", "#90CAF9", .hex(0x90CAF9))
             static let bg = palette("salty", "bg", "--tb-taste-salty-bg", "#C6D6FF", .hex(0xC6D6FF))
-            static let tintSoft = palette("salty", "tintSoft", "--tb-taste-salty-tint-soft", "rgba(114, 153, 255, 0.05)", .rgba(114, 153, 255, 0.05))
-            static let tintSoftBorder = palette("salty", "tintSoftBorder", "--tb-taste-salty-tint-soft-border", "rgba(114, 153, 255, 0.18)", .rgba(114, 153, 255, 0.18))
+            static let tintSoft = palette("salty", "tintSoft", "--tb-taste-salty-tint-soft", "#F8FAFF", .hex(0xF8FAFF))
+            static let tintSoftBorder = palette("salty", "tintSoftBorder", "--tb-taste-salty-tint-soft-border", "#E3EBFF", .hex(0xE3EBFF))
             static let tintSurface = palette("salty", "tintSurface", "--tb-taste-salty-tint-surface", "#E3EBFF", .hex(0xE3EBFF))
             static let tintSurfaceSubText = palette("salty", "tintSurfaceSubText", "--tb-taste-salty-tint-surface-sub-text", "#5A6789", .hex(0x5A6789))
             static let tintSurfaceText = palette("salty", "tintSurfaceText", "--tb-taste-salty-tint-surface-text", "#36466F", .hex(0x36466F))
@@ -353,7 +371,13 @@ enum TBDesignColorTokens {
             static let ringGuideBaseColor = loop("salty", "ringGuideBaseColor", "#7299FF", .hex(0x7299FF))
             static let glowTransparentColor = loop("salty", "glowTransparentColor", "#E3EBFF08", .hexRGBA(0xE3EBFF08))
 
-            static let paletteTokens = [main, dark, light, bg, tintSoft, tintSoftBorder, tintSurface, tintSurfaceSubText, tintSurfaceText, gradient]
+            static let whiteTints = TBTasteTint.whitePercents.map { white in
+                let hex = TBTasteTint.hex(0x7299FF, white: white)
+                return palette("salty", "tint/\(white)", "--tb-taste-salty-tint-\(white)", String(format: "#%06X", hex), .hex(hex))
+            }
+            static let chartTrack = palette("salty", "chartTrack", "--tb-taste-salty-chart-track", "#E3EBFF", .hex(0xE3EBFF))
+
+            static let paletteTokens = [main, dark, light, bg, tintSoft, tintSoftBorder, tintSurface, tintSurfaceSubText, tintSurfaceText, gradient] + [chartTrack] + whiteTints
             static let nodeColors = [node1, node2, node3, node4, node5, node6, node7, node8, node9, node10]
             static let measurementTokens = [accent] + nodeColors + [ringBaseColor, ringBaseColorSoft, ringGuideBaseColor, glowTransparentColor]
             static let all = paletteTokens + measurementTokens
@@ -364,8 +388,8 @@ enum TBDesignColorTokens {
             static let dark = palette("umami", "dark", "--tb-taste-umami-dark", "#8A5490", .hex(0x8A5490))
             static let light = palette("umami", "light", "--tb-taste-umami-light", "#CE93D8", .hex(0xCE93D8))
             static let bg = palette("umami", "bg", "--tb-taste-umami-bg", "#E1C7E1", .hex(0xE1C7E1))
-            static let tintSoft = palette("umami", "tintSoft", "--tb-taste-umami-tint-soft", "rgba(179, 114, 180, 0.05)", .rgba(179, 114, 180, 0.05))
-            static let tintSoftBorder = palette("umami", "tintSoftBorder", "--tb-taste-umami-tint-soft-border", "rgba(179, 114, 180, 0.18)", .rgba(179, 114, 180, 0.18))
+            static let tintSoft = palette("umami", "tintSoft", "--tb-taste-umami-tint-soft", "#FBF8FB", .hex(0xFBF8FB))
+            static let tintSoftBorder = palette("umami", "tintSoftBorder", "--tb-taste-umami-tint-soft-border", "#F0E3F0", .hex(0xF0E3F0))
             static let tintSurface = palette("umami", "tintSurface", "--tb-taste-umami-tint-surface", "#F0E3F0", .hex(0xF0E3F0))
             static let tintSurfaceSubText = palette("umami", "tintSurfaceSubText", "--tb-taste-umami-tint-surface-sub-text", "#705B70", .hex(0x705B70))
             static let tintSurfaceText = palette("umami", "tintSurfaceText", "--tb-taste-umami-tint-surface-text", "#513751", .hex(0x513751))
@@ -387,7 +411,13 @@ enum TBDesignColorTokens {
             static let ringGuideBaseColor = loop("umami", "ringGuideBaseColor", "#B372B4", .hex(0xB372B4))
             static let glowTransparentColor = loop("umami", "glowTransparentColor", "#F0E3F008", .hexRGBA(0xF0E3F008))
 
-            static let paletteTokens = [main, dark, light, bg, tintSoft, tintSoftBorder, tintSurface, tintSurfaceSubText, tintSurfaceText, gradient]
+            static let whiteTints = TBTasteTint.whitePercents.map { white in
+                let hex = TBTasteTint.hex(0xB372B4, white: white)
+                return palette("umami", "tint/\(white)", "--tb-taste-umami-tint-\(white)", String(format: "#%06X", hex), .hex(hex))
+            }
+            static let chartTrack = palette("umami", "chartTrack", "--tb-taste-umami-chart-track", "#F0E3F0", .hex(0xF0E3F0))
+
+            static let paletteTokens = [main, dark, light, bg, tintSoft, tintSoftBorder, tintSurface, tintSurfaceSubText, tintSurfaceText, gradient] + [chartTrack] + whiteTints
             static let nodeColors = [node1, node2, node3, node4, node5, node6, node7, node8, node9, node10]
             static let measurementTokens = [accent] + nodeColors + [ringBaseColor, ringBaseColorSoft, ringGuideBaseColor, glowTransparentColor]
             static let all = paletteTokens + measurementTokens
@@ -398,8 +428,8 @@ enum TBDesignColorTokens {
             static let dark = palette("fat", "dark", "--tb-taste-fat-dark", "#6B5E54", .hex(0x6B5E54))
             static let light = palette("fat", "light", "--tb-taste-fat-light", "#BCAAA4", .hex(0xBCAAA4))
             static let bg = palette("fat", "bg", "--tb-taste-fat-bg", "#D5CFCA", .hex(0xD5CFCA))
-            static let tintSoft = palette("fat", "tintSoft", "--tb-taste-fat-tint-soft", "rgba(149, 134, 122, 0.05)", .rgba(149, 134, 122, 0.05))
-            static let tintSoftBorder = palette("fat", "tintSoftBorder", "--tb-taste-fat-tint-soft-border", "rgba(149, 134, 122, 0.18)", .rgba(149, 134, 122, 0.18))
+            static let tintSoft = palette("fat", "tintSoft", "--tb-taste-fat-tint-soft", "#FAF9F8", .hex(0xFAF9F8))
+            static let tintSoftBorder = palette("fat", "tintSoftBorder", "--tb-taste-fat-tint-soft-border", "#EAE7E4", .hex(0xEAE7E4))
             static let tintSurface = palette("fat", "tintSurface", "--tb-taste-fat-tint-surface", "#EAE7E4", .hex(0xEAE7E4))
             static let tintSurfaceSubText = palette("fat", "tintSurfaceSubText", "--tb-taste-fat-tint-surface-sub-text", "#66625D", .hex(0x66625D))
             static let tintSurfaceText = palette("fat", "tintSurfaceText", "--tb-taste-fat-tint-surface-text", "#453F3A", .hex(0x453F3A))
@@ -421,7 +451,13 @@ enum TBDesignColorTokens {
             static let ringGuideBaseColor = loop("fat", "ringGuideBaseColor", "#95867A", .hex(0x95867A))
             static let glowTransparentColor = loop("fat", "glowTransparentColor", "#EAE7E408", .hexRGBA(0xEAE7E408))
 
-            static let paletteTokens = [main, dark, light, bg, tintSoft, tintSoftBorder, tintSurface, tintSurfaceSubText, tintSurfaceText, gradient]
+            static let whiteTints = TBTasteTint.whitePercents.map { white in
+                let hex = TBTasteTint.hex(0x95867A, white: white)
+                return palette("fat", "tint/\(white)", "--tb-taste-fat-tint-\(white)", String(format: "#%06X", hex), .hex(hex))
+            }
+            static let chartTrack = palette("fat", "chartTrack", "--tb-taste-fat-chart-track", "#EAE7E4", .hex(0xEAE7E4))
+
+            static let paletteTokens = [main, dark, light, bg, tintSoft, tintSoftBorder, tintSurface, tintSurfaceSubText, tintSurfaceText, gradient] + [chartTrack] + whiteTints
             static let nodeColors = [node1, node2, node3, node4, node5, node6, node7, node8, node9, node10]
             static let measurementTokens = [accent] + nodeColors + [ringBaseColor, ringBaseColorSoft, ringGuideBaseColor, glowTransparentColor]
             static let all = paletteTokens + measurementTokens
@@ -619,9 +655,9 @@ enum TBDesignColorTokens {
                 static let dark = css("--tb-taste-sweet-dark", "#cc7a00", .hex(0xCC7A00))
                 static let light = css("--tb-taste-sweet-light", "#ffcc80", .hex(0xFFCC80))
                 static let bg = css("--tb-taste-sweet-bg", "#ffd699", .hex(0xFFD699))
-                static let tintSoft = css("--tb-taste-sweet-tint-soft", "rgba(255, 153, 0, 0.05)", .rgba(255, 153, 0, 0.05))
-                static let tintSoftBorder = css("--tb-taste-sweet-tint-soft-border", "rgba(255, 153, 0, 0.18)", .rgba(255, 153, 0, 0.18))
-                static let tintSurface = css("--tb-taste-sweet-tint-surface", "#ffebcc", .hex(0xFFEBCC))
+                static let tintSoft = css("--tb-taste-sweet-tint-soft", "#FFFAF2", .hex(0xFFFAF2))
+                static let tintSoftBorder = css("--tb-taste-sweet-tint-soft-border", "#FFEBCC", .hex(0xFFEBCC))
+                static let tintSurface = css("--tb-taste-sweet-tint-surface", "#FFEBCC", .hex(0xFFEBCC))
                 static let tintSurfaceSubText = css("--tb-taste-sweet-tint-surface-sub-text", "#896735", .hex(0x896735))
                 static let tintSurfaceText = css("--tb-taste-sweet-tint-surface-text", "#6f4609", .hex(0x6F4609))
                 static let gradient = css("--tb-taste-sweet-gradient", "linear-gradient(135deg, #ff9900, #ffb84d)", .linearGradient(degrees: 135, stops: [0xFF9900, 0xFFB84D], raw: "linear-gradient(135deg, #ff9900, #ffb84d)"))
@@ -633,16 +669,16 @@ enum TBDesignColorTokens {
             }
 
             enum Sour {
-                static let main = css("--tb-taste-sour-main", "#fbc02d", .hex(0xFBC02D))
+                static let main = css("--tb-taste-sour-main", "#ffd600", .hex(0xFFD600))
                 static let dark = css("--tb-taste-sour-dark", "#c99a00", .hex(0xC99A00))
                 static let light = css("--tb-taste-sour-light", "#fdd835", .hex(0xFDD835))
                 static let bg = css("--tb-taste-sour-bg", "#ffef99", .hex(0xFFEF99))
-                static let tintSoft = css("--tb-taste-sour-tint-soft", "rgba(251, 192, 45, 0.05)", .rgba(251, 192, 45, 0.05))
-                static let tintSoftBorder = css("--tb-taste-sour-tint-soft-border", "rgba(251, 192, 45, 0.18)", .rgba(251, 192, 45, 0.18))
-                static let tintSurface = css("--tb-taste-sour-tint-surface", "#fff7cc", .hex(0xFFF7CC))
+                static let tintSoft = css("--tb-taste-sour-tint-soft", "#FFFDF2", .hex(0xFFFDF2))
+                static let tintSoftBorder = css("--tb-taste-sour-tint-soft-border", "#FFF7CC", .hex(0xFFF7CC))
+                static let tintSurface = css("--tb-taste-sour-tint-surface", "#FFF7CC", .hex(0xFFF7CC))
                 static let tintSurfaceSubText = css("--tb-taste-sour-tint-surface-sub-text", "#897c35", .hex(0x897C35))
                 static let tintSurfaceText = css("--tb-taste-sour-tint-surface-text", "#6f5f09", .hex(0x6F5F09))
-                static let gradient = css("--tb-taste-sour-gradient", "linear-gradient(135deg, #fbc02d, #ffd54f)", .linearGradient(degrees: 135, stops: [0xFBC02D, 0xFFD54F], raw: "linear-gradient(135deg, #fbc02d, #ffd54f)"))
+                static let gradient = css("--tb-taste-sour-gradient", "linear-gradient(135deg, #ffd600, #ffd54f)", .linearGradient(degrees: 135, stops: [0xFFD600, 0xFFD54F], raw: "linear-gradient(135deg, #ffd600, #ffd54f)"))
                 static let accent = css("--tb-taste-sour-accent", "#ffd600", .hex(0xFFD600))
                 static let ringBase = css("--tb-taste-sour-ring-base", "var(--tb-taste-sour-tint-surface)", .alias(cssVariable: "--tb-taste-sour-tint-surface"))
                 static let ringGuide = css("--tb-taste-sour-ring-guide", "#ffd600", .hex(0xFFD600))
@@ -655,9 +691,9 @@ enum TBDesignColorTokens {
                 static let dark = css("--tb-taste-bitter-dark", "#6e9600", .hex(0x6E9600))
                 static let light = css("--tb-taste-bitter-light", "#e6ee9c", .hex(0xE6EE9C))
                 static let bg = css("--tb-taste-bitter-bg", "#e0ebb4", .hex(0xE0EBB4))
-                static let tintSoft = css("--tb-taste-bitter-tint-soft", "rgba(149, 201, 0, 0.05)", .rgba(149, 201, 0, 0.05))
-                static let tintSoftBorder = css("--tb-taste-bitter-tint-soft-border", "rgba(149, 201, 0, 0.18)", .rgba(149, 201, 0, 0.18))
-                static let tintSurface = css("--tb-taste-bitter-tint-surface", "#eaf4cc", .hex(0xEAF4CC))
+                static let tintSoft = css("--tb-taste-bitter-tint-soft", "#FAFCF2", .hex(0xFAFCF2))
+                static let tintSoftBorder = css("--tb-taste-bitter-tint-soft-border", "#EAF4CC", .hex(0xEAF4CC))
+                static let tintSurface = css("--tb-taste-bitter-tint-surface", "#EAF4CC", .hex(0xEAF4CC))
                 static let tintSurfaceSubText = css("--tb-taste-bitter-tint-surface-sub-text", "#70794b", .hex(0x70794B))
                 static let tintSurfaceText = css("--tb-taste-bitter-tint-surface-text", "#505b24", .hex(0x505B24))
                 static let gradient = css("--tb-taste-bitter-gradient", "linear-gradient(135deg, #95c900, #aed581)", .linearGradient(degrees: 135, stops: [0x95C900, 0xAED581], raw: "linear-gradient(135deg, #95c900, #aed581)"))
@@ -673,9 +709,9 @@ enum TBDesignColorTokens {
                 static let dark = css("--tb-taste-salty-dark", "#4a70cc", .hex(0x4A70CC))
                 static let light = css("--tb-taste-salty-light", "#90caf9", .hex(0x90CAF9))
                 static let bg = css("--tb-taste-salty-bg", "#c6d6ff", .hex(0xC6D6FF))
-                static let tintSoft = css("--tb-taste-salty-tint-soft", "rgba(114, 153, 255, 0.05)", .rgba(114, 153, 255, 0.05))
-                static let tintSoftBorder = css("--tb-taste-salty-tint-soft-border", "rgba(114, 153, 255, 0.18)", .rgba(114, 153, 255, 0.18))
-                static let tintSurface = css("--tb-taste-salty-tint-surface", "#e3ebff", .hex(0xE3EBFF))
+                static let tintSoft = css("--tb-taste-salty-tint-soft", "#F8FAFF", .hex(0xF8FAFF))
+                static let tintSoftBorder = css("--tb-taste-salty-tint-soft-border", "#E3EBFF", .hex(0xE3EBFF))
+                static let tintSurface = css("--tb-taste-salty-tint-surface", "#E3EBFF", .hex(0xE3EBFF))
                 static let tintSurfaceSubText = css("--tb-taste-salty-tint-surface-sub-text", "#5a6789", .hex(0x5A6789))
                 static let tintSurfaceText = css("--tb-taste-salty-tint-surface-text", "#36466f", .hex(0x36466F))
                 static let gradient = css("--tb-taste-salty-gradient", "linear-gradient(135deg, #7299ff, #9fbfff)", .linearGradient(degrees: 135, stops: [0x7299FF, 0x9FBFFF], raw: "linear-gradient(135deg, #7299ff, #9fbfff)"))
@@ -691,9 +727,9 @@ enum TBDesignColorTokens {
                 static let dark = css("--tb-taste-umami-dark", "#8a5490", .hex(0x8A5490))
                 static let light = css("--tb-taste-umami-light", "#ce93d8", .hex(0xCE93D8))
                 static let bg = css("--tb-taste-umami-bg", "#e1c7e1", .hex(0xE1C7E1))
-                static let tintSoft = css("--tb-taste-umami-tint-soft", "rgba(179, 114, 180, 0.05)", .rgba(179, 114, 180, 0.05))
-                static let tintSoftBorder = css("--tb-taste-umami-tint-soft-border", "rgba(179, 114, 180, 0.18)", .rgba(179, 114, 180, 0.18))
-                static let tintSurface = css("--tb-taste-umami-tint-surface", "#f0e3f0", .hex(0xF0E3F0))
+                static let tintSoft = css("--tb-taste-umami-tint-soft", "#FBF8FB", .hex(0xFBF8FB))
+                static let tintSoftBorder = css("--tb-taste-umami-tint-soft-border", "#F0E3F0", .hex(0xF0E3F0))
+                static let tintSurface = css("--tb-taste-umami-tint-surface", "#F0E3F0", .hex(0xF0E3F0))
                 static let tintSurfaceSubText = css("--tb-taste-umami-tint-surface-sub-text", "#705b70", .hex(0x705B70))
                 static let tintSurfaceText = css("--tb-taste-umami-tint-surface-text", "#513751", .hex(0x513751))
                 static let gradient = css("--tb-taste-umami-gradient", "linear-gradient(135deg, #b372b4, #ce93d8)", .linearGradient(degrees: 135, stops: [0xB372B4, 0xCE93D8], raw: "linear-gradient(135deg, #b372b4, #ce93d8)"))
@@ -709,9 +745,9 @@ enum TBDesignColorTokens {
                 static let dark = css("--tb-taste-fat-dark", "#6b5e54", .hex(0x6B5E54))
                 static let light = css("--tb-taste-fat-light", "#bcaaa4", .hex(0xBCAAA4))
                 static let bg = css("--tb-taste-fat-bg", "#d5cfca", .hex(0xD5CFCA))
-                static let tintSoft = css("--tb-taste-fat-tint-soft", "rgba(149, 134, 122, 0.05)", .rgba(149, 134, 122, 0.05))
-                static let tintSoftBorder = css("--tb-taste-fat-tint-soft-border", "rgba(149, 134, 122, 0.18)", .rgba(149, 134, 122, 0.18))
-                static let tintSurface = css("--tb-taste-fat-tint-surface", "#eae7e4", .hex(0xEAE7E4))
+                static let tintSoft = css("--tb-taste-fat-tint-soft", "#FAF9F8", .hex(0xFAF9F8))
+                static let tintSoftBorder = css("--tb-taste-fat-tint-soft-border", "#EAE7E4", .hex(0xEAE7E4))
+                static let tintSurface = css("--tb-taste-fat-tint-surface", "#EAE7E4", .hex(0xEAE7E4))
                 static let tintSurfaceSubText = css("--tb-taste-fat-tint-surface-sub-text", "#66625d", .hex(0x66625D))
                 static let tintSurfaceText = css("--tb-taste-fat-tint-surface-text", "#453f3a", .hex(0x453F3A))
                 static let gradient = css("--tb-taste-fat-gradient", "linear-gradient(135deg, #95867a, #b0a49a)", .linearGradient(degrees: 135, stops: [0x95867A, 0xB0A49A], raw: "linear-gradient(135deg, #95867a, #b0a49a)"))

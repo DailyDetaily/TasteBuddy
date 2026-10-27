@@ -11,9 +11,9 @@ struct HomeDiscoveryStackCard: View {
     var body: some View {
         TasteQuestionStackCard(
             question: card.title, supportingText: card.detail, choices: [],
-            photoFilename: card.photoFilename, showsMedia: card.photoFilename != nil,
+            photoFilename: card.photoFilename, showsMedia: true, illustrationSeed: card.id,
             showsStack: showsStack, isStackExpanded: isStackExpanded, onToggleStack: onToggleStack,
-            contentLabel: "발견 · \(card.kind.label)", onOpenContent: onOpen,
+            onOpenContent: onOpen,
             stackAccessibilityLabel: "질문과 발견 카드",
             contentAccessibilityIdentifier: "home-discovery-open-\(card.kind.rawValue)"
         )
@@ -123,7 +123,8 @@ struct TasteDiscoverySummary: View {
     private var entries: [DiningEntry] { appModel.diningEntries.filter { card.entryIDs.contains($0.id) } }
     var body: some View {
         VStack(alignment: .leading, spacing: TBSpacing.x20) {
-            TasteDetailChartPanel {
+            SectionCard(showsBorder: false) {
+                VStack(alignment: .leading, spacing: TBSpacing.x16) {
                 TasteDetailScope(text: card.kind.label)
                 Text(card.title).font(TBFont.bold(18)).foregroundStyle(TBColor.textPrimary)
                     .fixedSize(horizontal: false, vertical: true).accessibilityIdentifier("home-discovery-detail-title")
@@ -132,7 +133,8 @@ struct TasteDiscoverySummary: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 TasteDetailScope(text: card.dataScope.label(calendar: .current))
-            }
+                }
+            }.padding(.horizontal, TBSpacing.page)
             TasteDetailGroup {
                 TasteDetailValueRow(title: "관련 식사", value: "\(Set(entries.map(\.mealID)).count)회", showsDivider: false)
                 TasteDetailValueRow(title: "요리 기록", value: "\(entries.count)개")

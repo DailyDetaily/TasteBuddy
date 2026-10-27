@@ -67,6 +67,7 @@ enum LucideIconName: String, CaseIterable {
     case globe
     case heart
     case image
+    case imagePlus
     case info
     case leaf
     case link
@@ -76,6 +77,7 @@ enum LucideIconName: String, CaseIterable {
     case menu
     case messageCircle
     case minus
+    case orbit
     case pencil
     case phone
     case plus
@@ -89,6 +91,8 @@ enum LucideIconName: String, CaseIterable {
     case sandwich
     case soup
     case sparkles
+    case slidersHorizontal
+    case speech
     case squarePen
     case star
     case store
@@ -184,6 +188,8 @@ enum LucideIconName: String, CaseIterable {
             self = .info
         case "image", "photo", "photo.on.rectangle":
             self = .image
+        case "image-plus", "imagePlus", "photo.badge.plus":
+            self = .imagePlus
         case "leaf.fill":
             self = .leaf
         case "link":
@@ -196,6 +202,8 @@ enum LucideIconName: String, CaseIterable {
             self = .mapPin
         case "minus":
             self = .minus
+        case "orbit":
+            self = .orbit
         case "paperplane":
             self = .send
         case "pencil":
@@ -220,6 +228,10 @@ enum LucideIconName: String, CaseIterable {
             self = .shieldCheck
         case "sparkles", "sparkles.fill":
             self = .sparkles
+        case "slider.horizontal.3", "sliders-horizontal", "slidersHorizontal":
+            self = .slidersHorizontal
+        case "speech":
+            self = .speech
         case "square.and.arrow.up":
             self = .share
         case "square-pen", "squarePen", "square.and.pencil":
@@ -357,7 +369,9 @@ struct LucideIcon: View {
             if filled {
                 context.fill(path, with: .foreground)
             }
-            context.stroke(path, with: .foreground, style: stroke)
+            if strokeWidth > 0 {
+                context.stroke(path, with: .foreground, style: stroke)
+            }
         }
 
         func line(_ x1: CGFloat, _ y1: CGFloat, _ x2: CGFloat, _ y2: CGFloat) {
@@ -1463,22 +1477,26 @@ struct LucideIcon: View {
             } else {
                 circle(12, 12, 10)
                 line(2, 12, 22, 12)
+                // Lucide Globe 0.487.0: two radius-14.5 SVG arcs.
                 var vertical = Path()
                 vertical.move(to: CGPoint(x: 12, y: 2))
-                vertical.addCurve(
+                addSvgArc(
+                    to: &vertical,
+                    from: CGPoint(x: 12, y: 2),
                     to: CGPoint(x: 12, y: 22),
-                    control1: CGPoint(x: 7.5, y: 6),
-                    control2: CGPoint(x: 7.5, y: 18)
+                    radius: 14.5,
+                    largeArc: false,
+                    sweep: false
                 )
-                vertical.move(to: CGPoint(x: 12, y: 2))
-                vertical.addCurve(
-                    to: CGPoint(x: 12, y: 22),
-                    control1: CGPoint(x: 16.5, y: 6),
-                    control2: CGPoint(x: 16.5, y: 18)
+                addSvgArc(
+                    to: &vertical,
+                    from: CGPoint(x: 12, y: 22),
+                    to: CGPoint(x: 12, y: 2),
+                    radius: 14.5,
+                    largeArc: false,
+                    sweep: false
                 )
                 strokePath(vertical)
-                line(4, 7, 20, 7)
-                line(4, 17, 20, 17)
             }
         case .heart:
             var path = Path()
@@ -1492,8 +1510,26 @@ struct LucideIcon: View {
             path.addLine(to: CGPoint(x: 12, y: 21))
             path.closeSubpath()
             fillThenStroke(path)
-        case .image:
-            rect(3, 3, 18, 18, 2)
+        case .image, .imagePlus:
+            if name == .imagePlus {
+                line(16, 5, 22, 5)
+                line(19, 2, 19, 8)
+                var frame = Path()
+                frame.move(to: CGPoint(x: 21, y: 11.5))
+                frame.addLine(to: CGPoint(x: 21, y: 19))
+                addSvgArc(to: &frame, from: CGPoint(x: 21, y: 19),
+                          to: CGPoint(x: 19, y: 21), radius: 2, largeArc: false, sweep: true)
+                frame.addLine(to: CGPoint(x: 5, y: 21))
+                addSvgArc(to: &frame, from: CGPoint(x: 5, y: 21),
+                          to: CGPoint(x: 3, y: 19), radius: 2, largeArc: false, sweep: true)
+                frame.addLine(to: CGPoint(x: 3, y: 5))
+                addSvgArc(to: &frame, from: CGPoint(x: 3, y: 5),
+                          to: CGPoint(x: 5, y: 3), radius: 2, largeArc: false, sweep: true)
+                frame.addLine(to: CGPoint(x: 12.5, y: 3))
+                strokePath(frame)
+            } else {
+                rect(3, 3, 18, 18, 2)
+            }
             circle(9, 9, 2)
             var imagePath = Path()
             imagePath.move(to: CGPoint(x: 21, y: 15))
@@ -1609,6 +1645,20 @@ struct LucideIcon: View {
             strokePath(path)
         case .minus:
             line(5, 12, 19, 12)
+        case .orbit:
+            // Lucide Orbit 0.487.0, matching the web's 24 x 24 source paths.
+            circle(12, 12, 3)
+            circle(19, 5, 2)
+            circle(5, 19, 2)
+            for (start, end) in [
+                (CGPoint(x: 10.4, y: 21.9), CGPoint(x: 20.341, y: 6.484)),
+                (CGPoint(x: 13.5, y: 2.1), CGPoint(x: 3.659, y: 17.516)),
+            ] {
+                var arc = Path()
+                arc.move(to: start)
+                addSvgArc(to: &arc, from: start, to: end, radius: 10, largeArc: false, sweep: false)
+                strokePath(arc)
+            }
         case .pencil:
             var path = Path()
             path.move(to: CGPoint(x: 21.17, y: 6.81))
@@ -1828,6 +1878,40 @@ struct LucideIcon: View {
                 line(4, 17, 4, 19)
                 line(5, 18, 3, 18)
             }
+        case .slidersHorizontal:
+            // Lucide SlidersHorizontal, 24 x 24 source coordinates.
+            line(21, 4, 14, 4); line(10, 4, 3, 4)
+            line(21, 12, 12, 12); line(8, 12, 3, 12)
+            line(21, 20, 16, 20); line(12, 20, 3, 20)
+            line(14, 2, 14, 6); line(8, 10, 8, 14); line(16, 18, 16, 22)
+        case .speech:
+            // Lucide Speech: fill each path like SVG fill="currentColor" when requested.
+            var profile = Path()
+            profile.move(to: CGPoint(x: 8.8, y: 20))
+            profile.addLine(to: CGPoint(x: 8.8, y: 15.9))
+            profile.addLine(to: CGPoint(x: 10.7, y: 16.1))
+            addSvgArc(to: &profile, from: CGPoint(x: 10.7, y: 16.1),
+                      to: CGPoint(x: 12.864, y: 14), radius: 2.3, largeArc: false, sweep: false)
+            profile.addLine(to: CGPoint(x: 12.864, y: 8.3))
+            addSvgArc(to: &profile, from: CGPoint(x: 12.864, y: 8.3),
+                      to: CGPoint(x: 2, y: 8.25), radius: 5.37, largeArc: false, sweep: false)
+            profile.addCurve(to: CGPoint(x: 3, y: 12.8),
+                             control1: CGPoint(x: 2, y: 11.05),
+                             control2: CGPoint(x: 2.656, y: 11.304))
+            addSvgArc(to: &profile, from: CGPoint(x: 3, y: 12.8),
+                      to: CGPoint(x: 3.029, y: 15.558), radius: 5.77, largeArc: false, sweep: true)
+            profile.addLine(to: CGPoint(x: 2, y: 20))
+            fillThenStroke(profile)
+
+            for (start, end, radius) in [
+                (CGPoint(x: 19.8, y: 17.8), CGPoint(x: 19.803, y: 7.197), CGFloat(7.5)),
+                (CGPoint(x: 17, y: 15), CGPoint(x: 16.975, y: 10.025), CGFloat(3.5)),
+            ] {
+                var wave = Path()
+                wave.move(to: start)
+                addSvgArc(to: &wave, from: start, to: end, radius: radius, largeArc: false, sweep: false)
+                fillThenStroke(wave)
+            }
         case .squarePen:
             var square = Path()
             let squareStart = CGPoint(x: 12, y: 3)
@@ -1916,18 +2000,40 @@ struct LucideIcon: View {
             pen.closeSubpath()
             strokePath(pen)
         case .star:
-            polyline([
-                CGPoint(x: 12, y: 2.5),
-                CGPoint(x: 14.8, y: 8.1),
-                CGPoint(x: 21, y: 9),
-                CGPoint(x: 16.5, y: 13.3),
-                CGPoint(x: 17.6, y: 20.7),
-                CGPoint(x: 12, y: 17.8),
-                CGPoint(x: 6.4, y: 20.7),
-                CGPoint(x: 7.5, y: 13.3),
-                CGPoint(x: 3, y: 9),
-                CGPoint(x: 9.2, y: 8.1)
-            ], closed: true)
+            // Lucide Star's SVG path uses curved tips for both fill and outline.
+            var star = Path()
+            star.move(to: CGPoint(x: 11.525, y: 2.295))
+            let segments: [(end: CGPoint, radius: CGFloat, sweep: Bool)] = [
+                (CGPoint(x: 12.475, y: 2.295), 0.53, true),
+                (CGPoint(x: 14.785, y: 6.974), 0, false),
+                (CGPoint(x: 16.380, y: 8.134), 2.123, false),
+                (CGPoint(x: 21.546, y: 8.890), 0, false),
+                (CGPoint(x: 21.840, y: 9.794), 0.53, true),
+                (CGPoint(x: 18.104, y: 13.432), 0, false),
+                (CGPoint(x: 17.493, y: 15.310), 2.123, false),
+                (CGPoint(x: 18.375, y: 20.450), 0, false),
+                (CGPoint(x: 17.604, y: 21.010), 0.53, true),
+                (CGPoint(x: 12.986, y: 18.582), 0, false),
+                (CGPoint(x: 11.013, y: 18.582), 2.122, false),
+                (CGPoint(x: 6.396, y: 21.010), 0, false),
+                (CGPoint(x: 5.626, y: 20.450), 0.53, true),
+                (CGPoint(x: 6.507, y: 15.311), 0, false),
+                (CGPoint(x: 5.896, y: 13.432), 2.122, false),
+                (CGPoint(x: 2.160, y: 9.794), 0, false),
+                (CGPoint(x: 2.454, y: 8.888), 0.53, true),
+                (CGPoint(x: 7.619, y: 8.133), 0, false),
+                (CGPoint(x: 9.216, y: 6.973), 2.122, false),
+            ]
+            for segment in segments {
+                if segment.radius == 0 {
+                    star.addLine(to: segment.end)
+                } else if let start = star.currentPoint {
+                    addSvgArc(to: &star, from: start, to: segment.end,
+                              radius: segment.radius, largeArc: false, sweep: segment.sweep)
+                }
+            }
+            star.closeSubpath()
+            fillThenStroke(star)
         case .store:
             if filled {
                 var roof = Path()

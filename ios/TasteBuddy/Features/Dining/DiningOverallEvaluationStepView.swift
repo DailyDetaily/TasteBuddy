@@ -29,6 +29,13 @@ struct DiningOverallEvaluationStepView: View {
                         }
 
                         VStack(spacing: 10) {
+                            if let evaluation, evaluation.questionVersion == DiningOverallEvaluation.starVersion,
+                               let rating = evaluation.starRating {
+                                Text("현재 평가: \(DiningOverallEvaluation.starText(rating))점")
+                                    .font(TBFont.medium(13))
+                                    .foregroundStyle(TBColor.textSubtle)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
                             ForEach(DiningOverallEvaluation.Response.allCases) { response in
                                 TBSelectionCard(
                                     title: response.label,
@@ -50,18 +57,39 @@ struct DiningOverallEvaluationStepView: View {
                 .scrollBounceBehavior(.basedOnSize)
             }
 
-            TBFlowStepCTA(
-                actionLabel: "미각 버블 고르기",
-                currentIndex: 1,
-                total: 2,
-                isEnabled: DiningSensoryRecommendationPolicy.isSupported(evaluation),
-                actionVisualDisabled: !DiningSensoryRecommendationPolicy.isSupported(evaluation),
-                helperText: DiningSensoryRecommendationPolicy.isSupported(evaluation)
-                    ? nil
-                    : "전체 평가를 하나 선택해 주세요.",
-                backgroundColor: TBColor.page,
-                showsIndicator: false,
-                action: onContinue
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+                if !DiningSensoryRecommendationPolicy.isSupported(evaluation) {
+                    Text("전체 평가를 하나 선택해 주세요.")
+                        .font(TBFont.medium(11))
+                        .foregroundStyle(TBColor.textFaint)
+                        .multilineTextAlignment(.center)
+                        .padding(.bottom, FlowBottomCtaMetrics.helperBottomMargin)
+                }
+
+                PrimaryButton(
+                    title: "미각 버블 고르기",
+                    isEnabled: DiningSensoryRecommendationPolicy.isSupported(evaluation),
+                    visualDisabled: !DiningSensoryRecommendationPolicy.isSupported(evaluation),
+                    action: onContinue
+                )
+            }
+            .padding(.horizontal, FlowBottomCtaMetrics.horizontalPadding)
+            .padding(.bottom, FlowBottomCtaMetrics.bottomPadding)
+            .frame(maxWidth: .infinity)
+            .frame(height: FlowBottomCtaMetrics.minHeight)
+            .background(
+                LinearGradient(
+                    stops: [
+                        .init(color: TBColor.page.opacity(0), location: 0),
+                        .init(color: TBColor.page.opacity(0.8), location: 0.45),
+                        .init(color: TBColor.page, location: 1),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea(edges: .bottom)
+                .allowsHitTesting(false)
             )
         }
         .background(TBColor.page.ignoresSafeArea())

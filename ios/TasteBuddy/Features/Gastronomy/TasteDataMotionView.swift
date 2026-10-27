@@ -106,6 +106,7 @@ struct TDCategoryMotionView: View {
     let input: TDCategoryMotionInput
     let reduceMotion: Bool
     let collapseProgress: Double
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var player = TDCategoryMotionPlayer()
     @State private var visible = false
@@ -134,11 +135,11 @@ struct TDCategoryMotionView: View {
                             let p = bridge.points.map { CGPoint(x: $0.x, y: $0.y) }
                             var path = Path(); path.move(to: p[0]); path.addCurve(to: p[3], control1: p[1], control2: p[2])
                             path.addLine(to: p[4]); path.addCurve(to: p[7], control1: p[5], control2: p[6]); path.closeSubpath()
-                            context.fill(path, with: .color(Self.color(bridge.color).opacity(bridge.opacity)))
+                            context.fill(path, with: .color(Self.color(bridge.color, mode: TBColorMode(colorScheme)).opacity(bridge.opacity)))
                         }
                         for dot in frame.dots {
                             context.fill(Path(ellipseIn: CGRect(x: dot.x-dot.r, y: dot.y-dot.r, width: dot.r*2, height: dot.r*2)),
-                                         with: .color(Self.color(dot.color, tint: dot.tintColor, amount: dot.tint ?? 0).opacity(dot.opacity)))
+                                         with: .color(Self.color(dot.color, tint: dot.tintColor, amount: dot.tint ?? 0, mode: TBColorMode(colorScheme)).opacity(dot.opacity)))
                         }
                     }.accessibilityHidden(true)
                     if let frame = player.frame {
@@ -184,9 +185,9 @@ struct TDCategoryMotionView: View {
         .onAppear { visible = true }
         .onDisappear { visible = false; player.suspend() }
     }
-    static func color(_ hex: String, tint: String? = nil, amount: Double = 0) -> Color {
-        let value = UInt64(hex.dropFirst(), radix: 16) ?? 0x95867A
-        let target = tint.flatMap { UInt64($0.dropFirst(), radix: 16) } ?? value
+    static func color(_ hex: String, tint: String? = nil, amount: Double = 0, mode: TBColorMode = .light) -> Color {
+        let value = UInt64(TBTasteMotionColor.hex(hex, in: mode).dropFirst(), radix: 16) ?? 0x95867A
+        let target = tint.flatMap { UInt64(TBTasteMotionColor.hex($0, in: mode).dropFirst(), radix: 16) } ?? value
         let t = min(1,max(0,amount))
         func channel(_ shift: Int) -> Double { let a = Double((value >> shift)&255), b = Double((target >> shift)&255); return (a+(b-a)*t)/255 }
         return Color(red: channel(16), green: channel(8), blue: channel(0))

@@ -27,10 +27,50 @@ struct SectionCard<Content: View>: View {
             .overlay {
                 if showsBorder && cardBordersVisible {
                     RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
-                        .stroke(TBColor.borderCard, lineWidth: 1)
+                        .stroke(TBColor.borderFaint, lineWidth: 1)
                         .allowsHitTesting(false)
                 }
             }
+    }
+}
+
+/// A vertical list with shared card spacing and separators; callers own row content and actions.
+struct SectionListCard<Item: Identifiable, Row: View, Footer: View>: View {
+    let items: [Item]
+    private let row: (Int, Item) -> Row
+    private let footer: Footer
+
+    init(
+        items: [Item],
+        @ViewBuilder row: @escaping (Int, Item) -> Row,
+        @ViewBuilder footer: () -> Footer
+    ) {
+        self.items = items
+        self.row = row
+        self.footer = footer()
+    }
+
+    var body: some View {
+        SectionCard {
+            VStack(spacing: TBSpacing.x12) {
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                    row(index, item)
+
+                    if index < items.count - 1 {
+                        Rectangle()
+                            .fill(TBColor.borderSubtle)
+                            .frame(height: 1)
+                    }
+                }
+                footer
+            }
+        }
+    }
+}
+
+extension SectionListCard where Footer == EmptyView {
+    init(items: [Item], @ViewBuilder row: @escaping (Int, Item) -> Row) {
+        self.init(items: items, row: row, footer: { EmptyView() })
     }
 }
 
@@ -175,7 +215,8 @@ private struct TBPressedSurface: ViewModifier {
     }
 }
 
-private extension View {
+extension View {
+    /// Reuses token press feedback for buttons composed directly in a screen.
     func tbPressedSurface(base: Color, tone: TBControlFeedback.SurfaceTone = .neutral) -> some View {
         modifier(TBPressedSurface(base: base, tone: tone))
     }
@@ -219,12 +260,14 @@ struct PrimaryButton: View {
     var fullWidth = true
     var size: PrimaryButtonSize = .default
     var appearance: PrimaryButtonAppearance = .primary
+    var textStyle: TBTextStyle? = nil
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(TBFont.semibold(size.fontSize))
+                .font(textStyle?.font ?? TBFont.semibold(size.fontSize))
+                .tbTypography(textStyle)
                 .padding(.horizontal, size.horizontalPadding)
                 .padding(.vertical, size.verticalPadding)
                 .frame(maxWidth: fullWidth ? .infinity : nil)
@@ -345,6 +388,8 @@ struct TBFlowBottomCTA: View {
     var secondaryButtonVisualDisabled = false
     var secondaryActionView: AnyView? = nil
     var topSlot: AnyView? = nil
+    var helperTextStyle: TBTextStyle? = nil
+    var actionTextStyle: TBTextStyle? = nil
     let action: () -> Void
 
     var body: some View {
@@ -357,7 +402,8 @@ struct TBFlowBottomCTA: View {
 
             if let helperText {
                 Text(helperText)
-                    .font(TBFont.medium(11))
+                    .font(helperTextStyle?.font ?? TBFont.medium(11))
+                    .tbTypography(helperTextStyle)
                     .foregroundStyle(TBColor.textFaint)
                     .multilineTextAlignment(.center)
                     .padding(.bottom, FlowBottomCtaMetrics.helperBottomMargin)
@@ -377,6 +423,7 @@ struct TBFlowBottomCTA: View {
                         isEnabled: isEnabled,
                         visualDisabled: actionVisualDisabled,
                         size: actionSize,
+                        textStyle: actionTextStyle,
                         action: action
                     )
                 }
@@ -387,6 +434,7 @@ struct TBFlowBottomCTA: View {
                     visualDisabled: actionVisualDisabled,
                     fullWidth: actionFullWidth,
                     size: actionSize,
+                    textStyle: actionTextStyle,
                     action: action
                 )
             }
@@ -442,84 +490,6 @@ struct TBFlowBottomCTA: View {
     }
 }
 
-struct TBFlowStepCTA: View {
-    let actionLabel: String
-    let currentIndex: Int
-    let total: Int
-    var isEnabled = true
-    var actionVisualDisabled = false
-    var actionFullWidth = true
-    var actionSize: PrimaryButtonSize = .default
-    var activeColor = TBColor.textPrimary
-    var inactiveColor = TBColor.borderStrong
-    var helperText: String? = nil
-    var backgroundColor = TBColor.focus
-    var showsIndicator = true
-    var stepLabel: String? = nil
-    var secondaryActionLabel: String? = nil
-    var secondaryAction: (() -> Void)? = nil
-    var secondaryButtonEnabled = true
-    var secondaryButtonVisualDisabled = false
-    var secondaryActionView: AnyView? = nil
-    let action: () -> Void
-
-    var body: some View {
-        TBFlowBottomCTA(
-            actionLabel: actionLabel,
-            isEnabled: isEnabled,
-            actionVisualDisabled: actionVisualDisabled,
-            actionFullWidth: actionFullWidth,
-            actionSize: actionSize,
-            helperText: helperText,
-            backgroundColor: backgroundColor,
-            secondaryActionLabel: secondaryActionLabel,
-            secondaryAction: secondaryAction,
-            secondaryButtonEnabled: secondaryButtonEnabled,
-            secondaryButtonVisualDisabled: secondaryButtonVisualDisabled,
-            secondaryActionView: secondaryActionView,
-            topSlot: indicatorTopSlot,
-            action: action
-        )
-    }
-
-    private var indicatorTopSlot: AnyView? {
-        guard showsIndicator else {
-            return nil
-        }
-
-        let indicator = TBStepIndicator(
-            currentIndex: currentIndex,
-            total: total,
-            activeColor: activeColor,
-            inactiveColor: inactiveColor
-        )
-
-        if let stepLabel {
-            return AnyView(
-                VStack(spacing: 0) {
-                    indicator
-                    Text(stepLabel)
-                        .font(TBFont.medium(12))
-                        .foregroundStyle(TBColor.textFaint)
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 6)
-                }
-                .padding(.bottom, FlowBottomCtaMetrics.stepIndicatorBottomMargin)
-            )
-        }
-
-        return AnyView(
-            indicator
-                .padding(
-                    .bottom,
-                    helperText == nil
-                        ? FlowBottomCtaMetrics.stepIndicatorBottomMargin
-                        : FlowBottomCtaMetrics.indicatorToHelperGap
-                )
-        )
-    }
-}
-
 struct TBFlowTopBar: View {
     let title: String?
     var leadingSymbol = "chevron.left"
@@ -529,13 +499,15 @@ struct TBFlowTopBar: View {
     var backgroundColor = TBColor.focus
     var leadingIconSize = TBIcon.Size.large
     var leadingIconStrokeWidth = TBIcon.Stroke.regular
+    var titleTextStyle: TBTextStyle? = nil
     let leadingAction: () -> Void
 
     var body: some View {
         ZStack {
             if let title {
                 Text(title)
-                    .font(TBFont.bold(15))
+                    .font(titleTextStyle?.font ?? TBFont.bold(15))
+                    .tbTypography(titleTextStyle)
                     .foregroundStyle(TBColor.textPrimary)
                     .lineLimit(1)
                     .allowsHitTesting(false)
@@ -593,13 +565,60 @@ enum SelectionCardMetrics {
     static let gap: CGFloat = 12
     static let padding: CGFloat = 16
     static let indicatorSize: CGFloat = 18
-    static let indicatorTopPadding: CGFloat = 2
     static let radioDotSize: CGFloat = 8
     static let checkboxRadius: CGFloat = 6
     static let cardRadius: CGFloat = TBRadius.card
     static let selectedShadowRadius: CGFloat = 12
     static let selectedShadowYOffset: CGFloat = 8
 }
+
+/// Compact actions inside content; title remains the accessible name in icon-only mode.
+struct InlineButton: View {
+    enum Tone { case neutral, accent }
+    enum IconPosition { case leading, trailing }
+
+    @Environment(\.isEnabled) private var isEnabled
+    let title: String
+    var tone: Tone = .accent
+    var accentColor: Color = TasteAxis.sweet.mainColor
+    var icon: LucideIconName? = nil
+    var iconPosition: IconPosition = .trailing
+    var iconOnly = false
+    let action: () -> Void
+
+    private var foregroundColor: Color {
+        if !isEnabled { return TBColor.textDisabled }
+        return tone == .accent ? accentColor : TBColor.iconMuted
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: TBSpacing.x2) {
+                if let icon, iconOnly || iconPosition == .leading {
+                    LucideIcon(icon, size: TBIcon.Size.small, strokeWidth: TBIcon.Stroke.regular)
+                        .accessibilityHidden(true)
+                }
+                if !iconOnly || icon == nil {
+                    Text(title)
+                }
+                if let icon, !iconOnly && iconPosition == .trailing {
+                    LucideIcon(icon, size: TBIcon.Size.small, strokeWidth: TBIcon.Stroke.regular)
+                        .accessibilityHidden(true)
+                }
+            }
+            .font(TBFont.semibold(11))
+            .foregroundStyle(foregroundColor)
+            .frame(minHeight: 16.5)
+            .fixedSize()
+            .contentShape(Rectangle())
+        }
+        .accessibilityLabel(title)
+        .buttonStyle(TBTokenButtonStyle())
+    }
+}
+
+@available(*, deprecated, renamed: "InlineButton")
+typealias InlineTextButton = InlineButton
 
 struct TBSelectionCard: View {
     @Environment(\.isEnabled) private var environmentIsEnabled
@@ -625,9 +644,8 @@ struct TBSelectionCard: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(alignment: singleLine ? .center : .top, spacing: SelectionCardMetrics.gap) {
+            HStack(alignment: .center, spacing: SelectionCardMetrics.gap) {
                 selectionIndicator
-                    .padding(.top, singleLine ? 0 : SelectionCardMetrics.indicatorTopPadding)
 
                 VStack(alignment: .leading, spacing: 0) {
                     Text(title)
@@ -731,7 +749,7 @@ struct TBSelectionCard: View {
             return .clear
         }
 
-        return isSelected ? TBColor.selectionSurface : TBColor.border
+        return isSelected ? TBColor.borderSelected : TBColor.border
     }
 }
 
@@ -902,11 +920,10 @@ private struct DishFeedbackTasteBubbleChip: View {
     }
 
     var body: some View {
-        TasteChip(
+        Chip(
             title: bubble.label,
-            tone: axis == nil ? .neutral : .taste,
-            colorAxis: axis,
-            size: .sm
+            tasteAxis: axis,
+            size: .small
         )
             .lineLimit(1)
             .accessibilityLabel(bubble.title ?? bubble.label)
@@ -1420,11 +1437,11 @@ private struct DishFeedbackDetailTagRow: View {
     let tags: [DishFeedbackCardTag]
 
     var body: some View {
-        TBOverflowTagRow(items: tags) { tag in
-            TasteChip(title: tag.label, tone: .neutral, size: .sm)
+        OverflowTagRow(items: tags) { tag in
+            Chip(title: tag.label, size: .small)
                 .accessibilityLabel(tag.title ?? tag.label)
         } overflow: { hiddenCount in
-            TasteChip(title: "+\(hiddenCount)", tone: .neutral, size: .sm)
+            Chip(title: "+\(hiddenCount)", size: .small)
                 .accessibilityLabel("\(hiddenCount)개 태그 더 있음")
         }
         .clipped()
@@ -1629,9 +1646,11 @@ private struct DishFeedbackActionButton: View {
     }
 }
 
-private struct DiningNotePreview: View {
+struct DiningNotePreview: View {
     let summary: String
     var trailingPadding: CGFloat = 0
+    var lineLimit: Int? = 4
+    var minimumHeight: CGFloat? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -1644,11 +1663,11 @@ private struct DiningNotePreview: View {
                     .foregroundStyle(TBColor.textSubtle)
             )
             .lineSpacing(4)
-            .lineLimit(4)
+            .lineLimit(lineLimit)
         }
         .padding(DishFeedbackCardMetrics.notePadding)
         .padding(.trailing, trailingPadding)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: minimumHeight, alignment: .leading)
         .background(TBColor.mutedSurface)
         .clipShape(RoundedRectangle(cornerRadius: DishFeedbackCardMetrics.noteRadius, style: .continuous))
     }

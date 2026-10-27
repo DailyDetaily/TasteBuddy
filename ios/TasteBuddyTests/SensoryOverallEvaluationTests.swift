@@ -4,6 +4,19 @@ import XCTest
 /// 전체 평가 생산 구현을 읽기 전에 동결한 OE-01...08 개발 검사.
 /// overall-evaluation-review/1: 03078481ee94bce496d0e9c9d42861420b94c4511d238b0ab4d3453456e80c67
 final class SensoryOverallEvaluationTests: XCTestCase {
+    func testExplicitHalfStarsStayOnTheirOwnScaleAndDoNotCreateSensoryLiking() throws {
+        let evaluation = try XCTUnwrap(DiningOverallEvaluation(starRating: 3.5))
+        let result = try analyze([meal(evaluation)])
+        let atom = try XCTUnwrap(result.observations.first)
+        XCTAssertEqual(result.observations.count, 1)
+        XCTAssertEqual(atom.scale, DiningOverallEvaluation.starScale)
+        XCTAssertEqual(atom.value, .text("3.5"))
+        XCTAssertNil(atom.attribute)
+        XCTAssertNil(result.mainWing.main)
+        XCTAssertTrue(result.mainWing.candidates.allSatisfy { $0.supportExperienceCount == 0 })
+        XCTAssertTrue(result.unresolved.isEmpty)
+    }
+
     private let sour = DiningSensorySelection(id: "sour-fresh", type: .bubble, labelSnapshot: "산뜻한 산미", liking: .disliked)
     private func meal(_ overall: DiningOverallEvaluation?, selections: [DiningSensorySelection] = [], id: UUID = UUID()) -> DiningEntry {
         .init(id: id, restaurant: "기록한 식당", menu: "기록한 음식", date: Date(timeIntervalSince1970: 1_700_000_000), rating: 5, note: "", sensorySelections: selections, overallEvaluation: overall)

@@ -535,7 +535,7 @@ struct ActionOverlayCard<Content: View>: View {
             .frame(maxWidth: ActionOverlayCardMetrics.cardMaxWidth)
             .background(TBColor.focus)
             .clipShape(RoundedRectangle(cornerRadius: ActionOverlayCardMetrics.cardRadius, style: .continuous))
-            .shadow(color: Color.black.opacity(0.24), radius: 30, x: 0, y: 20)
+            .shadow(color: TBEffectToken.drawer.dynamicColor(), radius: 30, x: 0, y: 20)
         }
         .padding(.horizontal, ActionOverlayCardMetrics.horizontalPadding)
     }
@@ -699,18 +699,18 @@ extension ActionOverlayCard where Content == EmptyView {
 }
 
 enum BottomSheetShellMetrics {
-    static let overlayOpacity: CGFloat = 0.60
-    static let stageHeightRatio: CGFloat = 0.98
+    static let overlayOpacity = TBSheetPresentation.Background.dimOpacity
+    static let stageHeightRatio = TBSheetPresentation.Surface.heightRatio
     static let authEntryEmailMaxHeightRatio: CGFloat = 0.72
-    static let stageTopInset: CGFloat = 12
+    static let stageTopInset = TBSheetPresentation.Surface.topInset
     static let maxWidth: CGFloat = TBSize.screenMaxWidth
-    static let topRadius: CGFloat = 32
+    static let topRadius = TBSheetPresentation.Surface.radius
     static let clipsOnlyTopCorners = true
     static let usesCustomGrabber = true
     static let grabberTopMargin: CGFloat = 5
-    static let grabberHeight: CGFloat = 5
+    static let grabberHeight = TBSheetPresentation.Surface.grabberHeight
     static let grabberToHeaderSpacing: CGFloat = 0
-    static let grabberWidth: CGFloat = 36
+    static let grabberWidth = TBSheetPresentation.Surface.grabberWidth
     static let topAreaHeightIncludingGrabber: CGFloat =
         grabberTopMargin + grabberHeight + grabberToHeaderSpacing
     static let headerHorizontalPadding: CGFloat = TBSpacing.page
@@ -899,17 +899,17 @@ enum BottomSheetStageMode: Equatable {
 }
 
 enum StagedBottomSheetDragMetrics {
-    static let minimumDistance: CGFloat = 6
-    static let dismissProgressThreshold: CGFloat = 0.32
+    static let minimumDistance = TBSheetPresentation.Drag.minimumDistance
+    static let dismissProgressThreshold = TBSheetPresentation.Drag.dismissProgress
 }
 
 enum StagedBottomSheetBackgroundMetrics {
-    static let openScale: CGFloat = 0.9
-    static let openOffsetY: CGFloat = 10
-    static let openRadius: CGFloat = 20
-    static let shadowY: CGFloat = 0
-    static let shadowBlur: CGFloat = 0
-    static let shadowOpacity: CGFloat = 0
+    static let openScale = TBSheetPresentation.Background.scale
+    static let openOffsetY = TBSheetPresentation.Background.offsetY
+    static let openRadius = TBSheetPresentation.Background.radius
+    static let shadowY = TBSheetPresentation.Background.shadowY
+    static let shadowBlur = TBSheetPresentation.Background.shadowBlur
+    static let shadowOpacity = TBSheetPresentation.Background.shadowOpacity
     static let animationDuration = TasteBloomMotion.duration(.sheet, reduceMotion: false)
 }
 
@@ -1454,7 +1454,7 @@ private struct BottomSheetSurfaceChrome: ViewModifier {
                         bottomSafeAreaFill
                     }
                     .ignoresSafeArea(edges: .bottom)
-                    .shadow(color: Color.black.opacity(0.24), radius: 30, x: 0, y: 20)
+                    .shadow(color: TBEffectToken.drawer.dynamicColor(), radius: 30, x: 0, y: 20)
             }
         }
     }
@@ -1624,5 +1624,84 @@ private struct UISheetPresentationConfigurator: UIViewControllerRepresentable {
                 sheet.animateChanges(changes)
             }
         }
+    }
+}
+
+/// Shared 36pt action matching Plating's CapsuleButton. The caller supplies the viewer's accent.
+struct TBCapsuleButton: View {
+    enum Appearance { case outlined, tonal }
+    enum TextSize {
+        case small, medium
+        var points: CGFloat { self == .small ? 11 : 12 }
+    }
+
+    let title: String
+    var appearance: Appearance = .outlined
+    var textSize: TextSize = .medium
+    var icon: LucideIconName? = nil
+    var accentAxis: TasteAxis = .sweet
+    let action: () -> Void
+    @State private var isHovered = false
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: TBSpacing.x8) {
+                if let icon {
+                    LucideIcon(icon, size: TBIcon.Size.base, strokeWidth: TBIcon.Stroke.regular)
+                        .accessibilityHidden(true)
+                }
+                Text(title)
+                    .font(TBFont.semibold(textSize.points))
+            }
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
+        }
+        .buttonStyle(TBCapsuleButtonStyle(
+            appearance: appearance, accentAxis: accentAxis,
+            isHovered: isHovered, isFocused: isFocused
+        ))
+        .focused($isFocused)
+        .onHover { isHovered = $0 }
+    }
+}
+
+private struct TBCapsuleButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+    let appearance: TBCapsuleButton.Appearance
+    let accentAxis: TasteAxis
+    let isHovered: Bool
+    let isFocused: Bool
+
+    private var background: Color {
+        if appearance == .tonal { return accentAxis.tintSurfaceColor }
+        return isEnabled && isHovered ? TBColor.mutedSurface : TBColor.surface
+    }
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(appearance == .tonal ? accentAxis.tintSurfaceTextColor : TBColor.textPrimary)
+            .padding(.horizontal, TBSpacing.x12)
+            .frame(height: 36)
+            .background {
+                Capsule().fill(background)
+                    .overlay {
+                        if isEnabled && configuration.isPressed {
+                            Capsule().fill(TBColor.pressedOverlay)
+                        } else if isEnabled && isHovered && appearance == .tonal {
+                            Capsule().fill(TBColor.hoverOverlay)
+                        }
+                    }
+            }
+            .overlay {
+                if appearance == .outlined { Capsule().strokeBorder(TBColor.border, lineWidth: 1) }
+            }
+            .overlay {
+                if isFocused && isEnabled {
+                    Capsule().stroke(TBColor.focusRing, lineWidth: 2).padding(-4)
+                }
+            }
+            .contentShape(Capsule())
+            .opacity(isEnabled ? 1 : 0.55)
     }
 }

@@ -1,5 +1,66 @@
 import SwiftUI
 
+/// A single card surface with an independently expandable body. Header actions belong to the caller.
+struct ExpandableCard<Header: View, Content: View>: View {
+    let isExpanded: Bool
+    @ViewBuilder let header: Header
+    @ViewBuilder let content: Content
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        SectionCard(showsBorder: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                header
+                if isExpanded {
+                    content
+                        .padding(.top, TBSpacing.x12)
+                        .transition(TasteBloomMotion.questionReveal(reduceMotion: reduceMotion))
+                }
+            }
+            .clipped()
+        }
+        .accessibilityElement(children: .contain)
+    }
+}
+
+/// Collapsed decoration or an expanded vertical queue. The caller supplies the visible cards.
+struct StackCard<Content: View>: View {
+    var showsStack = false
+    var isExpanded = false
+    @ViewBuilder let content: Content
+
+    private var showsDecoration: Bool { showsStack && !isExpanded }
+
+    var body: some View {
+        VStack(spacing: TBSpacing.x12) { content }
+            .background {
+                if showsDecoration {
+                    backCard(inset: 12, offset: TBSpacing.x16).transition(.opacity)
+                    backCard(inset: 6, offset: TBSpacing.x8).transition(.opacity)
+                }
+            }
+            .padding(.bottom, showsDecoration ? TBSpacing.x16 : 0)
+    }
+
+    private func backCard(inset: CGFloat, offset: CGFloat) -> some View {
+        RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
+            .fill(TBColor.surface)
+            .overlay {
+                RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous)
+                    .fill(TBColor.surface)
+                    .shadow(color: TBColor.textPrimary.opacity(0.08), radius: 3, y: 2)
+                    .padding(.horizontal, -6)
+                    .offset(y: -TBSpacing.x8)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
+            .padding(.horizontal, inset)
+            .offset(y: offset)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}
+
+
 /// Wraps views at their rendered natural width; unlike `TBFlowLayout`, it does not
 /// allocate equal-width adaptive grid columns.
 struct TBWrapLayout: Layout {
@@ -77,26 +138,57 @@ struct TBWrapArrangement {
 }
 
 /// Keeps the longest leading prefix that fits, including the actual `+N` chip.
-/// Chip size and accessible descriptions remain the caller's responsibility.
-struct TBOverflowTagRow<Item: Identifiable, Tag: View, Overflow: View>: View {
+/// Optional expansion reveals all items using the same row content.
+struct OverflowTagRow<Item: Identifiable, Tag: View, Overflow: View>: View {
     let items: [Item]
     let spacing: CGFloat
+    let allowsExpansion: Bool
+    let overflowSize: ChipSize
     private let tag: (Item) -> Tag
     private let overflow: (Int) -> Overflow
+    @State private var isExpanded = false
 
     init(
         items: [Item],
         spacing: CGFloat = 6,
+        allowsExpansion: Bool = false,
+        overflowSize: ChipSize = .small,
         @ViewBuilder tag: @escaping (Item) -> Tag,
         @ViewBuilder overflow: @escaping (Int) -> Overflow
     ) {
         self.items = items
         self.spacing = spacing
+        self.allowsExpansion = allowsExpansion
+        self.overflowSize = overflowSize
         self.tag = tag
         self.overflow = overflow
     }
 
     var body: some View {
+        Group {
+            if allowsExpansion && isExpanded {
+                TBWrapLayout(spacing: spacing) {
+                    ForEach(items) { item in
+                        tag(item)
+                    }
+                    Button { isExpanded = false } label: {
+                        Chip(title: "접기", size: overflowSize)
+                    }
+                    .buttonStyle(TBTokenButtonStyle())
+                    .accessibilityLabel("칩 그룹 접기")
+                    .accessibilityHint("칩을 한 줄로 표시합니다")
+                }
+            } else {
+                collapsedRow
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .tasteBloomMotion(.content, value: isExpanded)
+        .onChange(of: items.map(\.id)) { _, _ in isExpanded = false }
+        .onChange(of: allowsExpansion) { _, _ in isExpanded = false }
+    }
+
+    private var collapsedRow: some View {
         ViewThatFits(in: .horizontal) {
             ForEach(Array((0...items.count).reversed()), id: \.self) { visibleCount in
                 HStack(spacing: spacing) {
@@ -105,14 +197,27 @@ struct TBOverflowTagRow<Item: Identifiable, Tag: View, Overflow: View>: View {
                     }
 
                     if visibleCount < items.count {
-                        overflow(items.count - visibleCount)
+                        overflowContent(items.count - visibleCount)
                     }
                 }
                 .lineLimit(1)
                 .fixedSize(horizontal: true, vertical: false)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func overflowContent(_ count: Int) -> some View {
+        if allowsExpansion {
+            Button { isExpanded = true } label: {
+                overflow(count)
+            }
+            .buttonStyle(TBTokenButtonStyle())
+            .accessibilityLabel("\(count)개 칩 더 보기")
+            .accessibilityHint("전체 칩을 여러 줄로 펼칩니다")
+        } else {
+            overflow(count)
+        }
     }
 }
 
@@ -156,14 +261,14 @@ struct TBFlowRetryState: View {
         VStack(alignment: .leading, spacing: 24) {
             TBWrapLayout(spacing: 6) {
                 ForEach(TasteAxis.allCases) { axis in
-                    TasteChip(title: axis.label, tone: .taste, colorAxis: axis, size: .sm)
+                    Chip(title: axis.label, tasteAxis: axis, size: .small)
                 }
             }
 
-            TBOverflowTagRow(items: TasteAxis.allCases) { axis in
-                TasteChip(title: axis.label, tone: .neutral, size: .sm)
+            OverflowTagRow(items: TasteAxis.allCases, allowsExpansion: true) { axis in
+                Chip(title: axis.label, size: .small)
             } overflow: { count in
-                TasteChip(title: "+\(count)", tone: .neutral, size: .sm)
+                Chip(title: "+\(count)", size: .small)
                     .accessibilityLabel("\(count)개 태그 더 있음")
             }
         }

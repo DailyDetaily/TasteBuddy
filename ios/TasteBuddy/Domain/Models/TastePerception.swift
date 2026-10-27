@@ -1,5 +1,87 @@
 import Foundation
 
+/// All recorded liking evidence behind the type, counted once per meal and taste axis.
+struct OverallTasteProfile: Equatable {
+    struct Distribution: Equatable {
+        let positive: Int
+        let rated: Int
+        let mixed: Int
+        let mealIDs: [String]
+        let evidenceIDs: [String]
+        var value: Double? { rated > 0 ? Double(positive) / Double(rated) * 100 : nil }
+    }
+    struct Axis: Equatable, Identifiable {
+        let axis: TasteAxis
+        let current: Distribution
+        let previous: Distribution
+        var id: String { axis.rawValue }
+    }
+    let axes: [Axis]
+    let previousBefore: Date?
+    var values: [TasteAxis: Double] { Dictionary(uniqueKeysWithValues: axes.compactMap { row in row.current.value.map { (row.axis, $0) } }) }
+    var referenceValues: [TasteAxis: Double] { Dictionary(uniqueKeysWithValues: axes.compactMap { row in row.previous.value.map { (row.axis, $0) } }) }
+    private struct Unit {
+        let axis: TasteAxis
+        let mealID: String
+        let day: Date
+        var values: Set<String> = []
+        var evidenceIDs: Set<String> = []
+    }
+    private static func distribution(_ rows: [Unit]) -> Distribution {
+        let valid = rows.filter { $0.values.count == 1 }
+        return .init(positive: valid.filter { $0.values.contains("positive") }.count,
+                     rated: valid.count, mixed: rows.count - valid.count,
+                     mealIDs: valid.map(\.mealID).sorted(), evidenceIDs: Array(Set(rows.flatMap(\.evidenceIDs))).sorted())
+    }
+    static let empty = OverallTasteProfile(axes: TasteAxis.allCases.map { .init(axis: $0, current: distribution([]), previous: distribution([])) }, previousBefore: nil)
+
+    static func build(snapshot: SensoryAnalysisSnapshot, referenceDate: Date = Date(), calendar: Calendar = .current) -> Self {
+        guard let model = snapshot.personalModel else { return .empty }
+        let records = snapshot.observations.map { row in
+            PersonalTasteModelRecord(observationId: row.id, userId: model.userID,
+                experienceId: row.experienceID.uuidString.lowercased(), mealId: row.independentMealID.uuidString.lowercased(),
+                kind: row.kind, attribute: row.attribute, reference: row.reference, value: row.value, scale: row.scale,
+                target: row.target, phase: row.phase, observedAt: row.observedAt.map(PersonalTasteModelBuilder.timestamp),
+                knownAt: row.knownAt.map(PersonalTasteModelBuilder.timestamp),
+                confirmationStatus: row.selectionEvidence == nil ? "rule_extracted_statement" : "explicit_user_choice")
+        }
+        return build(model: model, records: records, userID: model.userID, referenceDate: referenceDate, calendar: calendar)
+    }
+
+    static func build(model: PersonalTasteModelSnapshot, records: [PersonalTasteModelRecord], userID: String,
+                      referenceDate: Date, calendar: Calendar = .current) -> Self {
+        guard !userID.isEmpty, model.userID == userID else { return .empty }
+        let own = records.filter { $0.userId == userID }
+        let mealDays = Dictionary(grouping: own, by: \.mealId).mapValues { rows -> Set<Date?> in
+            Set(rows.map { row in
+                guard let date = PersonalTasteModelBuilder.date(row.observedAt), date <= referenceDate else { return nil }
+                return calendar.startOfDay(for: date)
+            })
+        }
+        let accepted = Set(model.units.filter { $0.reference == nil && TastePerceptionEngine.axis(for: $0.attribute) != nil }.flatMap(\.evidenceIDs))
+        var units: [String: Unit] = [:]
+        for (id, duplicates) in Dictionary(grouping: own, by: \.observationId) {
+            let row = duplicates[0]
+            guard accepted.contains(id), duplicates.allSatisfy({ $0 == row }), row.reference == nil,
+                  let axis = TastePerceptionEngine.axis(for: row.attribute), row.kind == "attribute_liking",
+                  row.scale == "attribute-three-category-v1", ["positive", "neutral", "negative"].contains(row.value.text),
+                  ["explicit_user_choice", "rule_extracted_statement"].contains(row.confirmationStatus),
+                  let observed = PersonalTasteModelBuilder.date(row.observedAt), let known = PersonalTasteModelBuilder.date(row.knownAt),
+                  observed <= referenceDate, known <= referenceDate,
+                  let days = mealDays[row.mealId], days.count == 1, !days.contains(nil) else { continue }
+            let key = row.mealId + "|" + axis.rawValue
+            if units[key] == nil { units[key] = .init(axis: axis, mealID: row.mealId, day: calendar.startOfDay(for: observed)) }
+            units[key]!.values.insert(row.value.text)
+            units[key]!.evidenceIDs.insert(id)
+        }
+        let rows = Array(units.values), latest = rows.map(\.day).max()
+        return .init(axes: TasteAxis.allCases.map { axis in
+            .init(axis: axis, current: distribution(rows.filter { $0.axis == axis }),
+                  previous: distribution(rows.filter { $0.axis == axis && $0.day < (latest ?? .distantPast) }))
+        }, previousBefore: latest)
+    }
+}
+
 struct TastePerceptionPeriod: Equatable, Sendable {
     let evidenceIDs: [String]
     let experienceIDs: [UUID]
@@ -228,5 +310,31 @@ struct TasteChangeSeries: Identifiable {
     static func changeLabel(_ points: [Point]) -> String {
         guard let previous = points.first(where: { $0.id == "이전" }), let recent = points.first(where: { $0.id == "최근" }) else { return "비교 부족" }
         return recent.value == previous.value ? "같은 강도" : recent.value > previous.value ? "더 강하게" : "더 약하게"
+    }
+
+    /// Reuse the detail screen's validated periods. Keep meal and recall scales separate;
+    /// missing/one-sided comparisons never become a synthetic line or zero response.
+    static func summary(_ series: [Self]) -> [Self] {
+        let comparable = series.filter { row in
+            guard let before = row.points.first(where: { $0.id == "이전" }),
+                  let after = row.points.first(where: { $0.id == "최근" }) else { return false }
+            return before.date < after.start && (0...row.maximum).contains(before.value)
+                && (0...row.maximum).contains(after.value)
+        }
+        let meals = comparable.filter { $0.source == "식사 기록" }
+        let source = meals.isEmpty ? comparable.filter { $0.source == "기준 음식 회상" } : meals
+        func delta(_ row: Self) -> Int { row.points.last!.value - row.points.first!.value }
+        let ranked = source.sorted {
+            if (delta($0) != 0) != (delta($1) != 0) { return delta($0) != 0 }
+            if $0.points.last!.date != $1.points.last!.date { return $0.points.last!.date > $1.points.last!.date }
+            return $0.id < $1.id
+        }
+        var selected: [Self] = []
+        if let increase = ranked.first(where: { delta($0) > 0 }) { selected.append(increase) }
+        if let decrease = ranked.first(where: { delta($0) < 0 }) { selected.append(decrease) }
+        for row in ranked where selected.count < 2 && !selected.contains(where: { $0.id == row.id }) {
+            selected.append(row)
+        }
+        return selected
     }
 }

@@ -255,7 +255,12 @@ final class GastronomyNativeTests: XCTestCase {
     }
 
     func testCardDetailDiscoveryUsesCurrentAccountAndCurrentCandidates() throws {
-        let records = (1...6).map { record(days: $0, selections: [sense(.liked, intensity: .strong)]) }
+        // Common preference is an active discovery. A single repeated menu is now
+        // intentionally excluded from this route, so it cannot exercise resolution.
+        let records = (1...6).map {
+            record(menu: $0 <= 3 ? "menu-a" : "menu-b", days: $0,
+                   selections: [sense(.liked, intensity: .strong)])
+        }
         let (input, state) = try input(records)
         let candidates = HomeDiscoveryEngine.gastronomyCards(input: input, state: state, calendar: calendar)
         XCTAssertFalse(candidates.isEmpty)

@@ -9,16 +9,27 @@ import kotlinx.serialization.json.JsonElement
 enum class TasteAxis(
     val label: String,
     val main: Long,
-    val tint: Long,
     val text: Long,
     val light: Long,
 ) {
-    sweet("단맛", 0xFFFF9900, 0xFFFFEBCC, 0xFF6F4609, 0xFFFFCC80),
-    sour("신맛", 0xFFFBC02D, 0xFFFFF7CC, 0xFF6F5F09, 0xFFFDD835),
-    bitter("쓴맛", 0xFF95C900, 0xFFEAF4CC, 0xFF505B24, 0xFFE6EE9C),
-    salty("짠맛", 0xFF7299FF, 0xFFE3EBFF, 0xFF36466F, 0xFF90CAF9),
-    umami("감칠맛", 0xFFB372B4, 0xFFF0E3F0, 0xFF513751, 0xFFCE93D8),
-    fat("지방맛", 0xFF95867A, 0xFFEAE7E4, 0xFF453F3A, 0xFFBCAAA4);
+    sweet("단맛", 0xFFFF9900, 0xFF6F4609, 0xFFFFCC80),
+    sour("신맛", 0xFFFFD600, 0xFF6F5F09, 0xFFFDD835),
+    bitter("쓴맛", 0xFF95C900, 0xFF505B24, 0xFFE6EE9C),
+    salty("짠맛", 0xFF7299FF, 0xFF36466F, 0xFF90CAF9),
+    umami("감칠맛", 0xFFB372B4, 0xFF513751, 0xFFCE93D8),
+    fat("지방맛", 0xFF95867A, 0xFF453F3A, 0xFFBCAAA4);
+
+    val tint: Long get() = tintWithWhite(80)
+    val chartTrack: Long get() = tintWithWhite(80)
+
+    fun tintWithWhite(whitePercent: Int): Long {
+        require(whitePercent in listOf(10, 20, 30, 40, 50, 60, 70, 80, 90, 95))
+        return listOf(16, 8, 0).fold(0xFF000000L) { result, shift ->
+            val channel = (main shr shift) and 0xFF
+            val mixed = (channel * (100 - whitePercent) + 255 * whitePercent + 50) / 100
+            result or (mixed shl shift)
+        }
+    }
 
     companion object {
         fun from(value: String?): TasteAxis? = entries.firstOrNull {

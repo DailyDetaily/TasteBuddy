@@ -2,6 +2,38 @@ import SwiftUI
 import ImageIO
 import UniformTypeIdentifiers
 
+/// Opaque sRGB scale. The percentage is the mode's base share, not alpha.
+enum TBTasteTint {
+    static let whitePercents = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95]
+
+    static func baseColor(in mode: TBColorMode) -> Color {
+        Color(hex: mode == .dark ? 0x1C1C1C : 0xFFFFFF)
+    }
+
+    static func hex(_ main: UInt, white: Int) -> UInt {
+        hex(main, percent: white, mode: .light)
+    }
+
+    static func hex(_ main: UInt, percent: Int, mode: TBColorMode) -> UInt {
+        precondition(whitePercents.contains(percent))
+        let base: UInt = mode == .dark ? 0x1C1C1C : 0xFFFFFF
+        return [16, 8, 0].reduce(UInt(0)) { result, shift in
+            let channel = (main >> shift) & 0xFF
+            let baseChannel = (base >> shift) & 0xFF
+            let mixed = (channel * UInt(100 - percent) + baseChannel * UInt(percent) + 50) / 100
+            return result | (mixed << shift)
+        }
+    }
+
+    static func color(_ main: UInt, white: Int) -> Color {
+        Color(hex: hex(main, white: white))
+    }
+
+    static func color(_ main: UInt, percent: Int, mode: TBColorMode) -> Color {
+        Color(hex: hex(main, percent: percent, mode: mode))
+    }
+}
+
 struct TasteAxisPalette: Equatable {
     let main: Color
     let dark: Color
@@ -9,6 +41,10 @@ struct TasteAxisPalette: Equatable {
     let bg: Color
     let tintSoft: Color
     let tintSoftBorder: Color
+    let borderSubtle: Color
+    let borderDefault: Color
+    let borderStrong: Color
+    let borderAccent: Color
     let tintSurface: Color
     let tintSurfaceSubText: Color
     let tintSurfaceText: Color
@@ -65,7 +101,7 @@ enum TasteAxis: String, CaseIterable, Codable, Identifiable {
         }
     }
 
-    var palette: TasteAxisPalette {
+    var lightPalette: TasteAxisPalette {
         switch self {
         case .sweet: .sweet
         case .sour: .sour
@@ -76,7 +112,7 @@ enum TasteAxis: String, CaseIterable, Codable, Identifiable {
         }
     }
 
-    var measurementPalette: TasteAxisMeasurementPalette {
+    var lightMeasurementPalette: TasteAxisMeasurementPalette {
         switch self {
         case .sweet: .sweet
         case .sour: .sour
@@ -109,6 +145,16 @@ enum TasteAxis: String, CaseIterable, Codable, Identifiable {
 
     var tintSoftBorderColor: Color {
         palette.tintSoftBorder
+    }
+
+    var borderSubtleColor: Color { palette.borderSubtle }
+    var borderDefaultColor: Color { palette.borderDefault }
+    var borderStrongColor: Color { palette.borderStrong }
+    var borderAccentColor: Color { palette.borderAccent }
+
+    /// Graph tracks retain 20% taste color against the active mode's base.
+    var chartTrackColor: Color {
+        .tbAdaptive(light: lightPalette.tintSurface, dark: chartTrackColor(in: .dark))
     }
 
     var tintSurfaceColor: Color {
@@ -168,14 +214,7 @@ enum TasteAxis: String, CaseIterable, Codable, Identifiable {
     }
 
     var radarLineStartColor: Color {
-        switch self {
-        case .sweet: Color(hex: 0xFFB342)
-        case .sour: Color(hex: 0xFCD369)
-        case .bitter: Color(hex: 0xB5D94A)
-        case .salty: Color(hex: 0x9BB6FF)
-        case .umami: Color(hex: 0xC69AC7)
-        case .fat: Color(hex: 0xB1A69E)
-        }
+        .tbAdaptive(light: radarLineStartColor(in: .light), dark: radarLineStartColor(in: .dark))
     }
 }
 
@@ -185,17 +224,15 @@ private extension TasteAxisPalette {
         dark: 0xCC7A00,
         light: 0xFFCC80,
         bg: 0xFFD699,
-        tintSurface: 0xFFEBCC,
         tintSurfaceSubText: 0x896735,
         tintSurfaceText: 0x6F4609,
         gradientEnd: 0xFFB84D
     )
     static let sour = make(
-        main: 0xFBC02D,
+        main: 0xFFD600,
         dark: 0xC99A00,
         light: 0xFDD835,
         bg: 0xFFEF99,
-        tintSurface: 0xFFF7CC,
         tintSurfaceSubText: 0x897C35,
         tintSurfaceText: 0x6F5F09,
         gradientEnd: 0xFFD54F
@@ -205,7 +242,6 @@ private extension TasteAxisPalette {
         dark: 0x6E9600,
         light: 0xE6EE9C,
         bg: 0xE0EBB4,
-        tintSurface: 0xEAF4CC,
         tintSurfaceSubText: 0x70794B,
         tintSurfaceText: 0x505B24,
         gradientEnd: 0xAED581
@@ -215,7 +251,6 @@ private extension TasteAxisPalette {
         dark: 0x4A70CC,
         light: 0x90CAF9,
         bg: 0xC6D6FF,
-        tintSurface: 0xE3EBFF,
         tintSurfaceSubText: 0x5A6789,
         tintSurfaceText: 0x36466F,
         gradientEnd: 0x9FBFFF
@@ -225,7 +260,6 @@ private extension TasteAxisPalette {
         dark: 0x8A5490,
         light: 0xCE93D8,
         bg: 0xE1C7E1,
-        tintSurface: 0xF0E3F0,
         tintSurfaceSubText: 0x705B70,
         tintSurfaceText: 0x513751,
         gradientEnd: 0xCE93D8
@@ -235,7 +269,6 @@ private extension TasteAxisPalette {
         dark: 0x6B5E54,
         light: 0xBCAAA4,
         bg: 0xD5CFCA,
-        tintSurface: 0xEAE7E4,
         tintSurfaceSubText: 0x66625D,
         tintSurfaceText: 0x453F3A,
         gradientEnd: 0xB0A49A
@@ -246,7 +279,6 @@ private extension TasteAxisPalette {
         dark: UInt,
         light: UInt,
         bg: UInt,
-        tintSurface: UInt,
         tintSurfaceSubText: UInt,
         tintSurfaceText: UInt,
         gradientEnd: UInt
@@ -256,9 +288,13 @@ private extension TasteAxisPalette {
             dark: Color(hex: dark),
             light: Color(hex: light),
             bg: Color(hex: bg),
-            tintSoft: Color(hex: main, alpha: 0.05),
-            tintSoftBorder: Color(hex: main, alpha: 0.18),
-            tintSurface: Color(hex: tintSurface),
+            tintSoft: TBTasteTint.color(main, white: 80),
+            tintSoftBorder: TBTasteTint.color(main, white: 80),
+            borderSubtle: TBTasteTint.color(main, white: 80),
+            borderDefault: TBTasteTint.color(main, white: 70),
+            borderStrong: TBTasteTint.color(main, white: 60),
+            borderAccent: Color(hex: main),
+            tintSurface: TBTasteTint.color(main, white: 80),
             tintSurfaceSubText: Color(hex: tintSurfaceSubText),
             tintSurfaceText: Color(hex: tintSurfaceText),
             gradientColors: [Color(hex: main), Color(hex: gradientEnd)]
@@ -392,7 +428,7 @@ struct DiningEntry: Identifiable, Codable, Equatable {
     /// nil은 이전 ID 기록, 빈 배열은 새 선택을 모두 해제한 기록이다.
     let sensorySelections: [DiningSensorySelection]?
     var sensoryPresentation: DiningSelectionJSON?
-    let overallEvaluation: DiningOverallEvaluation?
+    var overallEvaluation: DiningOverallEvaluation?
     let dishKindIDs: [String]
     let reflectionPhotoFilename: String?
     /// Additional photos of this exact food record, in display order.

@@ -74,7 +74,7 @@ struct TasteBloomTransition: View {
                     Rectangle()
                         .fill(.ultraThinMaterial)
                         .overlay(
-                            Color.white.opacity(
+                            TBColor.surface.opacity(
                                 TasteBloomTransitionMetrics.whiteScrimOpacity(progress)
                             )
                         )
@@ -540,6 +540,7 @@ private enum TasteBloomTransitionMetrics {
 
 struct AppShellView: View {
     @EnvironmentObject private var appModel: AppModel
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var activeTab: MainTab
     @State private var routeStack: [AppRoute] = []
@@ -569,6 +570,7 @@ struct AppShellView: View {
     @State private var diningFeedbackLaunchOrigin: CGPoint?
     @State private var diningFeedbackLaunchColors: TasteBeamLaunchState?
     @State private var activeDiningFeedbackEditEntry: DiningEntry?
+    @State private var activeDiningAdditionalMenuDraft: DiningEntry?
     @State private var activeInfoSuggestionSheet: (restaurantName: String, infoRows: [RestaurantInfoRowModel])?
     @State private var activeMenuSuggestionSheetRestaurantName: String?
     private let onStagedSheetPresentationChange: ((Bool) -> Void)?
@@ -597,7 +599,7 @@ struct AppShellView: View {
             ZStack {
                 ZStack {
                     TBColor.page
-                    Color.black.opacity(stagedSheetProgress)
+                    stagedSheetCanvas.opacity(stagedSheetProgress)
                 }
                 .ignoresSafeArea()
                 .animation(
@@ -620,7 +622,6 @@ struct AppShellView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     .background(currentTopChromeBackground)
-                    .environment(\.colorScheme, .light)
                     .environment(\.mainTabStatusBarHeight, usesInternalStatusBarSpace ? safeAreaTop : 0)
                     .environment(\.tasteDetailNavigate, { detail in navigateImmediately(.cardDetail(detail)) })
                     .environment(\.tbTopChromeInset, usesInternalStatusBarSpace ? nil : safeAreaTop)
@@ -645,7 +646,6 @@ struct AppShellView: View {
                         .accessibilityElement(children: isBookmarkCoverEditorOpen || showsProfileEditDeleteConfirmation ? .ignore : .contain)
                         .accessibilityAddTraits(isBookmarkCoverEditorOpen || showsProfileEditDeleteConfirmation ? [] : .isModal)
                         .accessibilityHidden(isBookmarkCoverEditorOpen || showsProfileEditDeleteConfirmation)
-                        .environment(\.colorScheme, .light)
                         .environment(\.bottomSheetScrollCoordinator, stagedSheetScrollCoordinator)
                         .frame(
                             width: proxy.size.width,
@@ -749,6 +749,7 @@ struct AppShellView: View {
             activeSheet = nil
             activeBookmarkSheetRestaurant = nil
             activeDiningFeedbackEditEntry = nil
+            activeDiningAdditionalMenuDraft = nil
             activeDishOptionsItem = nil
             activeInfoSuggestionSheet = nil
             activeMenuSuggestionSheetRestaurantName = nil
@@ -807,6 +808,11 @@ struct AppShellView: View {
                 appModel.updateDiningEntry(updatedEntry)
             }
         }
+        .fullScreenCover(item: $activeDiningAdditionalMenuDraft) { draft in
+            DiningFeedbackSheet(entry: draft) { addedEntry in
+                appModel.addDiningEntry(addedEntry)
+            }
+        }
         .fullScreenCover(isPresented: $showsNewDiningFeedback) {
             DiningFeedbackSheet(
                 startMode: newDiningFeedbackStartMode,
@@ -849,12 +855,16 @@ struct AppShellView: View {
         }
     }
 
+    private var stagedSheetCanvas: Color {
+        colorScheme == .dark ? .black : TBColor.page
+    }
+
     private func bottomSafeAreaBackground(safeAreaBottom: CGFloat) -> some View {
         VStack(spacing: 0) {
             Spacer(minLength: 0)
             ZStack {
                 currentBottomChromeBackground
-                Color.black.opacity(stagedSheetProgress)
+                stagedSheetCanvas.opacity(stagedSheetProgress)
             }
             .frame(height: safeAreaBottom)
         }
@@ -1396,7 +1406,7 @@ struct AppShellView: View {
             .frame(maxWidth: ActionOverlayCardMetrics.cardMaxWidth)
             .background(TBColor.focus)
             .clipShape(RoundedRectangle(cornerRadius: ActionOverlayCardMetrics.cardRadius, style: .continuous))
-            .shadow(color: Color.black.opacity(0.24), radius: 30, x: 0, y: 20)
+            .shadow(color: TBEffectToken.drawer.dynamicColor(), radius: 30, x: 0, y: 20)
             .padding(.horizontal, ActionOverlayCardMetrics.horizontalPadding)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -1544,6 +1554,7 @@ struct AppShellView: View {
                 onEdit: { entry in
                     openDiningFeedbackEditorFromOptions(entry)
                 },
+                onAddMenu: openAdditionalMenuFromOptions,
                 onDelete: { entryId in
                     appModel.removeDiningEntry(id: entryId)
                     dismissDishOptionsSheet()
@@ -1784,6 +1795,22 @@ struct AppShellView: View {
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(TasteBloomMotion.duration(.sheet, reduceMotion: reduceMotion)))
             activeDiningFeedbackEditEntry = entry
+        }
+    }
+
+    private func openAdditionalMenuFromOptions(_ entry: DiningEntry) {
+        let accountGeneration = appModel.memoryAccountGeneration
+        dismissDishOptionsSheet()
+
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(TasteBloomMotion.duration(.sheet, reduceMotion: reduceMotion)))
+            guard appModel.memoryAccountGeneration == accountGeneration,
+                  let currentEntry = appModel.diningEntry(id: entry.id),
+                  currentEntry.hasCompletedTasteFeedback,
+                  let draft = appModel.additionalMenuDraft(for: currentEntry.id) else {
+                return
+            }
+            activeDiningAdditionalMenuDraft = draft
         }
     }
 
@@ -2715,7 +2742,7 @@ private struct ProfileEditPickerOverlay: View {
             .padding(20)
             .background(TBColor.focus)
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .shadow(color: Color.black.opacity(0.20), radius: 28, x: 0, y: 16)
+            .shadow(color: TBEffectToken.profilePicker.dynamicColor(), radius: 28, x: 0, y: 16)
             .padding(.horizontal, TBSpacing.page)
             .padding(.bottom, TBSpacing.page)
         }
@@ -3229,6 +3256,8 @@ private struct PublicProfileActionSection<Content: View>: View {
 }
 
 private struct AppMenuSheet: View {
+    @AppStorage(TBThemePreference.storageKey) private var appearance: TBThemePreference = .system
+    @State private var showsThemeSheet = false
     @EnvironmentObject private var appModel: AppModel
     @Environment(\.dismiss) private var dismiss
     @State private var isLoggingOut = false
@@ -3249,7 +3278,6 @@ private struct AppMenuSheet: View {
                     .font(TBFont.bold(15))
                     .foregroundStyle(TBColor.textPrimary)
             ),
-            footer: AnyView(logoutFooter),
             surfaceBackground: TBColor.page
         ) {
             BottomSheetScrollView {
@@ -3369,12 +3397,23 @@ private struct AppMenuSheet: View {
                                 detail: "Taste Buddy v1.0.0",
                                 action: {}
                             ),
+                            MenuRowModel(
+                                symbol: "sun",
+                                title: "화면 테마",
+                                detail: appearance.title,
+                                action: { showsThemeSheet = true }
+                            ),
                         ]
                     )
+
+                    logoutSection
                 }
                 .padding(.horizontal, TBSpacing.page)
                 .padding(.bottom, TBSpacing.page + 24)
             }
+        }
+        .sheet(isPresented: $showsThemeSheet) {
+            AppThemeSheet()
         }
     }
 
@@ -3386,7 +3425,7 @@ private struct AppMenuSheet: View {
         }
     }
 
-    private var logoutFooter: some View {
+    private var logoutSection: some View {
         VStack(spacing: 0) {
             Rectangle()
                 .fill(TBColor.border)
@@ -3398,7 +3437,6 @@ private struct AppMenuSheet: View {
                     .font(TBFont.regular(11))
                     .foregroundStyle(TBColor.destructive)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, TBSpacing.page)
                     .padding(.top, 10)
             }
 
@@ -3509,6 +3547,47 @@ private struct NotificationCompactRow: View {
         .padding(12)
         .background(TBColor.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+private struct AppThemeSheet: View {
+    @AppStorage(TBThemePreference.storageKey) private var appearance: TBThemePreference = .system
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        BottomSheetShell(
+            headerStart: AnyView(BottomSheetCloseButton(action: { dismiss() })),
+            headerCenter: AnyView(
+                Text("화면 테마")
+                    .font(TBFont.bold(15))
+                    .foregroundStyle(TBColor.textPrimary)
+            ),
+            stageMode: .auto(maxHeightRatio: 0.85),
+            usesNativeSheetChrome: true,
+            surfaceBackground: TBColor.page
+        ) {
+            ScrollView {
+                VStack(spacing: 8) {
+                    ForEach(TBThemePreference.allCases, id: \.self) { option in
+                        TBSelectionCard(
+                            title: option.title,
+                            isSelected: appearance == option,
+                            singleLine: true
+                        ) {
+                            appearance = option
+                        }
+                    }
+                }
+                .padding(.horizontal, TBSpacing.page)
+                .padding(.bottom, 24)
+            }
+            .accessibilityIdentifier("menu-theme-picker")
+        }
+        .presentationDetents([.height(340), .large])
+        .presentationDragIndicator(.hidden)
+        .presentationCornerRadius(BottomSheetShellMetrics.topRadius)
+        .presentationBackground(TBColor.page)
+        .preferredColorScheme(appearance.colorScheme)
     }
 }
 

@@ -628,7 +628,7 @@ struct TasteMotionView: View {
                 wedge.addLine(to: TasteMotionGeometry.polar(start, 316))
                 wedge.addArc(center: CGPoint(x: 320, y: 320), radius: 316, startAngle: .radians(start), endAngle: .radians(end), clockwise: false)
                 wedge.closeSubpath()
-                context.fill(wedge, with: .color(TBColor.borderCard))
+                context.fill(wedge, with: .color(TBColor.borderFaint))
             }
             var polygon = Path()
             polygon.addLines(points)

@@ -46,6 +46,19 @@ enum NativeAccountDataError: LocalizedError, Equatable {
     }
 }
 
+/// Diagnostic codes only: never log source records, account IDs, tokens or server messages.
+enum NativeAccountDataDiagnostics {
+    static func code(for error: Error) -> String {
+        #if canImport(Supabase)
+        if let error = error as? PostgrestError { return "postgrest:\(error.code ?? "unknown")" }
+        if let error = error as? StorageError { return "storage:\(error.statusCode ?? "unknown")" }
+        #endif
+        if let error = error as? URLError { return "url:\(error.code.rawValue)" }
+        if error is DecodingError { return "decoding" }
+        return String(describing: type(of: error))
+    }
+}
+
 protocol NativeAccountDataRepository {
     func fetch(userID: String) async throws -> NativeAccountRemoteData?
     func save(_ snapshot: NativeAccountSnapshot, userID: String, expectedRevision: Int) async throws -> Int

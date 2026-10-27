@@ -66,7 +66,8 @@ final class GastronomyDataTests: XCTestCase {
         let card = try XCTUnwrap(TDDataEngine.preference(sample, facet: .liking).cards.first { $0.id == "liking" })
         let display = TDArchiveCardPresentation.make(card, category: .preference)
         XCTAssertEqual(display.archiveChart?.total, 1)
-        XCTAssertTrue(display.detail.contains("전체 2개 항목"))
+        XCTAssertEqual(display.supportingText, "감각 2가지")
+        XCTAssertFalse(display.detail.contains("전체 2개 항목"))
         XCTAssertEqual(card.rows.count, 2, "All scopes remain available in the evidence detail")
     }
 
@@ -84,10 +85,113 @@ final class GastronomyDataTests: XCTestCase {
         // Adjacent rows now belong to different scopes; adjacency must not join them.
         card.rows = [card.rows[0], card.rows[2], card.rows[3], card.rows[1]]
         let display = TDArchiveCardPresentation.make(card, category: .change)
-        XCTAssertTrue(display.detail.contains("이전 아쉬움 1 → 최근 좋음 1"), display.detail)
+        XCTAssertTrue(display.detail.contains("이전: 아쉬움 1\n최근: 좋음 1"), display.detail)
         XCTAssertFalse(display.detail.contains("보통"))
+        XCTAssertEqual(display.supportingText, "비교 묶음 2개")
         XCTAssertNil(display.archiveChart, "A lone prior-period distribution would hide the comparison")
         XCTAssertEqual(card.rows.count, 4)
+    }
+
+    func testCompactPresenceComparisonPreservesFractionsUnknownsAndSubRoundingChanges() {
+        func display(_ comparison: TDComparison, compatible: Bool = true) -> HomePeriodInsightCardData {
+            var proof = TDEvidenceBundle()
+            proof.conditions["catalogComparable"] = compatible ? "true" : "false"
+            let row = TDRow(id: "sour", title: "산미", value: "engine-owned value",
+                            evidence: proof, comparison: comparison)
+            return TDArchiveCardPresentation.make(
+                .init(id: "change-presence", title: "감각 기록의 변화", meaning: "comparison", rows: [row]),
+                category: .change)
+        }
+        let same = display(.init(before: 5, after: 8, beforeDenominator: 5, afterDenominator: 8))
+        XCTAssertEqual(same.title, "산미 기록 비율 100% 유지")
+        XCTAssertTrue(same.detail.contains("이전 5/5회 → 최근 8/8회"))
+        XCTAssertTrue(same.detail.contains("감각을 기록한 식사 기준"))
+
+        let small = display(.init(before: 5_000, after: 5_001, beforeDenominator: 10_000, afterDenominator: 10_000))
+        XCTAssertEqual(small.title, "산미 기록 비율 50% → 50%")
+        XCTAssertTrue(small.detail.contains("0.1%p 미만 증가"))
+        XCTAssertFalse(small.title.contains("유지"), "Rounded equal percentages are not equal source fractions")
+
+        let zero = display(.init(before: 0, after: 0, beforeDenominator: 5, afterDenominator: 8))
+        XCTAssertEqual(zero.title, "산미 기록 비율 0% 유지")
+        XCTAssertTrue(zero.detail.contains("이전 0/5회 → 최근 0/8회"))
+
+        let missing = display(.init(before: nil, after: 3, beforeDenominator: 0, afterDenominator: 8))
+        XCTAssertEqual(missing.title, "산미 기록 비율 — → 38%")
+        XCTAssertTrue(missing.detail.contains("이전 비교 자료 부족"))
+        XCTAssertFalse(missing.detail.contains("0/0"))
+        XCTAssertFalse(missing.title.contains("유지"))
+
+        let incompatible = display(.init(before: 5, after: 8, beforeDenominator: 5, afterDenominator: 8), compatible: false)
+        XCTAssertTrue(incompatible.detail.contains("감각 응답 기준 확인 필요"))
+        XCTAssertFalse(incompatible.title.contains("유지"))
+    }
+
+    func testCompactExperienceKeepsFirstExcludedFromRepeatAndUnknownSeparateFromZero() {
+        let sample = state([record("a", daysAgo: 10), record("b", daysAgo: 5), record("c", daysAgo: 1)])
+        for dimension in TDDimension.allCases {
+            let card = TDDataEngine.eventCard(sample, dimension: dimension, first: false, calendar: calendar)
+            let display = TDArchiveCardPresentation.make(card, category: .experience)
+            XCTAssertEqual(display.title, "반복 기록 \(dimension.rawValue) 1\(dimension.unit)")
+            XCTAssertTrue(display.detail.contains("첫 기록 이후 2회"))
+            XCTAssertEqual(card.rows.first?.count, 2)
+        }
+        let unknown = state([record("unknown", menu: nil, restaurant: nil)])
+        let unknownCard = TDDataEngine.experience(unknown).cards.first { $0.id == "measure-메뉴" }!
+        let unknownDisplay = TDArchiveCardPresentation.make(unknownCard, category: .experience)
+        XCTAssertEqual(unknownDisplay.title, "연결·분류 확인 필요")
+        XCTAssertFalse(unknownDisplay.title.contains("0개"))
+
+        let emptyCard = TDDataEngine.experience(state([])).cards.first { $0.id == "measure-메뉴" }!
+        let emptyDisplay = TDArchiveCardPresentation.make(emptyCard, category: .experience)
+        XCTAssertEqual(emptyDisplay.title, "메뉴 0개")
+        XCTAssertEqual(emptyDisplay.detail, "선택 범위의 기록 없음")
+    }
+
+    func testCompactResponseCopyRetainsMixedMissingAndUnresolvedCounts() {
+        let segments: [TDSegment] = [
+            .init(key: "positive", label: "좋음", count: 2),
+            .init(key: "mixed", label: "응답 나뉨", count: 1),
+            .init(key: "missing", label: "미응답", count: 2),
+            .init(key: "unresolved", label: "해석 보류", count: 1),
+        ]
+        let row = TDRow(id: "sour", title: "산미", value: "engine-owned value",
+                        segments: segments, state: .invalidEvidence, count: 3, denominator: 6)
+        let card = TDCard(id: "liking", title: "감각별 호감", meaning: "liking",
+                          rows: [row], state: .invalidEvidence)
+        let display = TDArchiveCardPresentation.make(card, category: .preference)
+        XCTAssertEqual(display.title, "산미 호감 · 식사 3회 응답")
+        XCTAssertEqual(display.detail, "좋음 2 · 응답 나뉨 1 · 미응답 2 · 응답 확인 필요 1")
+        XCTAssertEqual(display.archiveChart?.total, 6)
+        XCTAssertEqual(display.state, .insufficient)
+        XCTAssertEqual(card.rows[0].segments.map(\.count), [2, 1, 2, 1])
+    }
+
+    func testCompactCopyDoesNotCallPendingPresenceMissingOrAnUnclassifiedIssueAnotherSense() {
+        let pending = TDEvidenceIssue(id: "pending", entryID: "a", facet: .presence,
+                                      attribute: "taste.sour", reference: nil, reason: "matching observation pending")
+        let sample = state([record("a")], issues: [pending])
+        let card = TDDataEngine.sensation(sample, domain: "맛").cards.first { $0.id == "presence" }!
+        let display = TDArchiveCardPresentation.make(card, category: .sensation)
+        XCTAssertEqual(display.title, "집계할 감각 기록 없음")
+        XCTAssertFalse(display.detail.contains("응답 없음"))
+
+        let unclassified = TDEvidenceIssue(id: "unknown", entryID: "b", facet: .liking,
+                                           attribute: nil, reference: nil, reason: "unclassified")
+        let mixed = state([record("a"), record("b")], [observation("sour", entry: "a", facet: .liking)], issues: [unclassified])
+        let liking = TDDataEngine.preference(mixed).cards.first { $0.id == "liking" }!
+        XCTAssertEqual(liking.rows.count, 2)
+        XCTAssertEqual(TDArchiveCardPresentation.make(liking, category: .preference).supportingText, "표시 항목 2개")
+        var unresolvedOnly = liking
+        unresolvedOnly.rows = liking.rows.filter { $0.id == "unclassified" }
+        XCTAssertEqual(TDArchiveCardPresentation.make(unresolvedOnly, category: .preference).title, "호감 응답 확인 필요")
+
+        let knownPending = TDEvidenceIssue(id: "known-pending", entryID: "a", facet: .liking,
+                                          attribute: "taste.sour", reference: nil, reason: "unrecognized response")
+        let knownCard = TDDataEngine.preference(state([record("a")], issues: [knownPending])).cards.first { $0.id == "liking" }!
+        let knownDisplay = TDArchiveCardPresentation.make(knownCard, category: .preference)
+        XCTAssertEqual(knownDisplay.title, "산미 호감 · 응답 확인 필요")
+        XCTAssertFalse(knownDisplay.title.contains("taste.sour"))
     }
 
     func testMealDishAndDayAreSeparateUnits() {

@@ -131,8 +131,8 @@ extension PersonalTasteModelBuilder {
         return patterns.sorted { $0.id < $1.id }
     }
 
-    static func fitQuestions(_ records: [PersonalTasteModelRecord], patterns: [PersonalTasteFitPattern]) -> [Question] {
-        scopedRatings(records, kind: "preference_fit", scale: "preference-fit-v1", values: fitValues).flatMap { rating in
+    static func fitQuestions(_ records: [PersonalTasteModelRecord], patterns: [PersonalTasteFitPattern], validatedIntensityLinks: [String: Set<String>] = [:]) -> [Question] {
+        scopedRatings(records, kind: "preference_fit", scale: "preference-fit-v1", values: fitValues, validatedIntensityLinks: validatedIntensityLinks).flatMap { rating in
             let row = rating.record
             let missing: [(String, Bool, Int)] = [("intensity", rating.intensity == nil, 70), ("target", row.target == "unspecified", 60), ("phase", row.phase == "unspecified", 50)]
             let unstable = patterns.contains { $0.attribute == row.attribute && $0.reference == row.reference && $0.status == "mixed_fit" }
@@ -142,8 +142,8 @@ extension PersonalTasteModelBuilder {
         }
     }
 
-    static func buildOverallPatterns(_ records: [PersonalTasteModelRecord], userID: String, includeEvidence: Bool = true) -> [PersonalTasteOverallPattern] {
-        let ratings = scopedRatings(records, kind: "attribute_liking", scale: "attribute-three-category-v1", values: likingValues)
+    static func buildOverallPatterns(_ records: [PersonalTasteModelRecord], userID: String, includeEvidence: Bool = true, validatedIntensityLinks: [String: Set<String>] = [:]) -> [PersonalTasteOverallPattern] {
+        let ratings = scopedRatings(records, kind: "attribute_liking", scale: "attribute-three-category-v1", values: likingValues, validatedIntensityLinks: validatedIntensityLinks)
         let overall = Dictionary(grouping: records.filter { $0.kind == "overall_liking" && $0.scale == "overall-five-category-v1" && overallValues.contains($0.value.text) }, by: \.experienceId)
         let pairs = ratings.flatMap { rating in
             (overall[rating.record.experienceId] ?? []).filter { $0.mealId == rating.record.mealId }.map { row in

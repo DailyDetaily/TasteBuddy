@@ -1,8 +1,10 @@
 import Foundation
 
-/// 음식 전체에 직접 남긴 5단계 평가. 개별 감각 평가나 과거 별점으로 환산하지 않는다.
+/// 음식 전체에 직접 남긴 평가. 5단계 문구와 0.5점 단위 별점의 척도를 구분해 보존한다.
 struct DiningOverallEvaluation: Codable, Equatable, Sendable {
     static let version = "dining-overall-liking/1"
+    static let starVersion = "dining-overall-stars/1"
+    static let starScale = "overall-five-stars-half-step-v1"
     static let question = "이 음식은 전체적으로 어땠나요?"
     struct Response: DiningSelectionStringValue {
         let rawValue: String
@@ -30,6 +32,32 @@ struct DiningOverallEvaluation: Codable, Equatable, Sendable {
         self.responseValue = response; self.responseLabelSnapshot = responseLabelSnapshot ?? response.label
         self.target = target; self.phase = phase
     }
+
+    init?(starRating: Double) {
+        guard starRating.isFinite, (0.5...5).contains(starRating),
+              (starRating * 2).rounded() == starRating * 2 else { return nil }
+        let value = Self.starText(starRating)
+        self.init(response: .init(rawValue: value), questionVersion: Self.starVersion,
+                  responseLabelSnapshot: "\(value)점")
+    }
+
+    static func starText(_ value: Double) -> String {
+        value.formatted(.number.precision(.fractionLength(0...1)).locale(Locale(identifier: "en_US_POSIX")))
+    }
+
+    /// Existing five-category answers retain their stored wording; editing writes explicit stars.
+    var starRating: Double? {
+        guard !parse().observations.isEmpty else { return nil }
+        if questionVersion == Self.starVersion { return numericStarRating }
+        return ["veryDisliked": 1, "disliked": 2, "neutral": 3, "liked": 4, "veryLiked": 5][responseValue.rawValue]
+    }
+
+    private var numericStarRating: Double? {
+        guard let value = Double(responseValue.rawValue), value.isFinite,
+              (0.5...5).contains(value), (value * 2).rounded() == value * 2,
+              Self.starText(value) == responseValue.rawValue else { return nil }
+        return value
+    }
     private enum CodingKeys: String, CodingKey { case questionID, questionVersion, questionLabelSnapshot, responseValue, responseLabelSnapshot, target, phase, unparsedPayload }
     init(from decoder: Decoder) throws {
         let raw = try DiningSelectionJSON(from: decoder)
@@ -49,16 +77,20 @@ struct DiningOverallEvaluation: Codable, Equatable, Sendable {
         let span = SensorySourceSpan(start: 0, end: responseLabelSnapshot.utf16.count, quote: responseLabelSnapshot)
         let reason: String?
         if unparsedPayload != nil { reason = "unreadable_overall_evaluation_payload" }
-        else if questionID != "overall_liking" || questionVersion != Self.version { reason = "unknown_overall_evaluation_version" }
-        else if questionLabelSnapshot != Self.question || responseLabelSnapshot != responseValue.label { reason = "overall_evaluation_label_mismatch" }
-        else if responseValue.semanticValue == nil { reason = "unknown_overall_evaluation_response" }
+        else if questionID != "overall_liking" || ![Self.version, Self.starVersion].contains(questionVersion) { reason = "unknown_overall_evaluation_version" }
+        else if questionLabelSnapshot != Self.question || responseLabelSnapshot != (questionVersion == Self.starVersion ? "\(responseValue.rawValue)점" : responseValue.label) { reason = "overall_evaluation_label_mismatch" }
+        else if questionVersion == Self.starVersion ? numericStarRating == nil : responseValue.semanticValue == nil { reason = "unknown_overall_evaluation_response" }
         else if target != "whole_dish" || phase != "unspecified" { reason = "invalid_overall_evaluation_scope" }
         else { reason = nil }
         if let reason {
             let pending = SensorySelectionEvidence(selectionID: evidence.selectionID, type: evidence.type, catalogVersion: evidence.catalogVersion, labelSnapshot: evidence.labelSnapshot, facet: evidence.facet, labelValue: evidence.labelValue, responseValue: evidence.responseValue, relatedBubbleID: nil, relatedBubbleLabel: nil, resolution: "unresolved")
             return .init(unresolved: [.init(phrase: responseLabelSnapshot, reason: reason, sourceSpans: [span], selectionEvidence: pending)])
         }
-        return .init(observations: [.init(kind: "overall_liking", attribute: nil, value: .text(responseValue.semanticValue!), scale: "overall-five-category-v1", target: target, phase: phase, phrase: responseLabelSnapshot, sourceSpans: [span], selectionEvidence: evidence)])
+        let isStars = questionVersion == Self.starVersion
+        return .init(observations: [.init(kind: "overall_liking", attribute: nil,
+            value: .text(isStars ? responseValue.rawValue : responseValue.semanticValue!),
+            scale: isStars ? Self.starScale : "overall-five-category-v1", target: target, phase: phase,
+            phrase: responseLabelSnapshot, sourceSpans: [span], selectionEvidence: evidence)])
     }
 }
 

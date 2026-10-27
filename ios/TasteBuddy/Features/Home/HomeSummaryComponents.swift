@@ -30,12 +30,13 @@ struct HomeSensorySummarySection: View {
         TBPageSection(title: "인사이트 요약", titleSize: .medium) {
             CardScrollList(spacing: TBSpacing.x12) {
                 ForEach(TDCategory.allCases) { category in
-                    HomeSummaryCard(
+                    CompactSummaryCard(
                         label: category.rawValue,
                         value: category.subtitle,
                         detail: "미식 데이터 보기",
                         axis: category.routeKind.axis,
                         symbol: category.routeKind.symbol,
+                        category: category,
                         onTap: onOpenInsight.map { open in { open(category.routeKind) } }
                     )
                     .accessibilityIdentifier("home-category-" + category.id)
@@ -48,7 +49,7 @@ struct HomeSensorySummarySection: View {
             } else if let error {
                 SensoryAnalysisStatusCard(state: .failed(error))
             } else if !pendingCards.isEmpty {
-                VStack(spacing: TBSpacing.x12) {
+                StackCard(showsStack: pendingCards.count > 1, isExpanded: isQuestionStackExpanded) {
                     ForEach(Array(stackCards.enumerated()), id: \.element.id) { index, item in
                         stackCard(item, index: index, total: pendingCards.count)
                             .transition(TasteBloomMotion.questionReveal(reduceMotion: reduceMotion, index: max(0, index - 1)))
@@ -94,14 +95,14 @@ struct HomeSensorySummarySection: View {
             PersonalTasteNextQuestionCard(
                 selection: question,
                 sourceSelectionLabel: snapshot.observations.first { $0.id == question.responseSourceID }?.selectionEvidence?.labelSnapshot,
-                showsStack: !isQuestionStackExpanded && total > 1,
+                showsStack: false,
                 isStackExpanded: isQuestionStackExpanded,
                 onToggleStack: toggle,
                 onStartNewRecord: { onStartNewDining?(question) },
                 stackAccessibilityLabel: "질문과 발견 카드"
             )
         case .discovery(let card):
-            HomeDiscoveryStackCard(card: card, showsStack: !isQuestionStackExpanded && total > 1,
+            HomeDiscoveryStackCard(card: card, showsStack: false,
                 isStackExpanded: isQuestionStackExpanded, onToggleStack: toggle,
                 onOpen: { selectedDetail = .discovery(card.id) })
         }
@@ -259,17 +260,7 @@ extension HomeArchiveCard.Kind {
     }
 
     var symbol: String {
-        switch self {
-        case .record: "calendar.badge.checkmark.fill"
-        case .repeated: "fork.knife.fill"
-        case .experience: "globe.fill"
-        case .liking: "heart.fill"
-        case .sensation: "sparkles.fill"
-        case .fit: "checkmark.circle.fill"
-        case .condition: "slider.horizontal.3"
-        case .difference: "arrow.left.arrow.right"
-        case .change: "arrow.up.right.fill"
-        }
+        dataCategory.symbol
     }
 }
 
@@ -330,7 +321,7 @@ struct HomeInsightDotRing: View {
                         .foregroundStyle(TBColor.textPrimary)
                     Text(countLabel ?? (mealCount == 0 ? "기록을 기다려요" : "번의 식사"))
                         .font(TBFont.medium(13)).foregroundStyle(TBColor.textBody)
-                    LucideIcon(systemName: kind.symbol, size: 20, filled: true)
+                    TDCategoryIcon(category: kind.dataCategory, size: 20)
                         .foregroundStyle(kind.axis.tintSurfaceTextColor)
                         .frame(width: 40, height: 40)
                         .background(TBColor.surface, in: RoundedRectangle(cornerRadius: TBRadius.row))
@@ -458,12 +449,13 @@ private struct HomeInsightRecordRow: View {
         .environmentObject(AppModel.preview(authEntryComplete: true, onboardingComplete: true, diningEntries: []))
 }
 
-struct HomeSummaryCard: View {
+struct CompactSummaryCard: View {
     let label: String
     let value: String
     let detail: String
     let axis: TasteAxis
     let symbol: String
+    var category: TDCategory? = nil
     var onTap: (() -> Void)? = nil
 
     var body: some View {
@@ -476,12 +468,15 @@ struct HomeSummaryCard: View {
             subtitleFont: TBFont.semibold(14),
             onTap: onTap
         ) {
-            LucideIcon(
-                systemName: symbol,
-                size: TBIcon.Size.small,
-                strokeWidth: TBIcon.Stroke.medium,
-                filled: true
-            )
+            Group {
+                if let category {
+                    TDCategoryIcon(category: category, size: TBIcon.Size.large, strokeWidth: TBIcon.Stroke.strong)
+                } else {
+                    LucideIcon(systemName: symbol, size: TBIcon.Size.large,
+                               strokeWidth: symbol == "heart.fill" ? 0 : TBIcon.Stroke.strong,
+                               filled: symbol == "heart.fill")
+                }
+            }
             .frame(
                 width: RecommendationMiniCardMetrics.avatarSize,
                 height: RecommendationMiniCardMetrics.avatarSize
@@ -501,12 +496,13 @@ struct HomeSummaryRail: View {
         TBPageSection(title: "미식 요약", titleSize: .medium) {
             CardScrollList(spacing: TBSpacing.x12) {
                 ForEach(metrics) { metric in
-                    HomeSummaryCard(
+                    CompactSummaryCard(
                         label: metric.cardLabel,
                         value: metric.cardValue,
                         detail: metric.cardDetail,
                         axis: metric.kind.cardAxis,
                         symbol: metric.kind.cardSymbol,
+                        category: metric.kind.insightCategory,
                         onTap: onSelect.map { handler in
                             { handler(metric.kind) }
                         }
@@ -530,13 +526,14 @@ private extension HomeSummaryMetricKind {
     }
 
     var cardSymbol: String {
+        insightCategory.symbol
+    }
+
+    var insightCategory: TDCategory {
         switch self {
-        case .record: "calendar.badge.checkmark.fill"
-        case .frequentMenu: "fork.knife.fill"
-        case .regularRestaurant: "storefront.fill"
-        case .tasteDiscovery: "sparkles.fill"
-        case .breadth: "globe.fill"
-        case .tasteChange: "arrow.up.right.fill"
+        case .record, .frequentMenu, .regularRestaurant, .breadth: .experience
+        case .tasteDiscovery: .sensation
+        case .tasteChange: .change
         }
     }
 }
@@ -603,7 +600,7 @@ private extension HomeSummaryMetric {
         let snapshot = (try? SensoryAnalysisEngine.analyze(entries: entries)) ?? .empty
         CardScrollList {
             ForEach(HomeArchiveSummaryEngine.cards(entries: entries, snapshot: snapshot)) { card in
-                HomeSummaryCard(label: card.kind.rawValue, value: card.value, detail: card.detail, axis: card.kind.axis, symbol: card.kind.symbol)
+                CompactSummaryCard(label: card.kind.rawValue, value: card.value, detail: card.detail, axis: card.kind.axis, symbol: card.kind.symbol, category: card.kind.dataCategory)
             }
         }
         .padding(TBSpacing.page)

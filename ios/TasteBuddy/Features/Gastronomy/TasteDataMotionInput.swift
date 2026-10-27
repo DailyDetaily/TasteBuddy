@@ -1,5 +1,16 @@
 import Foundation
 
+/// Resolve known attribute IDs through the existing catalog for display only.
+enum TDSensoryDisplayLabel {
+    static func resolve(_ value: String) -> String {
+        if let attribute = SensoryAnalysisEngine.contract?.semantic.attributes.first(where: { $0.id == value }) {
+            return attribute.label ?? attribute.meaning
+        }
+        return ["taste.", "aroma.", "texture.", "mouthfeel."].contains(where: value.hasPrefix)
+            ? "감각 확인 필요" : value
+    }
+}
+
 /// View-only mapping of validated TD evidence into the shared motion contract.
 /// No fixture values, synthetic observations, or persistence/aggregation changes.
 struct TDCategoryMotionInput: Equatable, Sendable {
@@ -58,7 +69,10 @@ struct TDCategoryMotionInput: Equatable, Sendable {
             let responses = evaluations(row?.segments ?? [], mode: mode, prefix: row?.id ?? "preference")
             let status = distributionState(responses, fallback: scopeState)
             data = ["kind": "preferenceFocus", "state": status, "mode": mode, "responses": responses]
-            if let row, facet != .overall { title = row.title + " · " + (facet == .fit ? "알맞음" : "호감") }
+            if let row, facet != .overall {
+                let name = row.state == .invalidEvidence ? TDSensoryDisplayLabel.resolve(row.title) : row.title
+                title = name + " · " + (facet == .fit ? "알맞음" : "호감")
+            }
         case .context:
             let mode = facet == .fit ? "fit" : "liking"
             let card = result.cards.first { $0.id == "context-" + contextDimension }

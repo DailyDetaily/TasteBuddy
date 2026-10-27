@@ -30,6 +30,102 @@ struct DiningMealTime: Codable, Equatable, Sendable {
     var confirmedDate: Date? { source == .confirmed ? start : nil }
 }
 
+/// A recording decision, separate from save time and from a restaurant-name guess.
+struct DiningRecordContext: Equatable {
+    var restaurant: String
+    var restaurantID: String? = nil
+    var mealTime: DiningMealTime? = nil
+    var foodSource: DiningFoodSource? = nil
+
+    /// A summary of this draft's source fields, never the record's save time.
+    /// The current meal-time model confirms a date only, not clock-time precision.
+    func dateTimeSummary(calendar: Calendar = .current) -> String {
+        guard let date = mealTime?.confirmedDate,
+              date.timeIntervalSinceReferenceDate.isFinite else {
+            return "날짜·시간 미확인"
+        }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
+        formatter.dateFormat = "M.d"
+        return "\(formatter.string(from: date)) · 시간 미확인"
+    }
+
+    var locationSummary: String {
+        let name = restaurant.trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty ? "위치 미확인" : name
+    }
+
+    var hasConfirmedContext: Bool {
+        guard mealTime?.confirmedDate != nil else { return false }
+        if foodSource?.kind == "homeCooked" {
+            return foodSource?.homeCookingID?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+        }
+        return !restaurant.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && restaurantID?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+    }
+
+    mutating func selectRestaurant(name: String, id: String, namespace: String? = nil, place: DiningRestaurantPlaceReference? = nil) {
+        restaurant = name
+        restaurantID = id
+        foodSource = .init(kind: "restaurant", restaurantNamespace: namespace, restaurantPlace: place)
+    }
+
+    func applying(to entry: DiningEntry) -> DiningEntry {
+        let sameRestaurant = restaurantID == entry.restaurantID
+            && foodSource?.restaurantNamespace == entry.foodSource?.restaurantNamespace
+        return DiningEntry(
+            id: entry.id, mealID: entry.mealID, restaurant: restaurant,
+            restaurantID: restaurantID, menu: entry.menu, menuItemID: sameRestaurant ? entry.menuItemID : nil,
+            observedAt: mealTime?.confirmedDate ?? entry.observedAt, savedAt: entry.savedAt, updatedAt: entry.updatedAt,
+            rating: entry.rating, note: entry.note, tasteExperienceIDs: entry.tasteExperienceIDs,
+            detailTagIDs: entry.detailTagIDs, sensorySelections: entry.sensorySelections,
+            sensoryPresentation: entry.sensoryPresentation, overallEvaluation: entry.overallEvaluation,
+            dishKindIDs: entry.dishKindIDs, reflectionPhotoFilename: entry.reflectionPhotoFilename,
+            additionalPhotoFilenames: entry.additionalPhotoFilenames, tbaAnalysisSnapshot: entry.tbaAnalysisSnapshot,
+            feedbackStatus: entry.feedbackStatus, photoPalette: entry.photoPalette,
+            mealTime: mealTime, foodSource: foodSource, memoryRevision: entry.memoryRevision,
+            memoryCorrections: entry.memoryCorrections
+        )
+    }
+}
+
+/// Field-specific edits preserve unrelated source facts, including legacy dates.
+enum DiningRecordFieldUpdate {
+    /// Editing source/location must not re-confirm an unchanged meal date or
+    /// replace legacy timestamps. Only an explicit confirmed-date change does so.
+    static func recordInfo(_ context: DiningRecordContext, in original: DiningEntry) -> DiningEntry {
+        var edited = context.applying(to: original)
+        edited.date = original.date
+        edited.observedAt = original.observedAt
+        if context.mealTime != original.mealTime, let date = context.mealTime?.confirmedDate {
+            edited.date = date
+            edited.observedAt = date
+        }
+        return edited
+    }
+
+    static func mealTime(_ value: DiningMealTime?, in original: DiningEntry) -> DiningEntry {
+        var edited = original
+        edited.mealTime = value
+        if let date = value?.confirmedDate {
+            edited.date = date
+            edited.observedAt = date
+        }
+        return edited
+    }
+
+    static func restaurant(_ context: DiningRecordContext, in original: DiningEntry) -> DiningEntry {
+        var edited = context.applying(to: original)
+        // Restaurant selection must not reconfirm or normalize the meal date.
+        edited.mealTime = original.mealTime
+        edited.date = original.date
+        edited.observedAt = original.observedAt
+        return edited
+    }
+}
+
 /// 실제로 달라진 원본 필드만 보존한다. AI 정제와 사진 파일은 이력에 복제하지 않는다.
 struct DiningMemoryCorrection: Codable, Equatable, Identifiable, Sendable {
     let id: UUID

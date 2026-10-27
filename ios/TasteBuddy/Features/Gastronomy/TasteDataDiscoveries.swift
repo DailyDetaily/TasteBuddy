@@ -84,7 +84,9 @@ private struct TDDiscoveryBuilder {
         bundle.add(.denominator, TDDataEngine.evidence(denominator, observations))
         return bundle
     }
+    // Preserve legacy revision signatures and read/snooze history across copy-only changes.
     mutating func add(_ kind: HomeDiscoveryCard.Kind, subject: String, title: String, detail: String,
+                      displayTitle: String? = nil, displayDetail: String? = nil,
                       meaning: String, proof: TDEvidenceBundle, scope explicitScope: TDDiscoveryScope? = nil, strength: Int = 55) {
         guard !Task.isCancelled, !proof.all.entryIDs.isEmpty else { return }
         let scope = explicitScope ?? self.scope
@@ -95,7 +97,8 @@ private struct TDDiscoveryBuilder {
         let originalIDs = Set(originals.map(\.id))
         let originalByID = Dictionary(uniqueKeysWithValues: originals.map { ($0.id, $0.memoryRevisionNumber) })
         let numerator = proof.roles[.numerator] ?? .empty, denominator = proof.roles[.denominator] ?? .empty
-        cards.append(.init(id: candidateID, revisionKey: revision, kind: kind, subjectID: subject, title: title, detail: detail,
+        cards.append(.init(id: candidateID, revisionKey: revision, kind: kind, subjectID: subject,
+                           title: displayTitle ?? title, detail: displayDetail ?? detail,
                            explanation: scope.label(calendar: calendar) + " · " + state.sourceFilter.rawValue,
                            entryIDs: originalIDs, evidenceIDs: proof.all.observationIDs, sourceRevisions: originalByID,
                            photoFilename: originals.sorted { $0.id.uuidString < $1.id.uuidString }.compactMap(\.reflectionPhotoFilename).first,
@@ -132,6 +135,8 @@ private struct TDDiscoveryBuilder {
             let counter = Set(aRows.map(\.mealID)).subtracting(meals).sorted()
             add(.menuCooccurrence, subject: "menu-pair:" + id, title: "함께 기록한 메뉴",
                 detail: "\(a.label)을 기록한 \(TDDataEngine.meals(aRows))번 중 \(meals.count)번에 \(b.label)도 함께 남겼어요.",
+                displayTitle: "\(a.label) + \(b.label)",
+                displayDetail: "\(a.label) 기록 식사 \(TDDataEngine.meals(aRows))회 중 함께 \(meals.count)회",
                 meaning: TDDataEngine.key(["cooccurrence"] + counter), proof: bundle)
         }
         for (kind, rows) in TDDataEngine.entityGroups(state.selected, .foodKind) {
@@ -142,6 +147,8 @@ private struct TDDiscoveryBuilder {
             bundle.conditions["foodKind"] = kind.id
             add(.foodKindAcrossRestaurants, subject: "foodKind:" + kind.id, title: "여러 식당에서 만난 음식 종류",
                 detail: "\(kind.label) 분류를 서로 다른 식당 \(restaurants.count)곳에서 기록했어요.",
+                displayTitle: "\(kind.label) · 식당 \(restaurants.count)곳",
+                displayDetail: "서로 다른 식당에서 기록",
                 meaning: "across-restaurants", proof: bundle)
         }
         let events = TDDataEngine.events(state, dimension: .menu).filter(\.isFirst)
@@ -156,6 +163,8 @@ private struct TDDiscoveryBuilder {
             bundle.conditions = ["restaurant": restaurant.id, "newMenu": event.identity.id]
             add(.newMenuAtKnownRestaurant, subject: "menu:" + event.identity.id,
                 title: "익숙한 식당의 새로운 메뉴", detail: "이전에 기록한 \(restaurant.label)에서 \(menuRecord.menu?.label ?? "새 메뉴")를 처음 확인했어요.",
+                displayTitle: "\(menuRecord.menu?.label ?? "새 메뉴") 첫 기록",
+                displayDetail: "이전에 기록한 식당 · \(restaurant.label)",
                 meaning: "first:" + date.ISO8601Format(), proof: bundle)
         }
     }
@@ -178,7 +187,9 @@ private struct TDDiscoveryBuilder {
             guard n >= 3 else { continue }
             let bundle = proof(numerator: rows, denominator: rows, observations: observations.filter { pair.2.contains($0.id) })
             add(.sensoryCooccurrence, subject: "sensory-pair:" + id, title: "함께 느낀 감각",
-                detail: "\(pair.0)을 같은 요리에서 함께 남긴 식사가 \(n)번 있어요.", meaning: "together", proof: bundle)
+                detail: "\(pair.0)을 같은 요리에서 함께 남긴 식사가 \(n)번 있어요.",
+                displayTitle: pair.0, displayDetail: "같은 요리에 함께 기록 · 식사 \(n)회",
+                meaning: "together", proof: bundle)
         }
     }
     mutating func periodRelations() {
@@ -194,6 +205,8 @@ private struct TDDiscoveryBuilder {
             let b = Double(before) / Double(nB) * 100, a = Double(after) / Double(nA) * 100
             add(.sensoryPeriodChange, subject: "sense:" + row.id, title: "감각 기록 비중의 차이",
                 detail: "\(row.title)을 남긴 식사 비중: \(before)/\(nB)번 → \(after)/\(nA)번 · " + String(format: "%.1f%% → %.1f%% (%+.1f%%p)", b, a, delta),
+                displayTitle: "\(row.title) 기록 비율 \(percentText(b))% → \(percentText(a))%",
+                displayDetail: "이전 \(before)/\(nB)회 → 최근 \(after)/\(nA)회\n\(percentText(abs(delta)))%p \(delta > 0 ? "증가" : "감소") · 감각 기록 식사 기준",
                 meaning: delta > 0 ? "presence-increase" : "presence-decrease", proof: row.evidence, scope: scope, strength: 65)
         }
         let rows = result.cards.first { $0.id == "change-fit" }?.rows ?? []
@@ -225,8 +238,16 @@ private struct TDDiscoveryBuilder {
             bundle.add(.beforeDenominator, before.evidence.roles[.denominator] ?? .empty)
             add(.fitPeriodChange, subject: "fit-scope:" + id, title: "같은 범위에서 달라진 알맞음",
                 detail: "\(state.observations.first { $0.attribute == after.evidence.attribute && $0.reference == after.evidence.reference }?.label ?? "감각") · 알맞음 응답 \(b)/\(nB)번 → \(a)/\(nA)번",
+                displayTitle: "\(state.observations.first { $0.attribute == after.evidence.attribute && $0.reference == after.evidence.reference }?.label ?? "감각") · 알맞음 비율 차이",
+                displayDetail: "이전 \(b)/\(nB)회 → 최근 \(a)/\(nA)회\n같은 메뉴·기록 조건 기준",
                 meaning: delta > 0 ? "just-right-increase" : "just-right-decrease", proof: bundle, scope: scope, strength: 78)
         }
+    }
+
+    /// Keep the existing one-decimal precision, omitting only a redundant trailing zero.
+    private func percentText(_ value: Double) -> String {
+        let text = String(format: "%.1f", value)
+        return text.hasSuffix(".0") ? String(text.dropLast(2)) : text
     }
 }
 

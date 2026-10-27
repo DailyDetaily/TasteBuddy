@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct StepBadge: View {
     let currentIndex: Int
@@ -10,36 +11,121 @@ struct StepBadge: View {
     }
 }
 
-struct TCSBadge: View {
-    let title: String
-    var axes: [TasteAxis] = [.sweet, .sour, .umami]
-    var isEnabled = true
+struct TCSBadgeAdjustment: Equatable {
+    let taste: TasteAxis
+    let change: Double
+}
 
-    var body: some View {
-        Text(title)
-            .font(TBFont.bold(10))
-            .foregroundStyle(TBColor.textInverse)
-            .lineLimit(1)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(background)
-            .clipShape(RoundedRectangle(cornerRadius: TBRadius.badge, style: .continuous))
-            .shadow(color: Color.black.opacity(0.10), radius: 8, x: 0, y: 2)
-            .fixedSize(horizontal: true, vertical: false)
+enum TCSBadgeMetrics {
+    static let fontSize: CGFloat = 10
+    static let lineHeight: CGFloat = 14
+    static let horizontalPadding: CGFloat = 6
+    static let verticalPadding: CGFloat = 2
+    static let cornerRadius: CGFloat = 6
+}
+
+/// Mirrors buildTasteAdjustmentGradient: preserve order, use absolute weights,
+/// and blend each boundary over min(24%, previous × 0.8, current × 0.8).
+enum TCSBadgeGradient {
+    struct Stop: Equatable {
+        let sourceIndex: Int
+        let location: Double
     }
 
-    private var background: some ShapeStyle {
-        if isEnabled {
-            return AnyShapeStyle(
-                LinearGradient(
-                    colors: axes.prefix(4).map(\.mainColor),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
+    static func stops(weights: [Double]) -> [Stop] {
+        let values = weights.enumerated().compactMap { index, value -> (Int, Double)? in
+            value.isFinite && value != 0 ? (index, abs(value)) : nil
         }
+        guard let first = values.first, let last = values.last else { return [] }
+        guard values.count > 1 else {
+            return [Stop(sourceIndex: first.0, location: 0), Stop(sourceIndex: first.0, location: 1)]
+        }
+        let maximum = values.map(\.1).max()!
+        let total = values.reduce(0) { $0 + $1.1 / maximum }
+        let widths = values.map { $0.1 / maximum / total }
+        var result = [Stop(sourceIndex: first.0, location: 0)]
+        var boundary = widths[0]
+        for index in 1..<values.count {
+            let transition = min(0.24, widths[index - 1] * 0.8, widths[index] * 0.8)
+            // Web emits percentage stops with two decimal places.
+            let left = (max(0, boundary - transition / 2) * 10_000).rounded() / 10_000
+            let right = (min(1, boundary + transition / 2) * 10_000).rounded() / 10_000
+            result.append(Stop(sourceIndex: values[index - 1].0, location: left))
+            result.append(Stop(sourceIndex: values[index].0, location: right))
+            boundary += widths[index]
+        }
+        result.append(Stop(sourceIndex: last.0, location: 1))
+        return result
+    }
 
-        return AnyShapeStyle(TBColor.disabledSurface)
+    /// CSS 135deg is a physical 45-degree diagonal even for a non-square badge.
+    static func endpoints(size: CGSize) -> (start: UnitPoint, end: UnitPoint) {
+        let width = max(size.width, 1), height = max(size.height, 1)
+        let x = (width + height) / (4 * width)
+        let y = (width + height) / (4 * height)
+        return (UnitPoint(x: 0.5 - x, y: 0.5 - y), UnitPoint(x: 0.5 + x, y: 0.5 + y))
+    }
+
+    /// The TCS mark preserves its Light palette in both appearance modes.
+    static func color(for taste: TasteAxis) -> Color {
+        let source = UIColor(taste.lightPalette.light)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        source.getRed(&r, green: &g, blue: &b, alpha: &a)
+        return Color(.sRGB, red: r * 0.75 + 0.25, green: g * 0.75 + 0.25, blue: b * 0.75 + 0.25)
+    }
+}
+
+/// Read-only TCS mark. Data controls the gradient, never a tap action.
+struct TCSBadge: View {
+    var adjustments: [TCSBadgeAdjustment] = []
+    var label = "TCS"
+    var disabled = false
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.isEnabled) private var environmentEnabled
+
+    private var isDisabled: Bool { disabled || !environmentEnabled }
+
+    var body: some View {
+        Text(label)
+            .font(TBFont.bold(TCSBadgeMetrics.fontSize))
+            .foregroundStyle(Color.white)
+            .lineLimit(1)
+            .frame(height: TCSBadgeMetrics.lineHeight)
+            .padding(.horizontal, TCSBadgeMetrics.horizontalPadding)
+            .padding(.vertical, TCSBadgeMetrics.verticalPadding)
+            .background(surface)
+            .fixedSize(horizontal: true, vertical: false)
+            .accessibilityLabel(label)
+            .accessibilityValue(isDisabled ? "비활성" : "")
+    }
+
+    private var gradientStops: [Gradient.Stop] {
+        let mode = TBColorMode(colorScheme)
+        let stops = TCSBadgeGradient.stops(weights: adjustments.map(\.change))
+        if isDisabled || stops.isEmpty {
+            let color = isDisabled ? mode.disabledSurface : Color(hex: 0xE0E0E0)
+            return [.init(color: color, location: 0), .init(color: color, location: 1)]
+        }
+        return stops.map { stop in
+            .init(color: TCSBadgeGradient.color(for: adjustments[stop.sourceIndex].taste), location: stop.location)
+        }
+    }
+
+    private var surface: some View {
+        GeometryReader { proxy in
+            let points = TCSBadgeGradient.endpoints(size: proxy.size)
+            let gradient = LinearGradient(stops: gradientStops, startPoint: points.start, endPoint: points.end)
+            RoundedRectangle(cornerRadius: TCSBadgeMetrics.cornerRadius, style: .circular)
+                .fill(gradient
+                    .shadow(.inner(color: .white.opacity(0.5), radius: 0.5, x: 0, y: 1))
+                    .shadow(.inner(color: .white.opacity(0.5), radius: 0.5, x: 1, y: 0))
+                    .shadow(.inner(color: .black.opacity(0.1), radius: 0.5, x: 0, y: -1))
+                    .shadow(.inner(color: .black.opacity(0.1), radius: 0.5, x: -1, y: 0)))
+        }
+        // CSS blur radius is twice the Gaussian radius used by SwiftUI.
+        .shadow(color: .black.opacity(0.1), radius: 1, x: 1, y: 1)
+        .shadow(color: .black.opacity(0.1), radius: 1, x: 0, y: 1)
+        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
 }
 
@@ -227,7 +313,7 @@ struct ToastSurface: View {
         .padding(12)
         .background(TBColor.focus)
         .clipShape(RoundedRectangle(cornerRadius: TBRadius.support, style: .continuous))
-        .shadow(color: Color.black.opacity(0.10), radius: 20, x: 0, y: 4)
+        .shadow(color: TBEffectToken.soft.dynamicColor(), radius: 20, x: 0, y: 4)
         .accessibilityElement(children: actionTitle == nil ? .combine : .contain)
     }
 }
@@ -700,7 +786,7 @@ struct TBUISwitch: View {
             .frame(width: 44, height: 26)
             .overlay(alignment: isOn ? .trailing : .leading) {
                 Circle()
-                    .fill(TBColor.surface)
+                    .fill(isOn ? TBColor.switchOnThumb : TBColor.switchOffThumb)
                     .frame(width: 22, height: 22)
                     .padding(2)
             }
@@ -836,7 +922,7 @@ struct TBUIPopoverContent: View {
             .padding(12)
             .background(TBColor.focus)
             .clipShape(RoundedRectangle(cornerRadius: TBRadius.row, style: .continuous))
-            .shadow(color: Color.black.opacity(0.10), radius: 20, x: 0, y: 4)
+            .shadow(color: TBEffectToken.soft.dynamicColor(), radius: 20, x: 0, y: 4)
     }
 }
 
@@ -889,7 +975,7 @@ struct TBUIDrawerContent<Content: View>: View {
             .frame(width: 300, alignment: .topLeading)
             .frame(maxHeight: .infinity, alignment: .topLeading)
             .background(TBColor.focus)
-            .shadow(color: Color.black.opacity(0.24), radius: 60, x: -12, y: 0)
+            .shadow(color: TBEffectToken.drawer.dynamicColor(), radius: 60, x: -12, y: 0)
         }
         .background(TBColor.scrimSubtle)
     }
@@ -969,7 +1055,7 @@ struct ReservationConfirmationPanel: View {
     }
 }
 
-/// Historical React inventory counts remain stable for migration contract tests.
+/// React source inventory excludes retired wrappers; compositions live in pattern documentation.
 /// Use NativeProductComponentCatalog to find current SwiftUI product components.
 enum NativeDesignSystemInventory {
     static let architectureGroups: [(title: String, components: [String])] = [
@@ -978,7 +1064,6 @@ enum NativeDesignSystemInventory {
             [
                 "PrimaryButton",
                 "FlowBottomCta",
-                "FlowStepCta",
                 "FlowHeaderBlock",
                 "CalibrationQuestionHeader",
                 "StepIndicator",
@@ -1073,7 +1158,6 @@ enum NativeDesignSystemInventory {
         "src/components/SectionCard.tsx",
         "src/components/system/PrimaryButton.tsx",
         "src/components/system/FlowBottomCta.tsx",
-        "src/components/system/FlowStepCta.tsx",
         "src/components/system/FlowHeaderBlock.tsx",
         "src/components/system/PageSection.tsx",
         "src/components/system/StepIndicator.tsx",
@@ -1128,9 +1212,9 @@ enum NativeDesignSystemInventory {
         architectureGroups.reduce(0) { $0 + $1.components.count }
     }
 
-    static let currentlyUsedComponentCount = 32
+    static let currentlyUsedComponentCount = 31
     static let unusedPrimitiveCount = 20
-    static let componentStyleSpecCount = 30
+    static let componentStyleSpecCount = 29
 }
 
 enum NativeComponentUsage: String, CaseIterable {
@@ -1153,6 +1237,8 @@ struct NativeComponentCatalogEntry: Identifiable {
 /// Curated native registry; registration identifies usage, not parity completion.
 enum NativeProductComponentCatalog {
     static let entries: [NativeComponentCatalogEntry] = [
+        .init(swiftType: "TBMiniChart", sourceFile: "Components/SystemParityComponents.swift", usage: .production,
+              note: "홈 아카이브·기간 카드의 132×32 미니 그래프. 0은 두께의 절반 높이, 1은 원형, 데이터 개수에 따라 막대 폭 변경."),
         .init(swiftType: "Callout", sourceFile: "Components/Callout.swift", usage: .production,
               note: "회고 수정의 저장 실패에 critical 표시형 사용. 다른 톤·전체 클릭·닫기는 라이브러리 옵션이며 호출부가 상태와 초점을 관리."),
         .init(swiftType: "PrimaryButton", sourceFile: "Components/TBComponents.swift", usage: .production,
@@ -1161,8 +1247,8 @@ enum NativeProductComponentCatalog {
               note: "20pt radius·12pt 내부 여백의 제품 카드"),
         .init(swiftType: "TBSelectionCard", sourceFile: "Components/TBComponents.swift", usage: .production,
               note: "라디오·체크박스 선택 카드와 선택 접근성"),
-        .init(swiftType: "TasteChip", sourceFile: "Components/SystemParityComponents.swift", usage: .production,
-              note: "라벨 전용은 읽기용 미각색, 숫자형은 중립 라벨과 미각 시그널"),
+        .init(swiftType: "Chip", sourceFile: "Components/SystemParityComponents.swift", usage: .production,
+              note: "Medium 라벨·Semibold 값·자연 줄 높이·내부 경계의 공용 칩. 한 줄 고정, 미각 팔레트, 톤·표현 방식, 아이콘·액션·비활성 상태 지원"),
         .init(swiftType: "BottomSheetShell", sourceFile: "Components/SystemCoreComponents.swift", usage: .production,
               note: "공용 제목·닫기·grabber·footer; 용도별 stage와 native chrome 옵션"),
         .init(swiftType: "TasteDetailPage", sourceFile: "Components/TasteDetailPage.swift", usage: .production,
@@ -1195,8 +1281,8 @@ enum NativeProductComponentCatalog {
               note: "다이닝·식당 정보 수정 선택형 칩의 상태와 접근성"),
         .init(swiftType: "TBWrapLayout", sourceFile: "Components/NativeLayoutComponents.swift", usage: .production,
               note: "실제 subview 측정으로 줄바꿈; 칩 모양과 간격은 호출부가 선택"),
-        .init(swiftType: "TBOverflowTagRow", sourceFile: "Components/NativeLayoutComponents.swift", usage: .production,
-              note: "태그와 +N을 같은 폭 계산으로 배치, 기존 순서 보존"),
+        .init(swiftType: "OverflowTagRow", sourceFile: "Components/NativeLayoutComponents.swift", usage: .production,
+              note: "태그와 +N을 같은 폭 계산으로 배치. allowsExpansion으로 전체 줄바꿈 표시·접기 지원"),
         .init(swiftType: "TBFlowLoadingState", sourceFile: "Components/NativeLayoutComponents.swift", usage: .production,
               note: "미각 설문·사전조사의 로딩과 안내 문구"),
         .init(swiftType: "TBFlowRetryState", sourceFile: "Components/NativeLayoutComponents.swift", usage: .production,

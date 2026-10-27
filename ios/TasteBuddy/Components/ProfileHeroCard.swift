@@ -133,16 +133,7 @@ private struct ProfileHeroSocialCount: View {
         .frame(width: TBIcon.Container.large, height: TBIcon.Container.large)
         .foregroundStyle(TBColor.iconPrimary)
     } footerAction: {
-        Text("버디 찾기")
-            .font(TBFont.semibold(12))
-            .foregroundStyle(TBColor.textPrimary)
-            .padding(.horizontal, 12)
-            .frame(height: 36)
-            .background(TBColor.surface)
-            .clipShape(Capsule())
-            .overlay {
-                Capsule().stroke(TBColor.border, lineWidth: 1)
-            }
+        TBCapsuleButton(title: "버디 찾기", icon: .userPlus) {}
     }
     .padding(20)
     .background(TBColor.page)
@@ -159,16 +150,7 @@ private struct ProfileHeroSocialCount: View {
     } headerAction: {
         EmptyView()
     } footerAction: {
-        Text("팔로잉")
-            .font(TBFont.semibold(12))
-            .foregroundStyle(TBColor.textPrimary)
-            .padding(.horizontal, 14)
-            .frame(height: 36)
-            .background(TBColor.surface)
-            .clipShape(Capsule())
-            .overlay {
-                Capsule().stroke(TBColor.border, lineWidth: 1)
-            }
+        TBCapsuleButton(title: "팔로잉") {}
     }
     .padding(20)
     .background(TBColor.page)

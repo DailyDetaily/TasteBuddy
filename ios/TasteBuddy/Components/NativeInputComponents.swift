@@ -1,6 +1,77 @@
 import SwiftUI
 import UIKit
 
+enum StarRatingInteraction {
+    static func value(afterTapping star: Int, current: Double) -> Double {
+        guard (1...5).contains(star) else { return current }
+        let selected = Double(star)
+        if current > selected { return selected }
+        if current == selected - 0.5 { return selected }
+        return selected - 0.5
+    }
+}
+
+/// Single taps choose half/full stars; an exclusive double tap clears without an interim save.
+struct StarRating: View {
+    let value: Double
+    let color: Color
+    let onChange: (Double) -> Void
+    private let iconSize = TBIcon.Size.control
+    private let emptyColor = Color.tbAdaptive(light: TBLightColor.neutralSoft, dark: Color(hex: 0x484848))
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(1...5, id: \.self) { index in
+                let fraction = min(1, max(0, value - Double(index - 1)))
+                ZStack {
+                    LucideIcon(.star, size: iconSize,
+                               strokeWidth: 0,
+                               filled: true)
+                        .foregroundStyle(fraction == 1 ? color : emptyColor)
+                    if fraction > 0 && fraction < 1 {
+                        LucideIcon(.star, size: iconSize, strokeWidth: 0, filled: true)
+                            .foregroundStyle(color)
+                            .mask(alignment: .leading) {
+                                Rectangle().frame(width: iconSize * fraction)
+                            }
+                    }
+                }
+            }
+        }
+        .frame(width: iconSize * 5, height: 44, alignment: .top)
+        .contentShape(Rectangle())
+        .gesture(
+            SpatialTapGesture(count: 2)
+                .exclusively(before: SpatialTapGesture(count: 1))
+                .onEnded { gesture in
+                    switch gesture {
+                    case .first:
+                        onChange(0)
+                    case .second(let tap):
+                        let star = min(5, max(1, Int(tap.location.x / iconSize) + 1))
+                        onChange(StarRatingInteraction.value(afterTapping: star, current: value))
+                    }
+                }
+        )
+        .sensoryFeedback(trigger: value) { oldValue, newValue in
+            guard oldValue != newValue else { return nil }
+            return newValue == 0 ? .impact(weight: .light, intensity: 0.6) : .selection
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("전체 평가")
+        .accessibilityValue(value == 0 ? "평가 없음" : "5점 중 \(DiningOverallEvaluation.starText(value))점")
+        .accessibilityHint("위아래로 쓸어 0.5점씩 수정할 수 있어요. 평가 지우기 동작으로 해제할 수 있어요.")
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: onChange(min(5, value + 0.5))
+            case .decrement: onChange(max(0, value - 0.5))
+            @unknown default: break
+            }
+        }
+        .accessibilityAction(named: "평가 지우기") { onChange(0) }
+    }
+}
+
 /// Geometry variants keep the existing dining and authentication forms distinct.
 enum TBTextInputVariant {
     case dining
@@ -43,8 +114,8 @@ struct TBTextInput: View {
 
     private var borderColor: Color {
         if !isEffectivelyEnabled { return TBColor.borderDisabled }
-        if errorText != nil { return TBColor.destructive }
-        return isFocused ? TBColor.focusRing : TBColor.border
+        if errorText != nil { return TBColor.borderDestructive }
+        return isFocused ? TBColor.borderFocus : TBColor.border
     }
 
     @ViewBuilder
@@ -127,8 +198,8 @@ struct TBSelectField: View {
     }
     private var borderColor: Color {
         if !isEffectivelyEnabled { return TBColor.borderDisabled }
-        if errorText != nil { return TBColor.destructive }
-        return isExpanded ? TBColor.focusRing : TBColor.border
+        if errorText != nil { return TBColor.borderDestructive }
+        return isExpanded ? TBColor.borderFocus : TBColor.border
     }
 
     var body: some View {
@@ -207,8 +278,8 @@ struct TBTextArea: View {
     private var isFocused: Bool { focus?.wrappedValue ?? internalFocus }
     private var borderColor: Color {
         if !isEffectivelyEnabled { return TBColor.borderDisabled }
-        if errorText != nil { return TBColor.destructive }
-        return isFocused ? TBColor.focusRing : TBColor.border
+        if errorText != nil { return TBColor.borderDestructive }
+        return isFocused ? TBColor.borderFocus : TBColor.border
     }
 
     @ViewBuilder
@@ -282,6 +353,7 @@ struct TBSelectableChip: View {
     var variant: TBSelectableChipVariant = .dining
     var accentAxis: TasteAxis? = nil
     var isEnabled = true
+    var textStyle: TBTextStyle? = nil
     let action: () -> Void
 
     private var isEffectivelyEnabled: Bool { isEnabled && environmentIsEnabled }
@@ -297,8 +369,8 @@ struct TBSelectableChip: View {
             if let accentAxis {
                 return ChipStyle(
                     background: accentAxis.tintColor,
-                    border: accentAxis.mainColor.opacity(0.28),
-                    foreground: accentAxis.mainColor
+                    border: accentAxis.borderStrongColor,
+                    foreground: accentAxis.tintSurfaceTextColor
                 )
             }
             return ChipStyle.resolve(tone: .neutral, variant: .solid)
@@ -330,7 +402,8 @@ struct TBSelectableChip: View {
                     )
                 }
                 Text(title)
-                    .font(ChipSize.medium.font)
+                    .font(textStyle?.font ?? ChipSize.medium.font)
+                    .tbTypography(textStyle)
                     .lineLimit(variant == .dining ? 1 : nil)
                     .fixedSize(horizontal: variant == .dining, vertical: true)
             }

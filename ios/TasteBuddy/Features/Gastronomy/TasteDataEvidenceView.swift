@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct TDDataDetailView: View {
+    @EnvironmentObject private var appModel: AppModel
     let request: TDDetailSelection
     @Binding var selectedPeriod: TDCardDetailPeriod
     let periodRequest: TDCardDetailRequest
@@ -14,7 +15,14 @@ struct TDDataDetailView: View {
         TasteDetailPage(title: request.title) {
             TDCardDetailPeriodPicker(selection: $selectedPeriod, request: periodRequest, axis: axis)
         } content: {
-            if let selection = resolve() {
+            if appModel.sensoryAnalysisIsUpdating || appModel.backendSessionStatus == .restoring {
+                ProgressView("현재 계정의 기록을 불러오고 있어요").frame(maxWidth: .infinity, minHeight: 232)
+            } else if let error = appModel.sensoryAnalysisError {
+                VStack(alignment: .leading, spacing: TBSpacing.x12) {
+                    SensoryAnalysisStatusCard(state: .failed(error))
+                    Button("다시 시도") { Task { await appModel.syncAccountData(); appModel.refreshSensoryAnalysis() } }.frame(minHeight: 44)
+                }.padding(TBSpacing.page)
+            } else if let selection = resolve() {
                 overview(selection)
             } else {
                 Group {
@@ -29,42 +37,15 @@ struct TDDataDetailView: View {
     }
     private func overview(_ selection: TDDetailSelection) -> some View {
         VStack(spacing: TBSpacing.x20) {
-            TasteDetailChartPanel {
-                TasteDetailScope(text: TDDetailPresentation.scope(selection.evidence))
-                    .frame(maxWidth: .infinity).accessibilityIdentifier("taste-data-detail-title")
-                if selection.rows.isEmpty {
-                    Text("—").font(TBFont.bold(18)).foregroundStyle(TBColor.textHint)
-                        .frame(maxWidth: .infinity, minHeight: 150)
-                    Text("기록 없음").font(TBFont.regular(12)).foregroundStyle(TBColor.textHint)
-                        .frame(maxWidth: .infinity)
-                } else {
-                    let rows = selection.rows
-                    let usesSingleScope = rows.contains { !$0.segments.isEmpty || $0.comparison != nil }
-                    if usesSingleScope, rows.count > 1 {
-                        Picker("비교 항목", selection: Binding(get: { rows.first { $0.id == plotRowID }?.id ?? rows[0].id }, set: { plotRowID = $0 })) {
-                            ForEach(rows) { row in Text(row.title).tag(row.id) }
-                        }.pickerStyle(.menu).frame(minHeight: 44).tint(TBColor.textPrimary)
-                    }
-                    let row = rows.first { $0.id == plotRowID } ?? rows[0]
-                    let points = TDDetailPresentation.points(rows: rows, selected: row)
-                    if let status = TDDetailPresentation.status(row) { TasteDetailScope(text: status) }
-                    if !points.isEmpty {
-                        if usesSingleScope {
-                            if rows.count == 1 { Text(row.title).font(TBFont.medium(13)).foregroundStyle(TBColor.textSecondary) }
-                            Text(row.value).font(TBFont.bold(18)).foregroundStyle(TBColor.textPrimary)
-                        }
-                        TasteDetailBarPlot(points: points)
-                            .accessibilityIdentifier("taste-data-detail-plot")
-                        if !usesSingleScope && rows.count > points.count {
-                            TasteDetailScope(text: "상위 \(points.count)개 · 식사 횟수")
-                        }
-                    } else {
-                        Text(row.title).font(TBFont.medium(13)).foregroundStyle(TBColor.textSecondary)
-                        Text(row.value).font(TBFont.bold(18)).foregroundStyle(TBColor.textPrimary)
-                            .frame(minHeight: 72, alignment: .topLeading)
-                    }
-                }
+            if let row = selection.rows.first(where: { $0.id == plotRowID }) ?? selection.rows.first,
+               !TDDetailPresentation.points(rows: selection.rows, selected: row).isEmpty {
+                TasteDetailChartPanel { overviewContent(selection) }
+            } else {
+                SectionCard(showsBorder: false) {
+                    VStack(alignment: .leading, spacing: TBSpacing.x16) { overviewContent(selection) }
+                }.padding(.horizontal, TBSpacing.page)
             }
+            AccountDataSyncNotice().padding(.horizontal, TBSpacing.page)
             if selection.metricID == "meals", let row = selection.rows.first {
                 TasteDetailGroup {
                     TasteDetailValueRow(title: "요리 기록", value: "\(row.entryIDs.count)개", showsDivider: false)
@@ -88,6 +69,48 @@ struct TDDataDetailView: View {
             }
         }.padding(.bottom, TBSpacing.page)
     }
+
+    @ViewBuilder
+    private func overviewContent(_ selection: TDDetailSelection) -> some View {
+        TasteDetailScope(text: TDDetailPresentation.scope(selection.evidence))
+            .frame(maxWidth: .infinity).accessibilityIdentifier("taste-data-detail-title")
+        if selection.rows.isEmpty {
+            Text("—").font(TBFont.bold(18)).foregroundStyle(TBColor.textHint)
+                .frame(maxWidth: .infinity, minHeight: 150)
+            Text("기록 없음").font(TBFont.regular(12)).foregroundStyle(TBColor.textHint)
+                .frame(maxWidth: .infinity)
+        } else {
+            let rows = selection.rows
+            let usesSingleScope = rows.contains { !$0.segments.isEmpty || $0.comparison != nil }
+            if usesSingleScope, rows.count > 1 {
+                Picker("비교 항목", selection: Binding(get: { rows.first { $0.id == plotRowID }?.id ?? rows[0].id }, set: { plotRowID = $0 })) {
+                    ForEach(rows) { row in Text(row.title).tag(row.id) }
+                }.pickerStyle(.menu).frame(minHeight: 44).tint(TBColor.textPrimary)
+            }
+            let row = rows.first { $0.id == plotRowID } ?? rows[0]
+            let points = TDDetailPresentation.points(rows: rows, selected: row)
+            if let status = TDDetailPresentation.status(row) { TasteDetailScope(text: status) }
+            if !points.isEmpty {
+                if usesSingleScope {
+                    if rows.count == 1 { Text(row.title).font(TBFont.medium(13)).foregroundStyle(TBColor.textSecondary) }
+                    Text(row.value).font(TBFont.bold(18)).foregroundStyle(TBColor.textPrimary)
+                }
+                TasteDetailBarPlot(points: points, accent: axis?.mainColor ?? TBColor.textSecondary,
+                                   unit: row.comparison.map { $0.beforeDenominator != nil || $0.afterDenominator != nil ? "%" : "" } ?? "",
+                                   maximum: row.comparison.flatMap { $0.beforeDenominator != nil || $0.afterDenominator != nil ? 100 : nil },
+                                   axis: axis, comparesPeriods: row.comparison != nil)
+                    .accessibilityIdentifier("taste-data-detail-plot")
+                if !usesSingleScope && rows.count > points.count {
+                    TasteDetailScope(text: "상위 \(points.count)개 · 식사 횟수")
+                }
+            } else {
+                Text(row.title).font(TBFont.medium(13)).foregroundStyle(TBColor.textSecondary)
+                Text(row.value).font(TBFont.bold(18)).foregroundStyle(TBColor.textPrimary)
+                    .frame(minHeight: 72, alignment: .topLeading)
+            }
+        }
+    }
+
 }
 
 /// Presentation only: never sum overlapping conditions or coerce unknown values to zero.

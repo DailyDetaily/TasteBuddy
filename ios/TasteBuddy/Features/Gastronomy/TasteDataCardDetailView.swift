@@ -111,7 +111,7 @@ struct TDCardDetailPeriodPicker: View {
             TBCapsuleTabs(options: options, selection: $selection,
                           selectedForeground: axis.tintSurfaceTextColor,
                           selectedBackground: axis.tintColor,
-                          selectedBorder: axis.tintSoftBorderColor) { $0.title(original: request.window) }
+                          selectedBorder: axis.borderDefaultColor) { $0.title(original: request.window) }
         } else {
             TBCapsuleTabs(options: options, selection: $selection) { $0.title(original: request.window) }
         }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Shared reading surface extracted from TasteChangeFocusView.
-/// The route owns navigation/safe areas; each card supplies its own controls and content.
+/// The route supplies navigation and the bottom safe-area inset; the page applies it once to scrolling content.
 struct TasteDetailPage<Controls: View, Content: View>: View {
     @Environment(\.tasteDetailChrome) private var routeChrome
     @Environment(\.tbTopChromeInset) private var inheritedTopChromeInset
@@ -43,7 +43,14 @@ struct TasteDetailPage<Controls: View, Content: View>: View {
                     // Let the shared progressive backdrop blur through the pinned header.
                     .overlay(alignment: .bottom) { Rectangle().fill(TBColor.borderSubtle).frame(height: 0.5) }
             },
-            content: content
+            content: {
+                VStack(spacing: 0) {
+                    content()
+                }
+                // The shell's UIKit host clears safe areas. Keep the viewport full-height,
+                // but let the final row scroll above the home indicator on every device.
+                .padding(.bottom, max(0, routeChrome?.bottomContentInset ?? 0))
+            }
         )
         .tbPageBackground()
         .accessibilityIdentifier("taste-detail-page")
@@ -60,6 +67,7 @@ struct TasteDetailChrome {
     let header: AnyView?
     let contentOffset: CGFloat
     let onBack: () -> Void
+    var bottomContentInset: CGFloat = 0
 }
 
 private struct TasteDetailChromeKey: EnvironmentKey {
@@ -110,14 +118,18 @@ private struct TasteDetailStandaloneHost: View {
     @Environment(\.dismiss) private var dismiss
     let route: TasteCardDetailRoute
     var body: some View {
-        TasteCardDetailDestination(route: route)
-            .environment(\.tasteDetailChrome, .init(
-                header: AnyView(TopAppBar(appearance: .transparent, title: route.title,
-                                         showBack: true, showsDefaultActions: false, onBack: { dismiss() })),
-                contentOffset: 0, onBack: { dismiss() }
-            ))
-            .tbScreenTopChrome()
-            .accessibilityAction(.escape) { dismiss() }
+        GeometryReader { geometry in
+            TasteCardDetailDestination(route: route)
+                .environment(\.tasteDetailChrome, .init(
+                    header: AnyView(TopAppBar(appearance: .transparent, title: route.title,
+                                             showBack: true, showsDefaultActions: false, onBack: { dismiss() })),
+                    contentOffset: 0, onBack: { dismiss() },
+                    bottomContentInset: geometry.safeAreaInsets.bottom
+                ))
+                .ignoresSafeArea(.container, edges: .bottom)
+        }
+        .tbScreenTopChrome()
+        .accessibilityAction(.escape) { dismiss() }
     }
 }
 
@@ -203,7 +215,7 @@ struct TasteDetailPeriodPicker: View {
                     selection: $selection,
                     selectedForeground: axis.tintSurfaceTextColor,
                     selectedBackground: axis.tintColor,
-                    selectedBorder: axis.tintSoftBorderColor
+                    selectedBorder: axis.borderDefaultColor
                 ) { $0.title }
             } else {
                 TBCapsuleTabs(options: TasteDetailPeriod.allCases, selection: $selection) { $0.title }
@@ -327,6 +339,10 @@ struct TasteDetailDisclosure<Content: View>: View {
         } label: {
             Text(title).font(TBFont.medium(12)).frame(minHeight: 44)
         }.tint(TBColor.textSecondary)
+            .padding(.horizontal, TBSpacing.x16)
+            .padding(.vertical, TBSpacing.x4)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(TBColor.surface, in: RoundedRectangle(cornerRadius: TBRadius.card, style: .continuous))
     }
 }
 
@@ -345,45 +361,21 @@ struct TasteDetailPlotPoint: Identifiable, Equatable {
 struct TasteDetailBarPlot: View {
     let points: [TasteDetailPlotPoint]
     var accent = TBColor.textSecondary
-    var height: CGFloat = 180
-    private var maximum: Double { max(1, points.compactMap(\.plottedValue).max() ?? 1) }
+    var height: CGFloat = 232
+    var unit = ""
+    var maximum: Double? = nil
+    var integerTicks = true
+    var axis: TasteAxis? = nil
+    var comparesPeriods = false
     var body: some View {
-        VStack(spacing: TBSpacing.x12) {
-            HStack(alignment: .bottom, spacing: TBSpacing.x12) {
-                ForEach(points) { point in
-                    VStack(spacing: TBSpacing.x8) {
-                        Text(point.plottedValue == nil ? "—" : point.valueLabel)
-                            .font(TBFont.medium(11)).foregroundStyle(TBColor.textPrimary)
-                            .fixedSize(horizontal: false, vertical: true)
-                        GeometryReader { geometry in
-                            if let value = point.plottedValue {
-                                Capsule().fill(accent)
-                                    .frame(width: 6, height: value == 0 ? 3 : max(3, geometry.size.height * CGFloat(value / maximum)))
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                            }
-                        }.frame(height: height)
-                    }.frame(maxWidth: .infinity)
-                }
-            }
-            .background(alignment: .bottom) {
-                VStack {
-                    Rectangle().fill(TBColor.borderSubtle).frame(height: 0.5)
-                    Spacer()
-                    Rectangle().fill(TBColor.borderSubtle).frame(height: 0.5)
-                    Spacer()
-                    Rectangle().fill(TBColor.borderSubtle).frame(height: 0.5)
-                }.frame(height: height).accessibilityHidden(true)
-            }
-            HStack(alignment: .top, spacing: TBSpacing.x12) {
-                ForEach(points) { point in
-                    Text(point.label).font(TBFont.regular(11)).foregroundStyle(TBColor.textSecondary)
-                        .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity)
-                }
-            }
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(points.map { "\($0.label), \($0.plottedValue == nil ? "미확인" : $0.valueLabel)" }.joined(separator: "; "))
+        TasteDetailCartesianChart(
+            labels: points.map(\.label),
+            series: [.init(id: "values", label: "", values: points.map(\.plottedValue), color: accent,
+                           valueLabels: points.map { $0.plottedValue == nil ? "미확인" : $0.valueLabel },
+                           axis: axis, highlightsEachValue: true,
+                           comparisonIndices: comparesPeriods ? [0] : [])],
+            unit: unit, height: height, fixedMaximum: maximum, integerTicks: integerTicks
+        )
     }
 }
 

@@ -4,7 +4,143 @@ import UIKit
 @testable import TasteBuddy
 
 @MainActor
+final class TCSBadgeTests: XCTestCase {
+    func testWeightedTransitionsMatchWebTwentyToFiveExample() {
+        let stops = TCSBadgeGradient.stops(weights: [20, 5])
+        XCTAssertEqual(stops.map(\.sourceIndex), [0, 0, 1, 1])
+        XCTAssertEqual(stops.map(\.location), [0, 0.72, 0.88, 1])
+    }
+
+    func testZeroAndInvalidValuesDoNotCreateSegmentsAndNegativesUseMagnitude() {
+        XCTAssertTrue(TCSBadgeGradient.stops(weights: [0, .nan, .infinity]).isEmpty)
+        let stops = TCSBadgeGradient.stops(weights: [0, -12, .nan])
+        XCTAssertEqual(stops.map(\.sourceIndex), [1, 1])
+        XCTAssertEqual(stops.map(\.location), [0, 1])
+        XCTAssertEqual(TCSBadgeGradient.stops(weights: [-20, 5]), TCSBadgeGradient.stops(weights: [20, 5]))
+    }
+
+    func testAllSixAxesAndHugeFiniteWeightsKeepOrderedBoundedStops() {
+        let stops = TCSBadgeGradient.stops(weights: [1, 2, 3, 4, 5, 6])
+        XCTAssertEqual(Set(stops.map(\.sourceIndex)), Set(0..<6))
+        XCTAssertEqual(stops.count, 12)
+        XCTAssertTrue(zip(stops, stops.dropFirst()).allSatisfy { $0.location <= $1.location })
+        XCTAssertEqual(TCSBadgeGradient.stops(weights: [.greatestFiniteMagnitude, .greatestFiniteMagnitude]).map(\.location), [0, 0.38, 0.62, 1])
+    }
+
+    func testGradientKeepsCSS135DegreeAngleForWideLabels() {
+        let size = CGSize(width: 90, height: 18)
+        let points = TCSBadgeGradient.endpoints(size: size)
+        XCTAssertEqual((points.end.x - points.start.x) * size.width,
+                       (points.end.y - points.start.y) * size.height, accuracy: 0.0001)
+        XCTAssertEqual(points.start.x + points.end.x, 1, accuracy: 0.0001)
+        XCTAssertEqual(points.start.y + points.end.y, 1, accuracy: 0.0001)
+    }
+
+    func testTintMixKeepsLightPaletteInBothAppearanceModes() {
+        for mode in TBColorMode.allCases {
+            for taste in TasteAxis.allCases {
+                var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+                UIColor(taste.lightPalette.light).getRed(&r, green: &g, blue: &b, alpha: &a)
+                var mr: CGFloat = 0, mg: CGFloat = 0, mb: CGFloat = 0, ma: CGFloat = 0
+                let traits = UITraitCollection(userInterfaceStyle: mode == .dark ? .dark : .light)
+                UIColor(TCSBadgeGradient.color(for: taste)).resolvedColor(with: traits).getRed(&mr, green: &mg, blue: &mb, alpha: &ma)
+                XCTAssertEqual(mr, r * 0.75 + 0.25, accuracy: 0.0001)
+                XCTAssertEqual(mg, g * 0.75 + 0.25, accuracy: 0.0001)
+                XCTAssertEqual(mb, b * 0.75 + 0.25, accuracy: 0.0001)
+                XCTAssertEqual(ma, 1, accuracy: 0.0001)
+            }
+        }
+    }
+}
+
+@MainActor
 final class PlatingEditingContractTests: XCTestCase {
+    func testRecordInfoSourceEditPreservesLegacyDatesAndUnrelatedFields() throws {
+        var original = DiningEntry(restaurant: "원래 식당", restaurantID: "fixture-original", menu: "원래 메뉴",
+                                   menuItemID: "fixture-menu", rating: 0, note: "그대로 둘 메모")
+        original.mealTime = .init(source: .confirmed, start: original.observedAt.addingTimeInterval(-86400))
+        let source = DiningFoodSource(kind: "homeCooked", homeCookingID: "existing-recipe-id", version: 3)
+        let context = DiningRecordContext(restaurant: original.restaurant, restaurantID: original.restaurantID,
+                                          mealTime: original.mealTime, foodSource: source)
+        let edited = DiningRecordFieldUpdate.recordInfo(context, in: original)
+        let before = try original.memorySourceFields(), after = try edited.memorySourceFields()
+        XCTAssertEqual(Set(before.keys.filter { before[$0] != after[$0] }), Set(["foodSource"]))
+        XCTAssertEqual(edited.foodSource, source)
+        XCTAssertEqual(edited.date, original.date)
+        XCTAssertEqual(edited.observedAt, original.observedAt)
+        XCTAssertEqual(edited.id, original.id)
+        XCTAssertEqual(edited.mealID, original.mealID)
+        XCTAssertEqual(edited.menuItemID, original.menuItemID)
+        XCTAssertEqual(edited.allReflectionPhotoFilenames, original.allReflectionPhotoFilenames)
+    }
+
+    func testRecordInfoKeepsUnknownAndFutureSourceUntilExplicitlyChanged() {
+        for source in [nil, DiningFoodSource(kind: "future-kind", homeCookingID: "preserved-id", version: 99)] {
+            var original = DiningEntry.sample
+            original.mealTime = nil
+            original.foodSource = source
+            var context = DiningRecordContext(restaurant: original.restaurant, restaurantID: original.restaurantID,
+                                              mealTime: original.mealTime, foodSource: original.foodSource)
+            context.restaurant = "사용자가 수정한 식당명"
+            let edited = DiningRecordFieldUpdate.recordInfo(context, in: original)
+            XCTAssertEqual(edited.foodSource, source)
+            XCTAssertNil(edited.mealTime)
+            XCTAssertEqual(edited.date, original.date)
+            XCTAssertEqual(edited.observedAt, original.observedAt)
+        }
+    }
+
+    func testRecordInfoUpdatesOnlyExplicitlyConfirmedDate() {
+        let original = DiningEntry.sample
+        let confirmed = original.observedAt.addingTimeInterval(-86400)
+        var context = DiningRecordContext(restaurant: original.restaurant, restaurantID: original.restaurantID,
+                                          mealTime: .init(source: .confirmed, start: confirmed), foodSource: original.foodSource)
+        let edited = DiningRecordFieldUpdate.recordInfo(context, in: original)
+        XCTAssertEqual(edited.observedAt, confirmed)
+        XCTAssertEqual(edited.date, confirmed)
+        context.mealTime = .init(source: .unknown)
+        let unknown = DiningRecordFieldUpdate.recordInfo(context, in: original)
+        XCTAssertEqual(unknown.date, original.date)
+        XCTAssertEqual(unknown.observedAt, original.observedAt)
+        XCTAssertEqual(unknown.foodSource, original.foodSource)
+    }
+
+    func testIndependentDateEditPreservesRestaurantMemoAndOtherSourceFields() throws {
+        let original = DiningEntry(restaurant: "원래 식당", restaurantID: "fixture-original", menu: "원래 메뉴",
+                                   rating: 0, note: "그대로 둘 메모")
+        let value = DiningMealTime(source: .confirmed, start: Date(timeIntervalSince1970: 1_790_000_000))
+        let edited = DiningRecordFieldUpdate.mealTime(value, in: original)
+        let before = try original.memorySourceFields(), after = try edited.memorySourceFields()
+        XCTAssertEqual(Set(before.keys.filter { before[$0] != after[$0] }), Set(["mealTime", "observedAt"]))
+        XCTAssertEqual(edited.date, value.start)
+        XCTAssertEqual(edited.restaurantID, original.restaurantID)
+        XCTAssertEqual(edited.note, original.note)
+        let unknown = DiningRecordFieldUpdate.mealTime(.init(source: .unknown), in: original)
+        XCTAssertNil(unknown.confirmedMealDate)
+        XCTAssertEqual(unknown.date, original.date)
+        XCTAssertEqual(unknown.observedAt, original.observedAt)
+    }
+
+    func testIndependentRestaurantEditPreservesExactLegacyDatesAndMemo() {
+        var original = DiningEntry(restaurant: "원래 식당", restaurantID: "fixture-original", menu: "원래 메뉴",
+                                   menuItemID: "fixture-original-menu", rating: 0, note: "그대로 둘 메모")
+        // An unrelated restaurant edit must not normalize a legacy date mismatch.
+        original.mealTime = .init(source: .confirmed, start: original.observedAt.addingTimeInterval(-86400))
+        var context = DiningRecordContext(restaurant: original.restaurant, restaurantID: original.restaurantID,
+                                          mealTime: original.mealTime, foodSource: original.foodSource)
+        context.selectRestaurant(name: "다른 지점", id: "fixture-new", namespace: "fixture.restaurant")
+        let edited = DiningRecordFieldUpdate.restaurant(context, in: original)
+        XCTAssertEqual(edited.restaurant, "다른 지점")
+        XCTAssertEqual(edited.restaurantID, "fixture-new")
+        XCTAssertNil(edited.menuItemID)
+        XCTAssertEqual(edited.mealTime, original.mealTime)
+        XCTAssertEqual(edited.date, original.date)
+        XCTAssertEqual(edited.observedAt, original.observedAt)
+        XCTAssertEqual(edited.note, original.note)
+        XCTAssertEqual(edited.sensorySelections, original.sensorySelections)
+        XCTAssertEqual(edited.allReflectionPhotoFilenames, original.allReflectionPhotoFilenames)
+    }
+
     func testTextAreaHeightScalesAndRejectsInvalidMetrics() {
         XCTAssertEqual(TBTextAreaMetrics.height(minimum: 156, scale: 1), 156)
         XCTAssertEqual(TBTextAreaMetrics.height(minimum: 180, scale: 2), 360)
@@ -519,7 +655,6 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(SelectionCardMetrics.gap, 12)
         XCTAssertEqual(SelectionCardMetrics.padding, 16)
         XCTAssertEqual(SelectionCardMetrics.indicatorSize, 18)
-        XCTAssertEqual(SelectionCardMetrics.indicatorTopPadding, 2)
         XCTAssertEqual(SelectionCardMetrics.radioDotSize, 8)
         XCTAssertEqual(SelectionCardMetrics.checkboxRadius, 6)
         XCTAssertEqual(SelectionCardMetrics.cardRadius, 20)
@@ -548,18 +683,18 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertNotNil(bottomCta.secondaryActionView)
         XCTAssertNotNil(bottomCta.topSlot)
 
-        let stepCta = TBFlowStepCTA(
+        let stepCta = TBFlowBottomCTA(
             actionLabel: "다음",
-            currentIndex: 1,
-            total: 4,
             actionVisualDisabled: true,
-            stepLabel: "2 / 4",
+            helperText: "2 / 4",
             secondaryButtonVisualDisabled: true,
+            topSlot: AnyView(TBStepIndicator(currentIndex: 1, total: 4)),
             action: {}
         )
         XCTAssertTrue(stepCta.actionVisualDisabled)
-        XCTAssertEqual(stepCta.stepLabel, "2 / 4")
+        XCTAssertEqual(stepCta.helperText, "2 / 4")
         XCTAssertTrue(stepCta.secondaryButtonVisualDisabled)
+        XCTAssertNotNil(stepCta.topSlot)
 
         let selectionCard = TBSelectionCard(
             title: "가벼운 시작이 좋아요",
@@ -614,7 +749,6 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(TasteMatchRecommendationCardMetrics.avatarSize, 42)
         XCTAssertEqual(TasteMatchRecommendationCardMetrics.imageBoxSize.sideLength, 48)
         XCTAssertEqual(TasteMatchRecommendationCardMetrics.imageFallbackIconSize, 28)
-        XCTAssertEqual(TasteMatchRecommendationCardMetrics.borderOpacity, 0.18)
     }
 
     func testHomeRecommendationEngineMirrorsReactAxisRanking() {
@@ -799,11 +933,11 @@ final class SystemParityComponentTests: XCTestCase {
 
     func testNativeDesignSystemInventoryMirrorsReactDesignSystemPage() {
         XCTAssertEqual(NativeDesignSystemInventory.architectureGroups.count, 7)
-        XCTAssertEqual(NativeDesignSystemInventory.totalArchitectureComponentCount, 59)
-        XCTAssertEqual(NativeDesignSystemInventory.currentlyUsedComponentCount, 32)
+        XCTAssertEqual(NativeDesignSystemInventory.totalArchitectureComponentCount, 58)
+        XCTAssertEqual(NativeDesignSystemInventory.currentlyUsedComponentCount, 31)
         XCTAssertEqual(NativeDesignSystemInventory.unusedPrimitiveCount, 20)
-        XCTAssertEqual(NativeDesignSystemInventory.componentStyleSpecCount, 30)
-        XCTAssertEqual(NativeDesignSystemInventory.filePreviewEntries.count, 52)
+        XCTAssertEqual(NativeDesignSystemInventory.componentStyleSpecCount, 29)
+        XCTAssertEqual(NativeDesignSystemInventory.filePreviewEntries.count, 51)
         XCTAssertTrue(
             NativeDesignSystemInventory.filePreviewEntries.contains("src/components/system/TCSHintCard.tsx")
         )
@@ -1007,6 +1141,91 @@ final class SystemParityComponentTests: XCTestCase {
             TopAppBarPrimaryAction.search.accessibilityLabel,
             "통합 검색 열기"
         )
+    }
+
+    @MainActor
+    func testTasteDetailKeepsLastRowAboveHomeIndicator() async throws {
+        let bounds = CGRect(x: 0, y: 0, width: 402, height: 874)
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previousWindow = scene.windows.first { $0.isKeyWindow }
+        let window = UIWindow(windowScene: scene)
+        window.frame = bounds
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+            previousWindow?.makeKey()
+        }
+        func descendants(_ view: UIView) -> [UIView] { [view] + view.subviews.flatMap(descendants) }
+
+        for inset: CGFloat in [0, 21, 34] {
+            var finalRowFrame = CGRect.zero
+            let page = TasteDetailPage(title: "기록한 식사") {
+                Color.clear.frame(height: 1_200)
+                Color.red.frame(height: 44)
+                    .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { finalRowFrame = $0 }
+            }
+            .environment(\.tasteDetailChrome, .init(header: nil, contentOffset: 0, onBack: {}, bottomContentInset: inset))
+            let host = StagedSheetScreenController(rootView: AnyView(page))
+            window.rootViewController = host
+            window.makeKeyAndVisible()
+            try await Task.sleep(for: .milliseconds(300))
+            host.view.layoutIfNeeded()
+            let scroll = try XCTUnwrap(descendants(host.view).compactMap { $0 as? UIScrollView }.first)
+            let end = scroll.contentSize.height + scroll.adjustedContentInset.bottom - scroll.bounds.height
+            scroll.setContentOffset(CGPoint(x: 0, y: end), animated: false)
+            try await Task.sleep(for: .milliseconds(300))
+            host.view.layoutIfNeeded()
+            let viewport = scroll.convert(scroll.bounds, to: window)
+            XCTAssertGreaterThan(finalRowFrame.height, 0)
+            XCTAssertEqual(finalRowFrame.maxY, viewport.maxY - inset, accuracy: 1,
+                           "하단 여백은 기기 안전영역만큼 한 번만 적용한다.")
+        }
+    }
+
+    @MainActor
+    func testArchiveMealDetailScrollsThroughBottomSafeArea() async throws {
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previousWindow = scene.windows.first { $0.isKeyWindow }
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+            previousWindow?.makeKey()
+        }
+        let meals = (0..<8).map { index in
+            DiningEntry(restaurant: "검증 식당", menu: "기록 \(index + 1)",
+                        date: .now.addingTimeInterval(-Double(index + 1) * 86_400), rating: 0, note: "")
+        }
+        let model = AppModel.preview(authEntryComplete: true, onboardingComplete: true, diningEntries: meals)
+        let host = UIHostingController(rootView:
+            AppShellView(initialRoute: .cardDetail(.archiveMetric(id: "meals", title: "기록한 식사")))
+                .environmentObject(model).environment(\.scenePhase, .active)
+        )
+        window.rootViewController = host
+        window.makeKeyAndVisible()
+        try await Task.sleep(for: .seconds(2))
+        host.view.layoutIfNeeded()
+        func descendants(_ view: UIView) -> [UIView] { [view] + view.subviews.flatMap(descendants) }
+        let scroll = try XCTUnwrap(descendants(host.view).compactMap { $0 as? UIScrollView }
+            .max { $0.bounds.height < $1.bounds.height })
+        XCTAssertGreaterThan(window.safeAreaInsets.bottom, 0)
+        XCTAssertEqual(scroll.convert(scroll.bounds, to: window).maxY, window.bounds.maxY, accuracy: 1,
+                       "상세 스크롤 영역이 하단 안전영역 위에서 잘리지 않아야 한다.")
+        let end = scroll.contentSize.height + scroll.adjustedContentInset.bottom - scroll.bounds.height
+        XCTAssertGreaterThan(end, 0)
+        for (name, offset) in [("처음", CGFloat(0)), ("끝", end)] {
+            scroll.setContentOffset(CGPoint(x: 0, y: offset), animated: false)
+            try await Task.sleep(for: .milliseconds(300))
+            host.view.layoutIfNeeded()
+            let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+                window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+            }
+            let attachment = XCTAttachment(image: image)
+            attachment.name = "기록한 식사 safe area · \(name)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
     }
 
     @MainActor
@@ -2160,6 +2379,7 @@ final class SystemParityComponentTests: XCTestCase {
         XCTAssertEqual(TasteLineChartMetrics.trackLineWidth, 12)
         XCTAssertEqual(TasteLineChartMetrics.coreLineWidth, 2)
         XCTAssertEqual(TasteLineChartMetrics.currentNodeDiameter, 12)
+        XCTAssertEqual(TasteLineChartMetrics.historyNodeDiameter, 4)
         XCTAssertTrue(data.hasHistory)
         XCTAssertEqual(sweet.history, [-8, -7, -6, -5, -4, -3])
         let specialNote = TasteInsightSummaryCardData.specialNote(current, history: profiles)

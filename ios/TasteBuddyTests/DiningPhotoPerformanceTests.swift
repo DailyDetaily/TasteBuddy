@@ -388,3 +388,63 @@ final class FoodMemoryDetailPresentationTests: XCTestCase {
         XCTAssertTrue(FoodMemoryDetailPresentation(entry: entry).isGeneratedNote)
     }
 }
+
+final class TopAppBarPhotoBackdropTests: XCTestCase {
+    func testDarkAndBrightPhotosChooseReadableIconTokens() throws {
+        let frame = CGRect(x: 0, y: 0, width: 100, height: 100)
+        let control = CGRect(x: 10, y: 10, width: 20, height: 20)
+        let dark = TopAppBarPhotoBackdrop(image: try image(width: 100, height: 100) { _, _ in 20 }, frame: frame)
+        let bright = TopAppBarPhotoBackdrop(image: try image(width: 100, height: 100) { _, _ in 235 }, frame: frame)
+        XCTAssertEqual(dark.iconTone(in: control), .light)
+        XCTAssertEqual(bright.iconTone(in: control), .dark)
+    }
+
+    func testDarkPhotoHeaderIsMeasuredSeparatelyFromItsBrightSubject() throws {
+        let photo = try image(width: 100, height: 100) { _, y in y < 25 ? 10 : 245 }
+        let backdrop = TopAppBarPhotoBackdrop(image: photo, frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        XCTAssertEqual(backdrop.iconTone(in: CGRect(x: 10, y: 0, width: 20, height: 20)), .light)
+        XCTAssertEqual(backdrop.iconTone(in: CGRect(x: 10, y: 75, width: 20, height: 20)), .dark)
+    }
+
+    func testAspectFillUsesTheVisibleCenterInsteadOfCroppedEdges() throws {
+        let photo = try image(width: 300, height: 100) { x, _ in (100..<200).contains(x) ? 10 : 245 }
+        let backdrop = TopAppBarPhotoBackdrop(image: photo, frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        XCTAssertEqual(backdrop.iconTone(in: CGRect(x: 5, y: 10, width: 20, height: 20)), .light)
+        XCTAssertEqual(backdrop.iconTone(in: CGRect(x: 75, y: 10, width: 20, height: 20)), .light)
+    }
+
+    func testControlsCanUseDifferentTokensOnAMixedPhoto() throws {
+        let photo = try image(width: 100, height: 100) { x, _ in x < 50 ? 10 : 245 }
+        let backdrop = TopAppBarPhotoBackdrop(image: photo, frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        XCTAssertEqual(backdrop.iconTone(in: CGRect(x: 5, y: 10, width: 20, height: 20)), .light)
+        XCTAssertEqual(backdrop.iconTone(in: CGRect(x: 75, y: 10, width: 20, height: 20)), .dark)
+    }
+
+    func testScrollingPastThePhotoReturnsToTheLightPageToken() throws {
+        let photo = try image(width: 100, height: 100) { _, _ in 10 }
+        let control = CGRect(x: 10, y: 10, width: 20, height: 20)
+        let overPhoto = TopAppBarPhotoBackdrop(image: photo, frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        let mostlyPage = TopAppBarPhotoBackdrop(image: photo, frame: CGRect(x: 0, y: -88, width: 100, height: 100))
+        let afterPhoto = TopAppBarPhotoBackdrop(image: photo, frame: CGRect(x: 0, y: -100, width: 100, height: 100))
+        XCTAssertEqual(overPhoto.iconTone(in: control), .light)
+        XCTAssertEqual(mostlyPage.iconTone(in: control), .dark)
+        XCTAssertEqual(afterPhoto.iconTone(in: control), .dark)
+        XCTAssertEqual(overPhoto.iconTone(in: .zero), .dark)
+    }
+
+    private func image(width: Int, height: Int, shade: (Int, Int) -> UInt8) throws -> CGImage {
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(width * height * 4)
+        for y in 0..<height {
+            for x in 0..<width {
+                let value = shade(x, y)
+                bytes.append(contentsOf: [value, value, value, 255])
+            }
+        }
+        let provider = try XCTUnwrap(CGDataProvider(data: Data(bytes) as CFData))
+        return try XCTUnwrap(CGImage(width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32,
+                                    bytesPerRow: width * 4, space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                    bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue),
+                                    provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent))
+    }
+}

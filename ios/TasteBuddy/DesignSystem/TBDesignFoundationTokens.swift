@@ -656,12 +656,40 @@ enum TBDesignFoundationTokens {
         }
     }
 
+    enum SheetPresentationTokens {
+        private static let values: [(String, CGFloat, Bool)] = [
+            ("background.scale", TBSheetPresentation.Background.scale, false),
+            ("background.offsetY", TBSheetPresentation.Background.offsetY, true),
+            ("background.radius", TBSheetPresentation.Background.radius, true),
+            ("background.dimOpacity", TBSheetPresentation.Background.dimOpacity, false),
+            ("background.shadowY", TBSheetPresentation.Background.shadowY, true),
+            ("background.shadowBlur", TBSheetPresentation.Background.shadowBlur, true),
+            ("background.shadowOpacity", TBSheetPresentation.Background.shadowOpacity, false),
+            ("surface.heightRatio", TBSheetPresentation.Surface.heightRatio, false),
+            ("surface.topInset", TBSheetPresentation.Surface.topInset, true),
+            ("surface.radius", TBSheetPresentation.Surface.radius, true),
+            ("surface.grabberWidth", TBSheetPresentation.Surface.grabberWidth, true),
+            ("surface.grabberHeight", TBSheetPresentation.Surface.grabberHeight, true),
+            ("drag.minimumDistance", TBSheetPresentation.Drag.minimumDistance, true),
+            ("drag.dismissProgress", TBSheetPresentation.Drag.dismissProgress, false),
+        ]
+
+        static let all = values.map { path, value, isDistance in
+            tbToken(
+                "SHEET_PRESENTATION_TOKENS.native.\(path)",
+                "\(value)\(isDistance ? "pt" : "")",
+                isDistance ? .pixels(value) : .number(Double(value))
+            )
+        }
+    }
+
     static let foundationAll =
         SpacingTokens.all +
         RadiusTokens.all +
         TypographyTokens.all +
         ShadowTokens.all +
         MotionTokens.all +
+        SheetPresentationTokens.all +
         IconTokens.all +
         BoxTokens.all +
         DataVizTokens.all +

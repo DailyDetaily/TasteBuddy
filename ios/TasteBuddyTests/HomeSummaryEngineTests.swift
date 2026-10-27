@@ -3,7 +3,287 @@ import SwiftUI
 import UIKit
 @testable import TasteBuddy
 
+@MainActor
+final class NativeSummaryCardRenderingTests: XCTestCase {
+    func testTwoLineDetailUsesPreparedSensoryRecordsInBothThemes() async throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul")!
+        let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-25T12:00:00+09:00"))
+        let umami = [1, 3, 2, 4], sweet = [3, 2, 3, 1]
+        let records: [TBRecordChartData.Input] = (0..<4).flatMap { day in
+            (0..<max(umami[day], sweet[day])).map { item in
+                let id = "line-pair-\(day)-\(item)"
+                return .init(id: id, date: calendar.date(byAdding: .day, value: day - 3, to: now), source: "restaurant",
+                             mealID: id, tasteIDs: (item < umami[day] ? ["umami"] : []) + (item < sweet[day] ? ["sweet"] : []), hasSensoryRecord: true)
+            }
+        }
+        let data = TBRecordChartData.make(records: records, now: now, calendar: calendar, unknownDateCount: 0, futureCount: 0)
+        XCTAssertEqual(data.sensorySeries.map(\.id), ["umami", "sweet"])
+        XCTAssertEqual(data.sensorySeries[0].values, umami.map { Double($0) })
+        XCTAssertEqual(data.sensorySeries[1].values, sweet.map { Double($0) })
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previous = scene.windows.first { $0.isKeyWindow }
+        let window = UIWindow(windowScene: scene); window.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
+        defer { window.isHidden = true; window.rootViewController = nil; previous?.makeKey() }
+        for scheme in [ColorScheme.light, .dark] {
+            window.overrideUserInterfaceStyle = scheme == .light ? .light : .dark
+            let host = UIHostingController(rootView: ScrollView {
+                RecordChartsPanel(data: data, initialMode: .linePair).padding(20)
+            }.background(TBColor.page).environment(\.colorScheme, scheme))
+            window.rootViewController = host; window.makeKeyAndVisible()
+            try await Task.sleep(for: .milliseconds(500)); host.view.layoutIfNeeded()
+            let screenshot = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
+            let name = "line-pair-" + (scheme == .light ? "light" : "dark")
+            let attachment = XCTAttachment(image: screenshot); attachment.name = name; attachment.lifetime = .keepAlways; add(attachment)
+            let path = FileManager.default.temporaryDirectory.appendingPathComponent(name + ".png")
+            try screenshot.pngData()?.write(to: path); print("LINE_PAIR_CAPTURE_PATH " + path.path)
+        }
+    }
+
+    func testMenuArchiveHomeRendersPopulatedGraphsInBothThemes() async throws {
+        let now = Date(timeIntervalSince1970: 1_792_890_000)
+        let names = ["국수", "수프", "카레", "리소토", "샐러드", "라비올리", "타코", "초밥", "피자", "스테이크", "케이크", "만두", "우동"]
+        var entries: [DiningEntry] = []
+        let schedules = [[60, 45, 30, 5, 1], [60, 4, 2], [60, 3], [60, 6], [60, 7]]
+        for index in 0..<13 {
+            let days = index < 5 ? schedules[index] : [20 - (index - 5)]
+            for day in days {
+                let date = now.addingTimeInterval(-Double(day) * 86400)
+                entries.append(.init(restaurant: "합성 식당", restaurantID: "archive-fixture", menu: names[index], menuItemID: String(index),
+                    observedAt: date, savedAt: date, rating: 0, note: "",
+                    overallEvaluation: index == 12 ? nil : DiningOverallEvaluation(starRating: index < 10 ? 4.5 : 3),
+                    mealTime: .init(source: .confirmed, start: date, confirmedAt: date),
+                    foodSource: .init(kind: "restaurant")))
+            }
+        }
+        let app = AppModel.preview(authEntryComplete: true, onboardingComplete: true, profile: .sample, diningEntries: entries,
+                                   authRepository: FixtureBackendAuthRepository(), accountDataRepository: UnavailableNativeAccountDataRepository(),
+                                   now: { now })
+        for _ in 0..<600 where app.sensoryAnalysisIsUpdating { try await Task.sleep(for: .milliseconds(50)) }
+        let insights = try XCTUnwrap(app.homeArchivePresentation?.menuInsights)
+        XCTAssertEqual(insights.newMenus.count, 8); XCTAssertEqual(insights.familiarMenus.count, 5)
+        XCTAssertEqual(insights.ratedCount, 7); XCTAssertEqual(insights.satisfiedMenus.count, 5)
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previous = scene.windows.first { $0.isKeyWindow }
+        let window = UIWindow(windowScene: scene); window.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
+        defer { window.isHidden = true; window.rootViewController = nil; previous?.makeKey() }
+        func descendants(_ view: UIView) -> [UIView] { [view] + view.subviews.flatMap(descendants) }
+        for scheme in [ColorScheme.light, .dark] {
+            window.overrideUserInterfaceStyle = scheme == .light ? .light : .dark
+            let host = UIHostingController(rootView: HomeView().environmentObject(app).environment(\.colorScheme, scheme))
+            window.rootViewController = host; window.makeKeyAndVisible()
+            try await Task.sleep(for: .milliseconds(1000)); host.view.layoutIfNeeded()
+            let scroll = try XCTUnwrap(descendants(host.view).compactMap { $0 as? UIScrollView }.max { $0.bounds.height < $1.bounds.height })
+            scroll.setContentOffset(CGPoint(x: 0, y: 280), animated: false)
+            try await Task.sleep(for: .milliseconds(1000)); host.view.layoutIfNeeded()
+            let screenshot = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
+            let name = "archive-menu-home-" + (scheme == .light ? "light" : "dark")
+            let attachment = XCTAttachment(image: screenshot); attachment.name = name; attachment.lifetime = .keepAlways; add(attachment)
+            let path = FileManager.default.temporaryDirectory.appendingPathComponent(name + ".png")
+            try screenshot.pngData()?.write(to: path); print("ARCHIVE_CAPTURE_PATH " + path.path)
+        }
+    }
+
+    /// Synthetic original records pass through AppModel's production account-scoped adapter
+    /// and aggregation. Captures exercise the actual detail destinations, not supplied chart values.
+    func testMenuArchiveDetailGraphsRenderInBothThemes() async throws {
+        let now = Date(timeIntervalSince1970: 1_792_890_000)
+        let names = ["국수", "수프", "카레", "리소토", "샐러드", "라비올리", "타코", "초밥", "피자", "스테이크", "케이크", "만두", "우동"]
+        let schedules = [[60, 45, 30, 5, 1], [60, 4, 2], [60, 3], [60, 6], [60, 7]]
+        var entries: [DiningEntry] = []
+        for index in names.indices {
+            for day in index < schedules.count ? schedules[index] : [20 - (index - 5)] {
+                let date = now.addingTimeInterval(-Double(day) * 86400)
+                entries.append(.init(restaurant: "합성 식당", restaurantID: "detail-graph-fixture", menu: names[index], menuItemID: String(index),
+                    observedAt: date, savedAt: date, rating: 0, note: "상세 그래프 검증용 합성 원본",
+                    overallEvaluation: index == 12 ? nil : DiningOverallEvaluation(starRating: index < 10 ? 4.5 : 3),
+                    mealTime: .init(source: .confirmed, start: date, confirmedAt: date), foodSource: .init(kind: "restaurant")))
+            }
+        }
+        let app = AppModel.preview(authEntryComplete: true, onboardingComplete: true, profile: .sample, diningEntries: entries,
+                                   authRepository: FixtureBackendAuthRepository(), accountDataRepository: UnavailableNativeAccountDataRepository(),
+                                   now: { now })
+        for _ in 0..<600 where app.sensoryAnalysisIsUpdating { try await Task.sleep(for: .milliseconds(50)) }
+        XCTAssertFalse(app.sensoryAnalysisIsUpdating)
+        XCTAssertNil(app.sensoryAnalysisError)
+        let archive = try XCTUnwrap(app.homeArchivePresentation)
+        let insights = archive.menuInsights
+        XCTAssertEqual(insights.newMenus.count, 8)
+        XCTAssertEqual(insights.familiarMenus.count, 5)
+        XCTAssertEqual(insights.ratedCount, 7)
+        XCTAssertEqual(insights.satisfiedMenus.count, 5)
+        XCTAssertEqual(insights.belowThresholdMenus.count, 2)
+        XCTAssertEqual(insights.unratedMenus.count, 1)
+        XCTAssertEqual(insights.repeatedMenus.map(\.mealCount), [5, 3, 2])
+        XCTAssertEqual(try XCTUnwrap(insights.satisfactionPercent), 100 * 5.0 / 7.0, accuracy: 0.000_001)
+        XCTAssertEqual(archive.sourceEntries.count, entries.count)
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previousWindow = scene.windows.first { $0.isKeyWindow }
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
+        defer { window.isHidden = true; window.rootViewController = nil; previousWindow?.makeKey() }
+        for scheme in [ColorScheme.light, .dark] {
+            window.overrideUserInterfaceStyle = scheme == .light ? .light : .dark
+            for kind in HomeArchiveMenuMetricKind.allCases {
+                let host = UIHostingController(rootView: HomeArchiveMenuMetricDetailView(kind: kind)
+                    .environmentObject(app).environment(\.colorScheme, scheme))
+                window.rootViewController = host
+                window.makeKeyAndVisible()
+                try await Task.sleep(for: .milliseconds(700))
+                host.view.layoutIfNeeded()
+                let screenshot = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+                    window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+                }
+                let name = "detail-graph-" + kind.rawValue + "-" + (scheme == .light ? "light" : "dark")
+                let attachment = XCTAttachment(image: screenshot)
+                attachment.name = name
+                attachment.lifetime = .keepAlways
+                add(attachment)
+                let path = FileManager.default.temporaryDirectory.appendingPathComponent(name + ".png")
+                try XCTUnwrap(screenshot.pngData()).write(to: path)
+                print("DETAIL_GRAPH_CAPTURE_PATH " + path.path)
+            }
+        }
+    }
+
+    func testCompactBarsRemainVisibleAfterScrollingIntoView() async throws {
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previousWindow = scene.windows.first { $0.isKeyWindow }
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
+        window.overrideUserInterfaceStyle = .light
+        defer { window.isHidden = true; window.rootViewController = nil; previousWindow?.makeKey() }
+        let chart = HomeArchiveChart(kind: .distribution, unit: "개", period: "별점 분포",
+            segments: (1...10).map { step in
+                .init(id: "stars:\(step)", label: "\(Double(step) / 2)점", count: step == 7 ? 2 : step == 8 ? 1 : 0, entryIDs: [])
+            }, responseScale: DiningOverallEvaluation.starScale)
+        let data = HomePeriodInsightCardData(kind: .tasteClue, title: "별점 3개", detail: "0.5~5점 · 0.5점 단위\n전체 기간",
+            supportingText: nil, stats: [], chartValues: [], accentAxis: nil, state: .populated, archiveChart: chart)
+        func descendants(_ view: UIView) -> [UIView] { [view] + view.subviews.flatMap(descendants) }
+        for (scheme, topSpace, offset) in [(ColorScheme.light, 0.0, 0.0), (.light, 900.0, 750.0), (.dark, 0.0, 0.0), (.dark, 900.0, 750.0)] {
+            window.overrideUserInterfaceStyle = scheme == .light ? .light : .dark
+            var cardFrame = CGRect.zero
+            let host = UIHostingController(rootView: ScrollView {
+                VStack(spacing: 0) {
+                    Color.clear.frame(height: topSpace)
+                    HomePeriodInsightCard(data: data, onTap: {}, labelOverride: "음식 전체 평가")
+                        .frame(width: 352)
+                        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { cardFrame = $0 }
+                    Color.clear.frame(height: 900)
+                }.frame(maxWidth: .infinity)
+            }.background(TBColor.page).environment(\.colorScheme, scheme))
+            window.rootViewController = host
+            window.makeKeyAndVisible()
+            try await Task.sleep(for: .milliseconds(250))
+            host.view.layoutIfNeeded()
+            let scroll = try XCTUnwrap(descendants(host.view).compactMap { $0 as? UIScrollView }.max { $0.bounds.height < $1.bounds.height })
+            if offset > 0 { scroll.setContentOffset(CGPoint(x: 0, y: offset), animated: false) }
+            try await Task.sleep(for: .milliseconds(1000))
+            host.view.layoutIfNeeded()
+            let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
+            let attachment = XCTAttachment(image: image)
+            attachment.name = "archive-bars-\(offset > 0 ? "scrolled" : "initial")-\(scheme == .light ? "light" : "dark")"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+            XCTAssertGreaterThan(cardFrame.height, 0)
+            let cg = try XCTUnwrap(image.cgImage), scale = image.scale
+            let plot = try XCTUnwrap(cg.cropping(to: CGRect(x: (cardFrame.maxX - 144) * scale,
+                y: (cardFrame.minY + 44) * scale, width: 132 * scale, height: 64 * scale)))
+            var pixels = [UInt8](repeating: 0, count: 132 * 64 * 4)
+            try pixels.withUnsafeMutableBytes { buffer in
+                let context = try XCTUnwrap(CGContext(data: buffer.baseAddress, width: 132, height: 64, bitsPerComponent: 8,
+                    bytesPerRow: 132 * 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+                context.draw(plot, in: CGRect(x: 0, y: 0, width: 132, height: 64))
+            }
+            let colored = stride(from: 0, to: pixels.count, by: 4).filter { offset in
+                let rgb = pixels[offset..<(offset + 3)].map(Int.init)
+                return rgb.max()! - rgb.min()! > 12
+            }.count
+            XCTAssertGreaterThan(colored, 30, "Visible archive bars must not remain masked (\(scheme))")
+            let emphasized = stride(from: 0, to: pixels.count, by: 4).filter { offset in
+                let rgb = pixels[offset..<(offset + 3)].map(Int.init)
+                return rgb.max()! - rgb.min()! > 100
+            }.count
+            XCTAssertGreaterThan(emphasized, 30, "Every populated distribution bin uses its main-color endpoint, not only the last bin")
+        }
+    }
+
+    func testPopulatedCardsRenderTheirGraphsInLightAndDark() async throws {
+        let now = Date(timeIntervalSince1970: 1_780_000_000)
+        let entries = (0..<7).map { index -> DiningEntry in
+            let date = now.addingTimeInterval(-Double(index) * 86400)
+            return .init(restaurant: index == 0 ? "다른 식당" : "검증 식당", restaurantID: index == 0 ? "fixture-other" : "fixture-restaurant", menu: index == 0 ? "샐러드" : "국물",
+                         observedAt: date, savedAt: date, rating: 0, note: "",
+                         overallEvaluation: .init(response: index % 2 == 0 ? .liked : .disliked),
+                         mealTime: .init(source: .confirmed, start: date, confirmedAt: date))
+        }
+        let snapshot = try SensoryAnalysisEngine.analyze(entries: entries)
+        let archive = HomeArchivePresentation.make(entries: entries, snapshot: snapshot, referenceDate: now)
+        let cards = archive.sections.flatMap(\.cards)
+        XCTAssertEqual(cards.count, 4)
+        XCTAssertTrue(cards.allSatisfy { $0.data.archiveChart?.hasData == true })
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previousWindow = scene.windows.first { $0.isKeyWindow }
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 352, height: 210)
+        defer { window.isHidden = true; window.rootViewController = nil; previousWindow?.makeKey() }
+        for scheme in [ColorScheme.light, .dark] {
+            for card in cards {
+                let host = UIHostingController(rootView: HomePeriodInsightCard(data: card.data, onTap: {}, labelOverride: card.label)
+                    .frame(width: 352).frame(maxHeight: .infinity, alignment: .top)
+                    .background(TBColor.page).environment(\.colorScheme, scheme).ignoresSafeArea())
+                window.rootViewController = host
+                window.makeKeyAndVisible()
+                try await Task.sleep(for: .milliseconds(900))
+                window.layoutIfNeeded()
+                let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+                    window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+                }
+                let attachment = XCTAttachment(image: image)
+                attachment.name = "summary-\(card.id)-\(scheme == .dark ? "dark" : "light")"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+                let cg = try XCTUnwrap(image.cgImage)
+                let scale = image.scale
+                let plot = try XCTUnwrap(cg.cropping(to: CGRect(x: 208 * scale, y: 44 * scale, width: 132 * scale, height: 64 * scale)))
+                var pixels = [UInt8](repeating: 0, count: 132 * 64 * 4)
+                try pixels.withUnsafeMutableBytes { buffer in
+                    let context = try XCTUnwrap(CGContext(data: buffer.baseAddress, width: 132, height: 64, bitsPerComponent: 8,
+                        bytesPerRow: 132 * 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+                    context.draw(plot, in: CGRect(x: 0, y: 0, width: 132, height: 64))
+                }
+                let coloredPixels = stride(from: 0, to: pixels.count, by: 4).filter { offset in
+                    let rgb = pixels[offset..<(offset + 3)].map(Int.init)
+                    return rgb.max()! - rgb.min()! > 12
+                }.count
+                XCTAssertGreaterThan(coloredPixels, 30, "\(card.id): populated graph must be visible after its reveal animation")
+            }
+        }
+    }
+}
+
 final class HomeArchiveSummaryEngineTests: XCTestCase {
+    func testGroupedMiniChartSpacingAndSharedScale() {
+        XCTAssertEqual(TBMiniChartMetrics.barWidth(count: 4, grouped: true), 12)
+        XCTAssertEqual(TBMiniChartMetrics.spacing(count: 4, grouped: true), 8)
+        XCTAssertEqual(TBMiniChartMetrics.innerSpacing(count: 4), 2)
+        XCTAssertEqual(TBMiniChartMetrics.height, 56, "Shared web/iOS mini-graph contract")
+        XCTAssertEqual(TBMiniChartMetrics.barHeight(value: 4, maximum: 6, barWidth: 12), 38.4, accuracy: 0.0001)
+        XCTAssertGreaterThan(TBMiniChartMetrics.barWidth(count: 200, grouped: true), 0)
+    }
+
+    func testMiniChartSeparatesZeroOneAndMissingAtBothDensities() {
+        for count in [7, 12] {
+            let width = TBMiniChartMetrics.barWidth(count: count)
+            XCTAssertEqual(width, count == 7 ? 12 : 8.25)
+            XCTAssertEqual(TBMiniChartMetrics.barHeight(value: 0, maximum: 6, barWidth: width), width / 2)
+            XCTAssertEqual(TBMiniChartMetrics.barHeight(value: 1, maximum: 6, barWidth: width), width)
+            XCTAssertEqual(TBMiniChartMetrics.barHeight(value: 1, maximum: 1, barWidth: width), width)
+            XCTAssertEqual(TBMiniChartMetrics.barHeight(value: 6, maximum: 6, barWidth: width), 56)
+            XCTAssertEqual(TBMiniChartMetrics.barHeight(value: .nan, maximum: 6, barWidth: width), 0)
+        }
+    }
+
     private let now = Date(timeIntervalSince1970: 1_788_768_000)
     private var calendar: Calendar {
         var value = Calendar(identifier: .gregorian)
@@ -603,6 +883,50 @@ final class HomePeriodInsightEngineTests: XCTestCase {
 }
 
 final class HomeArchiveMetricsEngineTests: XCTestCase {
+    func testCurrentHalfStarsReachArchiveWithoutInventingMealDatesOrRestaurantLinks() throws {
+        let date = Date(timeIntervalSince1970: 1_780_000_000)
+        let entries = try [3.5, 4.0].map { stars in
+            DiningEntry(restaurant: "이름만 있는 식당", menu: "기록한 메뉴", date: date,
+                savedAt: date, rating: 0, note: "", overallEvaluation: try XCTUnwrap(DiningOverallEvaluation(starRating: stars)))
+        }
+        func cards(_ rows: [DiningEntry], snapshot: SensoryAnalysisSnapshot? = nil) throws -> [HomeArchiveMetric] {
+            let snapshot = try snapshot ?? SensoryAnalysisEngine.analyze(entries: rows)
+            return HomeArchivePresentation.make(entries: rows, snapshot: snapshot, referenceDate: date.addingTimeInterval(86400)).sections.flatMap(\.cards)
+        }
+        let restored = try JSONDecoder().decode([DiningEntry].self, from: JSONEncoder().encode(entries))
+        let values = try cards(restored)
+        XCTAssertFalse(try XCTUnwrap(values.first { $0.id == "meals" }?.data.archiveChart).hasData)
+        XCTAssertEqual(values.first { $0.id == "menus" }?.data.state, .insufficient)
+        XCTAssertEqual(values.first { $0.id == "restaurants" }?.data.state, .insufficient)
+        let overall = try XCTUnwrap(values.first { $0.id == "overall" }?.data.archiveChart)
+        XCTAssertEqual(overall.responseScale, DiningOverallEvaluation.starScale)
+        XCTAssertEqual(overall.segments.count, 10)
+        XCTAssertEqual(overall.segments.map(\.count), [0, 0, 0, 0, 0, 0, 1, 1, 0, 0])
+        XCTAssertEqual(overall.total, 2)
+        let oldSnapshot = try SensoryAnalysisEngine.analyze(entries: restored)
+        var edited = restored
+        edited[0].overallEvaluation = DiningOverallEvaluation(starRating: 4.5)
+        XCTAssertEqual(try cards(edited, snapshot: oldSnapshot).first { $0.id == "overall" }?.data.archiveChart?.total, 1,
+                       "An observation from before the edit cannot represent the new direct answer")
+        XCTAssertEqual(try cards(edited).first { $0.id == "overall" }?.data.archiveChart?.segments[8].count, 1)
+        XCTAssertEqual(try cards(Array(edited.dropFirst())).first { $0.id == "overall" }?.data.archiveChart?.total, 1)
+    }
+
+    func testHalfStarsAndLegacyCategoriesNeverMergeTheirResponseScales() throws {
+        let date = Date(timeIntervalSince1970: 1_780_000_000)
+        let entries = [DiningEntry(restaurant: "식당", menu: "별점", date: date, rating: 0, note: "",
+                                  overallEvaluation: DiningOverallEvaluation(starRating: 4)),
+                       DiningEntry(restaurant: "식당", menu: "이전 응답", date: date, rating: 0, note: "",
+                                   overallEvaluation: .init(response: .liked))]
+        let snapshot = try SensoryAnalysisEngine.analyze(entries: entries)
+        let archive = HomeArchivePresentation.make(entries: entries, snapshot: snapshot, referenceDate: date.addingTimeInterval(1))
+        let chart = try XCTUnwrap(archive.sections.flatMap(\.cards).first { $0.id == "overall" }?.data.archiveChart)
+        XCTAssertEqual(chart.total, 1)
+        XCTAssertEqual(chart.segments.first { $0.label == "4점" }?.count, 1)
+        XCTAssertEqual(chart.supplements.first { $0.id == "category:liked" }?.count, 1)
+        XCTAssertEqual(chart.supplements.first { $0.id == "unanswered" }?.count, 0)
+    }
+
     private let now = Date(timeIntervalSince1970: 1_788_768_000)
 
     private func entry(mealID: UUID? = nil, status: DiningEntryFeedbackStatus = .completed,
@@ -647,12 +971,12 @@ final class HomeArchiveMetricsEngineTests: XCTestCase {
         let second = entry(mealID: mealID, status: .captured)
         let cards = try metrics([first, first, second])
         XCTAssertEqual(cards.first { $0.id == "meals" }?.data.title, "1번의 식사")
-        XCTAssertEqual(cards.first { $0.id == "restaurants" }?.data.detail, "다시 기록한 식당은 아직 없어요\n전체 기간")
-        XCTAssertEqual(cards.first { $0.id == "menus" }?.data.detail, "다시 기록한 메뉴는 아직 없어요\n전체 기간 · 식당별로 구분")
+        XCTAssertEqual(cards.first { $0.id == "restaurants" }?.data.detail, "한 번 1곳 · 반복 0곳\n전체 기간")
+        XCTAssertEqual(cards.first { $0.id == "menus" }?.data.detail, "한 번 1가지 · 반복 0가지\n전체 기간")
         XCTAssertEqual(cards.first { $0.id == "overall" }?.data.title, "아직 평가 없음", "Legacy rating must not become direct overall feedback")
         let repeated = try metrics([first, second, entry()])
-        XCTAssertEqual(repeated.first { $0.id == "restaurants" }?.data.detail, "다른 식사에서도 다시 기록했어요\n전체 기간")
-        XCTAssertEqual(repeated.first { $0.id == "menus" }?.data.detail, "다른 식사에서도 다시 기록했어요\n전체 기간 · 식당별로 구분")
+        XCTAssertEqual(repeated.first { $0.id == "restaurants" }?.data.detail, "한 번 0곳 · 반복 1곳\n전체 기간")
+        XCTAssertEqual(repeated.first { $0.id == "menus" }?.data.detail, "한 번 0가지 · 반복 1가지\n전체 기간")
     }
 
     func testThreeDishEntriesInOneMealCountAsOneMealAndThreeDishes() {
@@ -664,7 +988,7 @@ final class HomeArchiveMetricsEngineTests: XCTestCase {
                                                        referenceDate: now).flatMap(\.cards)
         XCTAssertEqual(cards.first { $0.id == "meals" }?.data.title, "1번의 식사")
         XCTAssertEqual(cards.first { $0.id == "meals" }?.entryIDs.count, 3)
-        XCTAssertTrue(cards.first { $0.id == "meals" }?.data.detail.contains("디시 기록 3개") == true)
+        XCTAssertTrue(cards.first { $0.id == "meals" }?.data.detail.contains("요리 기록 3개") == true)
     }
 
     func testSameMenuDuplicatedInsideOneMealDoesNotBecomeRepeatedMenu() {
@@ -709,7 +1033,7 @@ final class HomeArchiveMetricsEngineTests: XCTestCase {
         let unfinished = entry(status: .captured, overall: .liked)
         let cards = try metrics([positive, negative, unfinished])
         let overall = try XCTUnwrap(cards.first { $0.id == "overall" })
-        XCTAssertEqual(overall.data.title, "2개의 음식 평가")
+        XCTAssertEqual(overall.data.title, "음식 평가 2개")
         XCTAssertEqual(overall.data.archiveChart?.segments.map(\.count), [0, 1, 0, 1, 0])
         XCTAssertFalse(overall.data.archiveChart!.segments.flatMap(\.entryIDs).contains(unfinished.id))
         XCTAssertEqual(cards, try metrics([unfinished, negative, positive]))
@@ -726,7 +1050,7 @@ final class HomeArchiveMetricsEngineTests: XCTestCase {
         let cards = HomeArchiveMetricsEngine.sections(entries: [fitOnly], snapshot: snapshot,
                                                        referenceDate: now).flatMap(\.cards)
         let overall = try XCTUnwrap(cards.first { $0.id == "overall" })
-        XCTAssertEqual(overall.data.title, "1개의 음식 평가")
+        XCTAssertEqual(overall.data.title, "음식 평가 1개")
         XCTAssertEqual(overall.data.archiveChart?.segments.first?.count, 1)
         XCTAssertEqual(Set(snapshot.observations.filter { overall.evidenceIDs.contains($0.id) }.map(\.kind)), ["overall_liking"])
         XCTAssertEqual(cards.count, 4, "감각 응답이 있어도 하단 카드 수를 늘리지 않는다.")
@@ -829,7 +1153,7 @@ final class HomeArchiveMetricsEngineTests: XCTestCase {
             sourceExperienceCount: 1, actualApiCalls: 0, needsMeaningReview: false, limits: [])
         let cards = HomeArchiveMetricsEngine.sections(entries: [current], snapshot: snapshot,
                                                        referenceDate: now).flatMap(\.cards)
-        XCTAssertEqual(cards.first { $0.id == "overall" }?.data.title, "1개의 음식 평가")
+        XCTAssertEqual(cards.first { $0.id == "overall" }?.data.title, "음식 평가 1개")
         XCTAssertEqual(cards.first { $0.id == "overall" }?.evidenceIDs, [source.id])
         snapshot.personalModel = PersonalTasteModelBuilder.buildRecords(records: [
             .init(observationId: source.id, userId: "other-owner", experienceId: current.id.uuidString,

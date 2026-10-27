@@ -22,71 +22,156 @@ struct HomePeriodInsightCard: View {
     var labelOverride: String? = nil
     var detailLineLimit: Int? = 2
     var controls: AnyView? = nil
-    var iconOverride: LucideIconName? = nil
     var headerActionLabel: String? = "자세히보기"
     var balancedFooter: AnyView? = nil
+    var legend: [TBSummaryCardLegendItem]? = nil
+    var visualization: AnyView? = nil
+    var indicatorColors: [Color]? = nil
+    var showsIndicatorIcon = true
+    /// Item counts describe available detail scopes, not the measured value.
+    var summaryItemCount: String? = nil
+    var usesReadableInsightLayout = false
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         TasteInsightSummaryCardLayout(
-            indicatorColors: [indicatorAxis.mainColor],
-            indicatorIcon: iconOverride ?? data.kind.cardIcon,
+            indicatorColors: indicatorColors ?? graphIndicatorColors,
+            indicatorCategory: showsIndicatorIcon ? data.insightCategory : nil,
             sectionLabel: labelOverride ?? data.kind.label,
-            actionLabel: onTap == nil || dynamicTypeSize.isAccessibilitySize ? nil : headerActionLabel,
+            actionLabel: onTap == nil || dynamicTypeSize.isAccessibilitySize || summaryItemCount != nil ? nil : headerActionLabel,
             title: data.title,
             titleContentSpacing: TBSpacing.x4,
             showsTitle: false,
             combinesAccessibilityChildren: controls == nil,
-            sectionLabelLineLimit: dynamicTypeSize.isAccessibilitySize ? nil : 1,
+            sectionLabelLineLimit: dynamicTypeSize.isAccessibilitySize || usesReadableInsightLayout ? nil : 1,
             accessibilityLabel: accessibilityLabel,
             accessibilityHint: onTap == nil ? nil : "기간별 미식 기록 자세히 보기",
             onTap: controls == nil ? onTap : nil,
-            balancedFooter: balancedFooter
+            balancedFooter: balancedFooter,
+            legend: legend ?? chartLegend
         ) {
-            if let controls { controls }
-            if controls != nil, let onTap {
-                Button(action: onTap) { insightDetails.frame(minHeight: 44) }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(accessibilityLabel)
-                    .accessibilityHint("집계 기준과 원본을 엽니다")
-            } else { insightDetails }
+            VStack(alignment: .leading, spacing: TBSpacing.x12) {
+                if let controls { controls }
+                if controls != nil, let onTap {
+                    Button(action: onTap) { insightDetails.frame(minHeight: 44) }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(accessibilityLabel)
+                        .accessibilityHint("집계 기준과 원본을 엽니다")
+                } else { insightDetails }
+                if let summaryItemCount {
+                    let actionLayout = dynamicTypeSize.isAccessibilitySize
+                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: TBSpacing.x8))
+                        : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: TBSpacing.x8))
+                    actionLayout {
+                        Text(summaryItemCount)
+                            .font(TBFont.regular(TBTypography.FontSize.x12))
+                            .foregroundStyle(TBColor.textHint)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: TBSpacing.x8) }
+                        if onTap != nil, let headerActionLabel {
+                            CardDetailLabel(label: headerActionLabel)
+                        }
+                    }
+                }
+            }
         }
     }
 
     private var insightDetails: some View {
-        let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: TBSpacing.x12)) : AnyLayout(HStackLayout(alignment: .center, spacing: TBSpacing.x16))
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: TBSpacing.x12))
+            : usesReadableInsightLayout
+                ? AnyLayout(InsightSummaryReadableBodyLayout())
+                : AnyLayout(TBSummaryCardBodyLayout())
         return layout {
             VStack(alignment: .leading, spacing: TBSpacing.x4) {
                 if !data.title.isEmpty {
-                    Text(data.title)
+                    Text(renderedTitle)
                         .font(TBFont.bold(16))
                         .foregroundStyle(TBColor.textPrimary)
-                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: usesReadableInsightLayout)
+                        .frame(minHeight: 23, alignment: .leading)
                 }
 
                 Text(data.detail)
                     .font(TBFont.regular(TBTypography.FontSize.x12))
                     .foregroundStyle(TBColor.textHint)
-                    .lineSpacing(3)
+                    .lineSpacing(4)
                     .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : detailLineLimit)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .layoutPriority(1)
 
-            if let chart = data.archiveChart, chart.hasData, chart.kind != .composition {
+            if let visualization {
+                visualization.frame(width: TBMiniChartMetrics.width, height: TBMiniChartMetrics.height)
+            } else if let chart = data.archiveChart, chart.hasData {
                 HomeArchiveChartView(chart: chart, axis: indicatorAxis)
-                    .frame(width: dynamicTypeSize.isAccessibilitySize ? nil : 132)
+                    .frame(width: TBMiniChartMetrics.width, height: TBMiniChartMetrics.height)
             } else if !data.chartValues.isEmpty {
-                HomePeriodInsightSparkBars(
+                TBMiniChart(
                     values: data.chartValues,
                     axis: indicatorAxis
                 )
-                .frame(width: 132)
+            } else if data.archiveChart != nil {
+                Color.clear.frame(width: TBMiniChartMetrics.width, height: TBMiniChartMetrics.height)
             }
         }
     }
 
+    /// Keep the measured unit and its value together without changing the data or
+    /// accessibility copy. Korean line breaking otherwise permits “31 / 회”.
+    private var renderedTitle: String {
+        guard usesReadableInsightLayout else { return data.title }
+        return data.title.replacingOccurrences(of: #"식사 ([0-9][0-9,]*)회"#,
+            with: "식사\u{00A0}$1\u{2060}회", options: .regularExpression)
+    }
+
+    private var graphIndicatorColors: [Color] {
+        if visualization != nil || !data.chartValues.isEmpty || data.archiveChart?.hasData == true {
+            return [indicatorAxis.mainColor]
+        }
+        return []
+    }
+
     private var indicatorAxis: TasteAxis {
-        data.accentAxis ?? data.kind.cardAxis
+        if let chart = data.archiveChart, chart.kind == .composition,
+           let primary = chart.segments.filter({ $0.count > 0 }).max(by: { $0.count < $1.count }) {
+            return primary.id == "once" ? .umami : .sweet
+        }
+        return data.accentAxis ?? data.kind.cardAxis
+    }
+
+    /// Labels describe the exact rendered archive chart; no fixture or inferred unit.
+    private var chartLegend: [TBSummaryCardLegendItem] {
+        guard balancedFooter == nil, data.state == .populated else { return [] }
+        if let chart = data.archiveChart, chart.hasData {
+            if chart.kind == .composition {
+                return chart.segments.map { segment in
+                    .init(id: segment.id, label: "\(segment.label) \(segment.count)\(chart.unit)",
+                          color: TBMiniChartColor.color(segment.id == "once" ? .umami : .sweet,
+                                                        tint: 40, mode: TBColorMode(colorScheme)))
+                }
+            }
+            if chart.kind == .distribution {
+                if chart.responseScale == DiningOverallEvaluation.starScale {
+                    return [.init(id: "scale", label: "별점 0.5~5점 · 단위 개")]
+                        + chart.segments.filter { $0.count > 0 }.map {
+                            .init(id: $0.id, label: "\($0.label) \($0.count)개")
+                        }
+                }
+                let unit = usesReadableInsightLayout
+                    ? ["번 식사": "회", "개 요리": "개"][chart.unit] ?? chart.unit
+                    : chart.unit
+                return chart.segments.map { segment in
+                    .init(id: segment.id, label: "\(segment.label) \(segment.count)\(unit)")
+                }
+            }
+            let label = "기간별 기록"
+            return [.init(id: "archive", label: "\(label) · 단위 \(chart.unit)", color: indicatorAxis.mainColor)]
+        }
+        return data.chartValues.isEmpty ? [] : [.init(id: "records", label: "기록 추이", color: indicatorAxis.mainColor)]
     }
 
     private var accessibilityLabel: String {
@@ -94,51 +179,60 @@ struct HomePeriodInsightCard: View {
             labelOverride ?? data.kind.label,
             data.title,
             data.detail,
+            data.supportingText ?? "",
             data.archiveChart?.summary ?? "",
+            (legend ?? chartLegend).map(\.label).joined(separator: " · "),
         ]
         .filter { !$0.isEmpty }
         .joined(separator: ", ")
     }
 }
 
-private struct HomePeriodInsightSparkBars: View {
-    let values: [Double]
-    let axis: TasteAxis
+/// Keeps the existing 132pt chart beside concise copy. Longer scopes use the full
+/// text width instead of truncation, compressed type, or a very narrow text column.
+private struct InsightSummaryReadableBodyLayout: Layout {
+    private let spacing = TBSpacing.x16
 
-    private var maximum: Double {
-        values.max() ?? 1
+    private func textWidth(_ width: CGFloat) -> CGFloat {
+        max(0, min((width - spacing) / 2, width - TBMiniChartMetrics.width - spacing))
     }
 
-    var body: some View {
-        GeometryReader { proxy in
-            HStack(alignment: .bottom, spacing: TBSpacing.x4) {
-                ForEach(Array(values.enumerated()), id: \.offset) { index, value in
-                    GeometryReader { barProxy in
-                        let thickness = barProxy.size.width
+    private func stacks(_ width: CGFloat, subviews: Subviews) -> Bool {
+        guard subviews.count == 2 else { return false }
+        let columnWidth = textWidth(width)
+        let text = subviews[0].sizeThatFits(.init(width: columnWidth, height: nil))
+        return columnWidth < TBMiniChartMetrics.width || text.height > TBMiniChartMetrics.height * 2
+    }
 
-                        TasteChartBarMark(axis: axis, showsEndpoint: index == values.indices.last)
-                        .frame(width: thickness, height: barHeight(for: value, in: proxy.size.height))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            }
-            .padding(.horizontal, TBSpacing.x2)
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? 328
+        guard subviews.count == 2 else {
+            return subviews.first?.sizeThatFits(.init(width: width, height: nil)) ?? .zero
         }
-        .frame(height: 32)
-        .tasteBloomChartReveal(from: .bottom)
-        .accessibilityHidden(true)
+        let stacked = stacks(width, subviews: subviews)
+        let text = subviews[0].sizeThatFits(.init(width: stacked ? width : textWidth(width), height: nil))
+        let chart = subviews[1].sizeThatFits(.init(width: TBMiniChartMetrics.width, height: nil))
+        return CGSize(width: width, height: stacked ? text.height + TBSpacing.x12 + chart.height : max(text.height, chart.height))
     }
 
-    private func normalizedValue(_ value: Double) -> CGFloat {
-        maximum > 0 ? CGFloat(max(0, value) / maximum) : 0
-    }
-
-    private func barHeight(
-        for value: Double,
-        in height: CGFloat
-    ) -> CGFloat {
-        normalizedValue(value) * height
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard subviews.count == 2 else {
+            subviews.first?.place(at: bounds.origin, anchor: .topLeading,
+                                  proposal: .init(width: bounds.width, height: nil))
+            return
+        }
+        if stacks(bounds.width, subviews: subviews) {
+            let text = subviews[0].sizeThatFits(.init(width: bounds.width, height: nil))
+            subviews[0].place(at: bounds.origin, anchor: .topLeading,
+                              proposal: .init(width: bounds.width, height: nil))
+            subviews[1].place(at: CGPoint(x: bounds.maxX, y: bounds.minY + text.height + TBSpacing.x12), anchor: .topTrailing,
+                              proposal: .init(width: TBMiniChartMetrics.width, height: nil))
+        } else {
+            subviews[0].place(at: CGPoint(x: bounds.minX, y: bounds.midY), anchor: .leading,
+                              proposal: .init(width: textWidth(bounds.width), height: nil))
+            subviews[1].place(at: CGPoint(x: bounds.maxX, y: bounds.midY), anchor: .trailing,
+                              proposal: .init(width: TBMiniChartMetrics.width, height: nil))
+        }
     }
 }
 
@@ -179,12 +273,9 @@ extension HomePeriodInsightKind {
 
     var cardIcon: LucideIconName {
         switch self {
-        case .recordFlow: .calendarCheck
-        case .newExperiences: .sparkles
-        case .repeatPatterns: .refreshCw
-        case .tasteClue: .waves
-        case .experienceBreadth: .globe
-        case .tasteChange: .arrowUpRight
+        case .recordFlow, .newExperiences, .repeatPatterns, .experienceBreadth: TDCategory.experience.icon
+        case .tasteClue: TDCategory.sensation.icon
+        case .tasteChange: TDCategory.change.icon
         }
     }
 }
@@ -230,26 +321,62 @@ extension HomePeriodInsightKind {
 
 /// 기존 기간 카드의 레이아웃을 그대로 사용하는 누적 지표 영역.
 struct HomeArchiveMetricsSection: View {
-    let sections: [HomeArchiveMetricSection]
+    @EnvironmentObject private var appModel: AppModel
+    @Environment(\.colorScheme) private var colorScheme
     @State private var selectedDetail: TasteCardDetailRoute?
 
     var body: some View {
-        ForEach(sections) { section in
-            TBPageSection(title: section.title) {
-                VStack(spacing: TBSpacing.x12) {
-                    ForEach(section.cards) { card in
-                        HomePeriodInsightCard(
-                            data: card.data,
-                            onTap: { selectedDetail = .archiveMetric(id: card.id, title: card.label) },
-                            labelOverride: card.label,
-                            detailLineLimit: nil
-                        )
-                        .accessibilityIdentifier("home-archive-metric-\(card.id)")
+        Group {
+            if appModel.sensoryAnalysisIsUpdating || appModel.backendSessionStatus == .restoring {
+                SensoryAnalysisStatusCard(state: .processing)
+            } else if let error = appModel.sensoryAnalysisError {
+                SensoryAnalysisStatusCard(state: .failed(error))
+                Button("다시 시도") {
+                    Task { await appModel.syncAccountData(); appModel.refreshSensoryAnalysis() }
+                }.frame(minHeight: 44)
+            } else {
+                AccountDataSyncNotice()
+                if let archive = appModel.homeArchivePresentation {
+                    TBPageSection(title: "아카이브") {
+                        VStack(spacing: TBSpacing.x12) {
+                            Text("전체 식사 \(archive.menuInsights.mealCount)번 · 연결된 메뉴 \(archive.menuInsights.menuCount)가지 · 식당 \(archive.menuInsights.restaurantCount)곳")
+                                .font(TBFont.regular(12)).foregroundStyle(TBColor.textHint)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .accessibilityIdentifier("home-archive-totals")
+                            ForEach(HomeArchiveMenuMetricKind.allCases) { kind in
+                                HomeArchiveMenuMetricCard(kind: kind, insights: archive.menuInsights,
+                                    onTap: { selectedDetail = .archiveMetric(id: kind.rawValue, title: kind.title) })
+                            }
+                            recordHeatmapCard(archive.gastronomyState)
+                        }
                     }
+                    .platingLayoutFrame("home-section")
                 }
             }
-            .platingLayoutFrame("home-section", when: section.id == sections.first?.id)
         }
         .tasteDetail($selectedDetail)
+        .onChange(of: appModel.memoryAccountGeneration) { _, _ in selectedDetail = nil }
+    }
+
+    private func recordHeatmapCard(_ state: TDState) -> some View {
+        let data = TBRecordChartData.make(state: state)
+        let days = data.month.filter { ($0.count ?? 0) > 0 }.count
+        var items = (0..<5).map { level in
+            TBSummaryCardLegendItem(id: String(level), label: level == 4 ? "4개 이상" : "\(level)개",
+                                   color: TasteAxis.umami.heatmapColor(level: level, in: TBColorMode(colorScheme)))
+        }
+        if data.unknownDateCount > 0 {
+            items.append(.init(id: "undated", label: "식사일 미확인 \(data.unknownDateCount)개 제외"))
+        }
+        return HomePeriodInsightCard(
+            data: .init(kind: .recordFlow, title: "기록한 날 \(days)일",
+                        detail: "요리 기록 \(data.total)개\n\(data.monthLabel)", supportingText: nil,
+                        stats: [], chartValues: [], accentAxis: .umami, state: .populated),
+            onTap: { selectedDetail = .archiveMetric(id: "meals", title: "기록한 식사") },
+            labelOverride: "날짜별 기록 빈도",
+            legend: items,
+            visualization: AnyView(TBMiniHeatmap(values: data.month.map(\.count), startDay: data.startDay))
+        )
+        .accessibilityIdentifier("home-archive-record-frequency")
     }
 }

@@ -445,6 +445,64 @@ final class HomeTasteQuestionsIntegrationTests: XCTestCase {
         XCTAssertEqual(relaunched.homeArchivePresentation?.sections, before)
     }
 
+    @MainActor func testRecentSummaryUsesConfirmedDishDatesAndRebuildsOnEditDeleteAndRestore() async throws {
+        let now = Date(timeIntervalSince1970: 1_780_000_000)
+        let day = now.addingTimeInterval(-86400)
+        let meal = UUID()
+        func record(_ menu: String, confirmed: Bool) -> DiningEntry {
+            .init(mealID: meal, restaurant: "합성 식당", menu: menu, observedAt: day, savedAt: now,
+                  rating: 0, note: "", feedbackStatus: .completed,
+                  mealTime: confirmed ? .init(source: .confirmed, start: day, confirmedAt: day) : nil)
+        }
+        let a = record("A", confirmed: true), b = record("B", confirmed: true)
+        var unknown = record("미확인", confirmed: false)
+        // Separate meal: an unknown sibling would correctly quarantine the whole meal date.
+        unknown = try replacing(unknown, "mealID", with: UUID())
+        let (model, store) = try await app([a, b, unknown], now: { now })
+        func summary(_ model: AppModel) throws -> HomePeriodInsightCardData {
+            try XCTUnwrap(model.homeArchivePresentation).recentRecordSummary()
+        }
+        XCTAssertEqual(try summary(model).chartValues.reduce(0, +), 2, "Two dishes in one meal count as two dishes")
+        XCTAssertEqual(try summary(model).detail, "피드백 완료 2개\n최근 7일")
+        let relaunched = AppModel(defaults: store, authRepository: FixtureBackendAuthRepository(), now: { now })
+        try await wait(relaunched)
+        XCTAssertEqual(try summary(relaunched), try summary(model))
+        var moved = a
+        moved.mealTime = .init(source: .confirmed, start: now.addingTimeInterval(-10 * 86400), confirmedAt: now)
+        model.updateDiningEntry(moved)
+        XCTAssertNil(model.homeArchivePresentation)
+        try await wait(model)
+        XCTAssertEqual(try summary(model).chartValues.reduce(0, +), 0, "Conflicting dates in a meal must not invent a day")
+        model.removeDiningEntry(id: a.id)
+        try await wait(model)
+        XCTAssertEqual(try summary(model).chartValues.reduce(0, +), 1)
+        model.removeDiningEntry(id: b.id)
+        try await wait(model)
+        XCTAssertEqual(try summary(model).chartValues, Array(repeating: 0, count: 7))
+    }
+
+    func testUnlinkedSummaryRecordsAreUnknownAndPartialMealDatesAreNotFuture() throws {
+        let now = Date(timeIntervalSince1970: 1_780_000_000)
+        var confirmed = source()
+        confirmed.mealTime = .init(source: .confirmed, start: confirmed.observedAt, confirmedAt: confirmed.savedAt)
+        let unknown = source(meal: confirmed.mealID)
+        let archive = HomeArchivePresentation.make(entries: [confirmed, unknown], snapshot: .empty, referenceDate: now)
+        let cards = archive.sections.flatMap(\.cards)
+        for id in ["menus", "restaurants"] {
+            let card = try XCTUnwrap(cards.first { $0.id == id })
+            XCTAssertEqual(card.data.state, .insufficient)
+            XCTAssertEqual(card.data.title, "연결 확인 필요")
+            XCTAssertFalse(card.data.archiveChart?.hasData ?? true)
+        }
+        let timeline = try XCTUnwrap(cards.first { $0.id == "meals" }?.data.archiveChart)
+        XCTAssertEqual(timeline.supplements.first { $0.id == "unknown" }?.count, 1)
+        XCTAssertNil(timeline.supplements.first { $0.id == "future" })
+        let linked = try replacing(confirmed, "restaurantID", with: "fixture-restaurant")
+        let updated = HomeArchivePresentation.make(entries: [linked], snapshot: .empty, referenceDate: now)
+        XCTAssertTrue(updated.sections.flatMap(\.cards).filter { ["menus", "restaurants"].contains($0.id) }
+            .allSatisfy { $0.data.state == .populated && $0.data.archiveChart?.total == 1 })
+    }
+
     @MainActor func testQ8DifferentReferencesWithinOneExperienceKeepSeparateAnswerTargets() async throws {
         let catalog = try XCTUnwrap(SensoryAnalysisEngine.contract?.selectionCatalog)
         let references = Dictionary(grouping: catalog.entries.filter { $0.reference == true }, by: \.attribute)
@@ -603,7 +661,7 @@ final class HomeTasteQuestionsIntegrationTests: XCTestCase {
         let metrics = HomeArchiveMetricsEngine.sections(entries: [a, b], snapshot: snapshot).flatMap(\.cards)
         XCTAssertEqual(metrics.first { $0.id == "meals" }?.data.title, "1번의 식사")
         XCTAssertEqual(metrics.first { $0.id == "menus" }?.data.title, "2가지")
-        XCTAssertEqual(metrics.first { $0.id == "overall" }?.data.title, "2개의 음식 평가")
+        XCTAssertEqual(metrics.first { $0.id == "overall" }?.data.title, "음식 평가 2개")
         XCTAssertFalse(metrics.first { $0.id == "overall" }!.data.detail.contains("충돌 1"))
         var identified = try replacing(a, "restaurant", with: "")
         identified = try replacing(identified, "menu", with: "")

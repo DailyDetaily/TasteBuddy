@@ -69,6 +69,7 @@ struct AnalysisView: View {
 
     @ViewBuilder
     private var analysisContent: some View {
+        AccountDataSyncNotice()
         switch displayState {
         case .ready(let snapshot):
             readyContent(snapshot)
@@ -81,103 +82,16 @@ struct AnalysisView: View {
             snapshot: appModel.sensoryAnalysis,
             submissions: ([appModel.profile].compactMap { $0 } + appModel.profileHistory).compactMap(\.surveySubmission),
             entries: appModel.diningEntries,
-            onOpenTasteChange: onOpenTasteChange
+            onOpenTasteChange: onOpenTasteChange,
+            isLoading: appModel.sensoryAnalysisIsUpdating || appModel.backendSessionStatus == .restoring,
+            error: appModel.sensoryAnalysisError,
+            onRetry: { Task { await appModel.syncAccountData(); appModel.refreshSensoryAnalysis() } }
         )
-        if let submission = appModel.profile?.surveySubmission {
-            TBPageSection(title: "처음 남긴 맛의 단서") {
-                TasteSurveyEvidenceCard(submission: submission)
-            }
-        }
+        .id(appModel.memoryAccountGeneration)
     }
 
-    @ViewBuilder
     private func readyContent(_ snapshot: SensoryAnalysisSnapshot) -> some View {
-        TBPageSection(title: "나의 입맛") {
-            SensoryAnalysisHeroCard(snapshot: snapshot)
-
-            if snapshot.needsMeaningReview || !snapshot.unresolved.isEmpty {
-                InterpretationCard(
-                    description: "아직 뜻을 확인 중인 표현이 있어요",
-                    eyebrow: "선택 확인",
-                    supportingText: "원문은 보존하고, 의미가 분명해지기 전에는 입맛 사실로 확정하지 않아요.",
-                    detailLabel: "표현 보기",
-                    accentColor: TBColor.textDisabled,
-                    onExpand: { selectedDetail = .sensory(.evidence) }
-                )
-            }
-        }
-
-        TBPageSection(title: "인사이트") {
-            let personalCandidates = PersonalTasteCandidatePresentation.groups(
-                snapshot.personalModel?.candidates ?? []
-            )
-            if !personalCandidates.isEmpty {
-                VStack(spacing: TBSpacing.x12) {
-                    ForEach(personalCandidates) { candidate in
-                        InterpretationCard(
-                            description: candidate.title,
-                            eyebrow: PersonalTasteCandidatePresentation.eyebrow(candidate),
-                            supportingText: candidate.body,
-                            detailLabel: "근거 보기",
-                            accentColor: TBColor.textDisabled,
-                            onExpand: { selectedDetail = .sensory(.personalCandidate(candidate.id)) }
-                        )
-                        .accessibilityIdentifier("taste-candidate-\(candidate.id)")
-                    }
-                }
-            } else if snapshot.insights.isEmpty {
-                SectionCard {
-                    VStack(alignment: .leading, spacing: TBSpacing.x4) {
-                        Text("다음 단서를 모으고 있어요")
-                            .font(TBFont.semibold(14))
-                            .foregroundStyle(TBColor.textPrimary)
-                        Text("같은 감각의 직접 평가나 다른 상황의 기록이 쌓이면 비교할 수 있는 해석을 보여드려요.")
-                            .font(TBFont.regular(12))
-                            .foregroundStyle(TBColor.textHint)
-                            .lineSpacing(4)
-                    }
-                }
-            } else {
-                VStack(spacing: TBSpacing.x12) {
-                    ForEach(snapshot.insights) { insight in
-                        InterpretationCard(
-                            description: insight.title,
-                            eyebrow: insightEyebrow(insight),
-                            supportingText: insight.body,
-                            detailLabel: "근거 보기",
-                            accentColor: TBColor.textDisabled,
-                            onExpand: { selectedDetail = .sensory(.insight(insight.id)) }
-                        )
-                    }
-                }
-            }
-        }
-
-        let insightGroups = PersonalTasteInsightPresentation.groups(snapshot.personalModel)
-        ForEach([PersonalTasteInsightGroup.Kind.fit, .overall], id: \.self) { kind in
-            let groups = insightGroups.filter { $0.kind == kind }
-            if !groups.isEmpty {
-                TBPageSection(title: kind == .fit ? "알맞았던 조건" : "음식 전체와 감각") {
-                    VStack(spacing: TBSpacing.x12) {
-                        ForEach(groups) { group in
-                            InterpretationCard(
-                                description: group.title,
-                                eyebrow: group.eyebrow,
-                                supportingText: group.body,
-                                detailLabel: "근거 보기",
-                                accentColor: TBColor.textDisabled,
-                                onExpand: { selectedDetail = .sensory(.personalInsight(group.id)) }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        if let configuration = ChatGPTAnalysisConfiguration.load() {
-            ChatGPTAnalysisCard(configuration: configuration)
-        }
-
+        SensoryAnalysisHeroCard(snapshot: snapshot, showsCard: false)
     }
 
     private var displayState: SensoryAnalysisDisplayState {

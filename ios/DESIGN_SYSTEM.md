@@ -8,6 +8,12 @@ Taste Buddy 디자인 시스템의 공식 이름은 **플레이팅(Plating)**이
 
 ## 기준 파일과 프리뷰
 
+### 2026-10-08 · TCSBadge
+
+기존 웹 배지를 [TCSBadge 공통 규격](../docs/design/tcs-badge.md)으로 맞췄다. `DesignSystemFullComponents.swift`의 `TCSBadge(adjustments:label:disabled:)`를 사용한다. 조정량 절대값에 따른 그라데이션, 빈 데이터, 비활성을 지원하며 iOS 제품 화면에서 재사용할 수 있다. 활성색은 라이트 팔레트로 고정하고 비활성 배경만 Light/Dark 모드를 따른다.
+
+DEBUG 독립 표본: `--design-system-preview --plating-native-audit-capture --plating-tcs-badge-capture`.
+
 ### 2026-10-02 · 여러 줄 입력과 원본 수정
 
 제품의 회고 수정과 다이닝 추가 메모에는 `NativeInputComponents.swift`의 `TBTextArea`를 사용한다. 기존 TextEditor를 감싸 레이블·초점·비활성·오류/도움말을 제공하며, 편집 viewport 156pt(회고 수정 180pt)와 바깥 10pt 패딩을 구분한다. Dynamic Type 배율로 viewport를 확장하고 긴 입력은 내부에서 스크롤한다.
@@ -35,7 +41,17 @@ DEBUG 독립 표본: `--design-system-preview --plating-native-audit-capture --p
 
 기존 `NativeDesignSystemInventory`의 7개 그룹·59개 컴포넌트·52개 파일 프리뷰·30개 스타일·20개 primitive 수치는 웹 카탈로그 이식 이력이다. 제품에서 실제 사용 중이라는 뜻이나 모든 상태의 검증 완료를 뜻하지 않는다. 네이티브 등록부는 이 계약과 독립적으로 관리하며, 재사용 판단에 필요한 주요 부품을 추적한다.
 
+## 미니 그래프
+
+그룹형은 `TBMiniChart(values:comparisonValues:axis:)`로 표시한다. 132×32pt 안에서 왼쪽은 이전 계열(중립 회색), 오른쪽은 현재 계열(미각색)이며 두 배열의 공통 최댓값을 사용한다. 4쌍 예시는 막대 폭 12pt·쌍 안 간격 2pt·그룹 간격 8pt다. 호출부가 항목 순서·기간·비교 데이터를 맞춰 전달하며, 기존 홈의 기간 집계는 변경하지 않는다.
+
+`SystemParityComponents.swift`의 `TBMiniChart`를 홈 아카이브·기간 카드가 공유한다. 영역 132×32pt, 간격 3pt, 최대 막대 폭 12pt다. 0은 막대 두께의 절반 높이(기본 6pt·촘촘 4.125pt)의 옅은 표시, 1은 막대 폭과 높이가 같은 원형이다. 2 이상은 1의 높이부터 최대 높이 32까지 비례해 늘린다. 12개 예시의 막대는 8.25pt다. 상세 그래프와 데이터 집계에는 이 시각 보정을 적용하지 않는다. [공통 규격과 Figma·웹 연결](../docs/design/mini-chart.md)을 함께 갱신한다.
+
+`TBMiniAreaChart`의 단일·겹침·비교 영역은 `TBMiniAreaGeometry`의 공통 표시 척도를 사용한다. 132×56pt 안에서 값 0은 높이 0pt, 값 1은 12pt이며, 1 초과 값은 `12 + (값−1)/(공통 최댓값−1) × 44`로 계산한다. 모든 값이 1이면 높이 12pt를 유지한다. 0~1은 0~12pt로 보간하고 미확인·음수·비정상 값 사이를 연결하지 않는다. 단일의 요리 기록 수와 겹침·비교의 미각별 식사 수 단위, 기존 계정 범위·날짜·상태 처리 경로를 유지한다. [영역 그래프 공통 규격](../docs/design/mini-area-chart.md)을 따른다.
+
 ## 글자와 색상
+
+미각 6색·뉴트럴·상태색·알파·대비와 기존 TB 전환 규칙은 [컬러 스타일 가이드](../docs/design/color-style-guide.md)를 따른다. 신맛 대표색 `#FFD600`, 힌트 `#6F6F6F`, 기본 아이콘 `#3F3F3F`는 현재 `TBColor`·`TasteAxis`와 동일하다. 신맛 대표색과 측정 루프의 강조색은 현재 #FFD600으로 같으며, UI·measurement 역할 토큰은 각각 유지한다.
 
 `TBFont`는 Pretendard의 기존 기본 크기를 유지한다. 기본 크기 상한은 18pt이며 Dynamic Type에 따른 실제 표시 크기를 18pt로 강제 제한하지 않는다. 제목과 본문을 새로 작성할 때는 아래 `TBTextStyle`과 `.tbTextStyle(...)`을 우선 사용한다. 긴 문장의 줄 수 제한은 글자 역할이 아닌 컴포넌트에서 정한다.
 
@@ -55,6 +71,9 @@ DEBUG 독립 표본: `--design-system-preview --plating-native-audit-capture --p
 - 미각 `mainColor`는 아이콘·차트 노드·숫자 시그널의 원색이다. 작은 라벨이나 음식명처럼 읽어야 하는 미각 텍스트에는 기존 `tintTextColor`(팔레트 `tintSurfaceText`)를 사용한다. 장문의 일반 본문은 중립색을 사용한다.
 - `TasteChip`의 **라벨 전용** 미각형은 `tintSoft` 배경과 읽기용 `tintSurfaceText` 라벨을 사용한다. **숫자형**은 `textPrimary` 라벨과 `tintTextColor`(팔레트 `tintSurfaceText`) 값을 사용한다. **중립형**은 중립 팔레트를 사용한다. 현재 `SystemParityComponents.swift` 구현을 기준으로 하며 미각 6색 값은 변경하지 않는다.
 - 셰프 가이드 카드는 두 줄 안에서 의미가 완결되는 `chefTranslationSummary`를 사용한다. 긴 `chefTranslationCopy`는 상세 설명에서 유지한다. 글자 축소로 긴 문장을 밀어 넣지 않는다.
+- 요약 카드의 하단 보조 문구는 기본 2줄로 작성한다. 윗줄은 핵심 값을 보완하는 사실·상태, 아랫줄은 기간·대상·비교 기준을 담는다. 각 줄에는 필수 정보 한 가지만 짧은 구절로 쓰고, 그래프와 나란히 놓을 때 텍스트는 카드 절반 이내에서 전체 2줄을 넘지 않게 한다. [요약 카드 UX 라이팅 규칙](../docs/design/summary-card-ux-writing.md)을 따른다. 이 문구 기준의 제품 적용은 별도이며 `CompactSummaryCard.detail`의 현재 구현은 한 줄이다.
+- 카드의 `Description baseline`은 `Hug contents`로 실제 보조 문구 높이를 따르고 상단 정렬한다. 최소 36pt 예약 높이를 두지 않으며, 한 줄은 한 줄 높이, 여러 줄은 기존 줄 간격을 포함한 높이를 사용한다. 제목 간격·문구 폭·줄 수 제한·그래프 크기와 접근성 글자 크기의 자연 높이 확장 규칙은 유지한다.
+- `TasteInsightSummaryCard`는 상승·하강 `TastePointArrowBox`와 각각의 미각명·변화 수치가 있는 기존 두 행을 유지한다. 피그마 대응 카드도 일반 보조 문구로 대체하지 않는다. 과거 점 표시가 있는 Figma 라인 컴포넌트의 연결은 디자인 표본의 규칙이며 네이티브 그래프 런타임 변경을 뜻하지 않는다.
 
 ## 치수와 배치
 
@@ -76,6 +95,14 @@ DEBUG 독립 표본: `--design-system-preview --plating-native-audit-capture --p
 ## 공통 카드 상세 화면
 
 `TasteDetailPage`는 미각변화의 `TBCollapsingTopChromeScrollView`를 재사용한다. 접히는 상단 바, 고정된 조작부, 단일 세로 스크롤을 공유하되 모든 카드에 같은 차트나 기간 필터를 강제하지 않는다. 상단 바·뒤로 가기·가장자리 스와이프는 기존 `AppRoute` 셸이 담당한다.
+
+기록한 식사 상세는 기간 선택 바로 아래에 전체 폭의 `TasteDetailChartPanel`을 첫 콘텐츠로 둔다. 그 아래에는 20pt 간격·좌우 20pt 여백으로 `RecordChartsPanel` 기록량 카드와 `TasteDetailGroup` 기간별 수치 카드를 배치한다. 상단 그래프는 선택 기간의 고유 식사 수, 기록량 카드는 자체 표시 기간의 요리 기록 수를 사용하며 기존 계정·확정 식사일·중복·미확인 처리 계약을 따른다.
+
+이 순서는 `TasteDetailPage`를 사용하는 나머지 상세에도 적용한다. 분포·변화 그래프와 강도·호감 매트릭스는 최상단의 전체 폭 영역에 두고, 여러 감각을 표시할 때도 그래프들을 먼저 배치한다. 아래에는 요약·수치·조건·근거·작업을 좌우 20pt의 카드로 배치하며 카드 사이 간격은 20pt다. 수치 목록은 `TasteDetailGroup`, 설명은 `SectionCard`, 펼치는 세부 조건은 카드 표면을 가진 `TasteDetailDisclosure`를 사용한다. 근거 카드 묶음 내부 간격은 기존 12pt를 유지한다. 그래프가 없는 발견·해석·회상 응답·단순 횟수는 요약 카드부터 시작한다. 여러 그래프 아래의 수치 카드에는 감각과 조건명을 남겨 대응 관계를 유지한다.
+
+배치 변경은 기존 원본·계정 범위와 집계를 사용한다. 감각 분포는 기존 식사별 강도 집계, 매트릭스는 기존 요리 기록 셀 수와 독립 식사 수, 회상 응답은 기존 설문 응답을 사용한다. 새 분모·기간·날짜·분류를 만들지 않으며, 미확인·충돌·로딩·오류·빈 상태와 원본 열기·수정 동작을 유지한다. 대응 Figma 플로우도 같은 순서를 따르고, 그래프가 없는 표본에 새 그래프를 만들지 않는다.
+
+상세 화면의 스크롤 영역은 하단 safe area를 포함해 화면 끝까지 이어진다. 셸은 실제 창의 `safeAreaInsets.bottom`을 `TasteDetailChrome.bottomContentInset`으로 전달하고, `TasteDetailPage`는 콘텐츠 끝에 이 값을 한 번만 더해 마지막 행을 홈 인디케이터 위로 올릴 수 있게 한다. 개별 화면의 기존 내용 여백은 유지한다. 독립 전체 화면은 바깥 `GeometryReader`가 읽은 하단 safe area를 같은 경로로 전달한다. Figma `08 Flows · iOS`의 대응 상세 화면은 402×874 표본에서 스크롤 영역의 하단을 874로, 콘텐츠 끝 안전 여백을 34pt로 표현한다. 34pt는 디자인 표본 값이며 런타임 고정값이 아니다.
 
 미각변화와 누적 지표·카테고리 측정 상세은 `1개월 / 3개월 / 6개월 / 1년 / 전체` 기간 탭을 공통으로 사용한다. 기간을 바꾸면 차트·수치·관련 기록을 같은 기간 범위로 다시 집계하며, 별도의 `요약 / 기록` 상단 탭은 두지 않는다. 발견·조건별 입맛처럼 해석과 근거의 역할 자체가 다른 화면에서만 `TasteDetailSectionPicker`를 유지한다. `TasteDetailPeriodPicker`는 기본 크기에서 캡슐 탭, 접근성 글자 크기에서 메뉴를 사용한다.
 

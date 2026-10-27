@@ -16,12 +16,12 @@ enum SensoryAnalysisEngine {
         case contractUnavailable
         var errorDescription: String? { "감각 분석 기준을 불러오지 못했어요." }
     }
-    static func analyze(entries: [DiningEntry], userID: String = "local-owner", asOf: Date? = nil, suppressedQuestionIDs: [String] = [], preferenceSubmissions: [PreferenceIntakeSubmission] = []) throws -> SensoryAnalysisSnapshot {
-        try analyze(entries: entries, contract: contract, userID: userID, asOf: asOf, suppressedQuestionIDs: suppressedQuestionIDs, preferenceSubmissions: preferenceSubmissions)
+    static func analyze(entries: [DiningEntry], userID: String = "local-owner", asOf: Date? = nil, suppressedQuestionIDs: [String] = [], preferenceSubmissions: [PreferenceIntakeSubmission] = [], referenceDate: Date = Date()) throws -> SensoryAnalysisSnapshot {
+        try analyze(entries: entries, contract: contract, userID: userID, asOf: asOf, suppressedQuestionIDs: suppressedQuestionIDs, preferenceSubmissions: preferenceSubmissions, referenceDate: referenceDate)
     }
-    static func analyze(entries: [DiningEntry], contract: SensoryNativeContract?, userID: String = "local-owner", asOf: Date? = nil, suppressedQuestionIDs: [String] = [], preferenceSubmissions: [PreferenceIntakeSubmission] = []) throws -> SensoryAnalysisSnapshot {
+    static func analyze(entries: [DiningEntry], contract: SensoryNativeContract?, userID: String = "local-owner", asOf: Date? = nil, suppressedQuestionIDs: [String] = [], preferenceSubmissions: [PreferenceIntakeSubmission] = [], referenceDate: Date = Date()) throws -> SensoryAnalysisSnapshot {
         guard contract != nil else { throw AnalysisError.contractUnavailable }
-        var snapshot = buildSnapshot(entries: entries, contract: contract, userID: userID, asOf: asOf, suppressedQuestionIDs: suppressedQuestionIDs)
+        var snapshot = buildSnapshot(entries: entries, contract: contract, userID: userID, asOf: asOf, suppressedQuestionIDs: suppressedQuestionIDs, referenceDate: referenceDate)
         if var model = snapshot.personalModel {
             let queue = model.availableSelections
             let reviews = PersonalTasteSourceReviewQuestions.make(unresolved: snapshot.unresolved, entries: entries, userID: userID)
@@ -32,10 +32,18 @@ enum SensoryAnalysisEngine {
         return snapshot
     }
 
-    private static func buildSnapshot(entries: [DiningEntry], contract: SensoryNativeContract?, userID: String, asOf: Date?, suppressedQuestionIDs: [String]) -> SensoryAnalysisSnapshot {
+    /// Keep undated originals for current recall without treating legacy save dates as meal times.
+    private static func analysisMealDate(_ entry: DiningEntry) -> Date? {
+        guard let date = entry.confirmedMealDate, date.timeIntervalSinceReferenceDate.isFinite else { return nil }
+        return date
+    }
+
+    private static func buildSnapshot(entries: [DiningEntry], contract: SensoryNativeContract?, userID: String, asOf: Date?, suppressedQuestionIDs: [String], referenceDate: Date) -> SensoryAnalysisSnapshot {
         // 같은 ID의 서로 다른 현재 사본을 입력 순서로 고르지 않는다.
         let completed = Dictionary(grouping: entries, by: \.id).values.compactMap { rows -> DiningEntry? in
             guard let first = rows.first, first.hasCompletedTasteFeedback, rows.allSatisfy({ $0 == first }) else { return nil }
+            // One boundary for the model, type, fallback insights and source-review questions.
+            guard analysisMealDate(first).map({ $0 <= referenceDate }) ?? true else { return nil }
             return first
         }.sorted { $0.id.uuidString < $1.id.uuidString }
         let parser = contract.map(SensoryNativeParser.init)
@@ -71,15 +79,15 @@ enum SensoryAnalysisEngine {
                               return span.start >= 0 && span.end > span.start && span.end <= ns.length && ns.substring(with: NSRange(location: span.start, length: span.end - span.start)) == span.quote
                           }) else { continue }
                     let id = stableID([entry.id.uuidString, field, atom.kind, atom.attribute ?? "", atom.value.text, atom.target ?? "whole_dish", atom.phase ?? "unspecified", phrase, String(spans.first?.start ?? 0), evidenceIdentity(atom.selectionEvidence)])
-                    observations.append(.init(id: id, experienceID: entry.id, foodName: entry.menu, recordedAt: entry.date, sourceField: field, kind: atom.kind, attribute: atom.attribute, attributeLabel: atom.reference ?? labels[atom.attribute ?? ""] ?? atom.selectionEvidence?.labelSnapshot ?? (atom.kind == "part_liking" ? "부분 평가" : "음식 전체"), value: atom.value, scale: atom.scale, target: atom.target ?? "whole_dish", phase: atom.phase ?? "unspecified", phrase: phrase, sourceSpans: spans, reference: atom.reference, combinationComponents: atom.combinationComponents ?? [], selectionEvidence: atom.selectionEvidence, mealID: entry.mealID, observedAt: entry.observedAt, knownAt: entry.knownAt(sourceField: field, phrase: phrase, selectionInstanceID: atom.selectionEvidence?.selectionInstanceID), dishKindIDs: entry.dishKindIDs, restaurantID: entry.restaurantID, menuItemID: entry.menuItemID, restaurantName: entry.restaurant, sourceRevision: entry.memoryRevisionNumber, mealTimeIsConfirmed: entry.confirmedMealDate != nil))
+                    observations.append(.init(id: id, experienceID: entry.id, foodName: entry.menu, recordedAt: entry.date, sourceField: field, kind: atom.kind, attribute: atom.attribute, attributeLabel: atom.reference ?? labels[atom.attribute ?? ""] ?? atom.selectionEvidence?.labelSnapshot ?? (atom.kind == "part_liking" ? "부분 평가" : "음식 전체"), value: atom.value, scale: atom.scale, target: atom.target ?? "whole_dish", phase: atom.phase ?? "unspecified", phrase: phrase, sourceSpans: spans, reference: atom.reference, combinationComponents: atom.combinationComponents ?? [], selectionEvidence: atom.selectionEvidence, mealID: entry.mealID, observedAt: analysisMealDate(entry), knownAt: entry.knownAt(sourceField: field, phrase: phrase, selectionInstanceID: atom.selectionEvidence?.selectionInstanceID), dishKindIDs: entry.dishKindIDs, restaurantID: entry.restaurantID, menuItemID: entry.menuItemID, restaurantName: entry.restaurant, sourceRevision: entry.memoryRevisionNumber, mealTimeIsConfirmed: analysisMealDate(entry) != nil))
                 }
                 for pending in result.unresolved {
-                    unresolved.append(.init(id: stableID([entry.id.uuidString, field, pending.reason, pending.phrase, String(pending.sourceSpans.first?.start ?? 0), evidenceIdentity(pending.selectionEvidence)]), experienceID: entry.id, foodName: entry.menu, recordedAt: entry.date, sourceField: field, phrase: pending.phrase, reason: pending.reason, sourceSpans: pending.sourceSpans, needsMeaningReview: result.needsAI || pending.selectionEvidence != nil, selectionEvidence: pending.selectionEvidence, observedAt: entry.observedAt, knownAt: entry.knownAt(sourceField: field, phrase: pending.phrase, selectionInstanceID: pending.selectionEvidence?.selectionInstanceID)))
+                    unresolved.append(.init(id: stableID([entry.id.uuidString, field, pending.reason, pending.phrase, String(pending.sourceSpans.first?.start ?? 0), evidenceIdentity(pending.selectionEvidence)]), experienceID: entry.id, foodName: entry.menu, recordedAt: entry.date, sourceField: field, phrase: pending.phrase, reason: pending.reason, sourceSpans: pending.sourceSpans, needsMeaningReview: result.needsAI || pending.selectionEvidence != nil, selectionEvidence: pending.selectionEvidence, observedAt: analysisMealDate(entry), knownAt: entry.knownAt(sourceField: field, phrase: pending.phrase, selectionInstanceID: pending.selectionEvidence?.selectionInstanceID)))
                 }
             }
         }
-        observations = dedupe(observations, by: { $0.id })
-        unresolved = dedupe(unresolved, by: { $0.id })
+        observations = dedupe(observations, by: { $0.id }).filter { $0.knownAt.map({ $0 <= referenceDate }) ?? true }
+        unresolved = dedupe(unresolved, by: { $0.id }).filter { $0.knownAt.map({ $0 <= referenceDate }) ?? true }
         let entriesByID = Dictionary(uniqueKeysWithValues: completed.map { ($0.id,$0) })
         let selectionKeys = Dictionary(uniqueKeysWithValues: completed.map { ($0.id, PersonalTasteModelBuilder.canonical(effectiveSelections(for: $0, catalog: contract?.selectionCatalog))) })
         var safeAnswerCache: [String: [String]] = [:]
@@ -100,7 +108,7 @@ enum SensoryAnalysisEngine {
             observations = observations.filter { ($0.observedAt ?? .distantFuture) <= asOf && ($0.knownAt ?? .distantFuture) <= asOf }
             unresolved = unresolved.filter { ($0.observedAt ?? .distantFuture) <= asOf && ($0.knownAt ?? .distantFuture) <= asOf }
         }
-        return .init(engineVersion: "\(version):\(contract?.ruleVersion ?? "unavailable")", observations: observations, unresolved: unresolved, insights: buildInsights(observations), mainWing: buildProfile(observations, styles: contract?.styles ?? []), completedExperienceCount: completed.filter { entry in asOf.map { entry.observedAt <= $0 && (entry.updatedAt ?? entry.savedAt ?? .distantFuture) <= $0 } ?? true }.count, sourceExperienceCount: Set(observations.filter { ($0.kind != "sensory_detail" && $0.kind != "unresolved") || ($0.selectionEvidence != nil && $0.selectionEvidence?.resolution != "unresolved") }.map(\.experienceID)).count, actualApiCalls: 0, needsMeaningReview: unresolved.contains(where: \.needsMeaningReview), limits: ["직접 남긴 감각과 평가만 해석하며 음식 이름·기존 점수로 취향을 추정하지 않아요.", "미등록 표현과 복잡한 조건은 원문으로 보관하고 의미 확인을 기다려요.", "메인·윙은 반복 기록을 구분하는 표시 정책이며 검증된 확률이나 고정 성격이 아니에요.", "같은 식사의 여러 기록은 mealID로 묶어 반복 횟수를 계산해요.", "현재 원문을 분석한 결과예요. asOf는 확인 가능한 시각 필터이며 과거 전체 원본 상태의 복원이 아니에요."], personalModel: personalModel, perception: TastePerceptionEngine.build(observations: observations, asOf: asOf))
+        return .init(engineVersion: "\(version):\(contract?.ruleVersion ?? "unavailable")", observations: observations, unresolved: unresolved, insights: buildInsights(observations), mainWing: buildProfile(observations, styles: contract?.styles ?? []), completedExperienceCount: completed.filter { entry in asOf.map { (analysisMealDate(entry) ?? .distantFuture) <= $0 && (entry.updatedAt ?? entry.savedAt ?? .distantFuture) <= $0 } ?? true }.count, sourceExperienceCount: Set(observations.filter { ($0.kind != "sensory_detail" && $0.kind != "unresolved") || ($0.selectionEvidence != nil && $0.selectionEvidence?.resolution != "unresolved") }.map(\.experienceID)).count, actualApiCalls: 0, needsMeaningReview: unresolved.contains(where: \.needsMeaningReview), limits: ["직접 남긴 감각과 평가만 해석하며 음식 이름·기존 점수로 취향을 추정하지 않아요.", "미등록 표현과 복잡한 조건은 원문으로 보관하고 의미 확인을 기다려요.", "메인·윙은 반복 기록을 구분하는 표시 정책이며 검증된 확률이나 고정 성격이 아니에요.", "같은 식사의 여러 기록은 mealID로 묶어 반복 횟수를 계산해요.", "현재 원문을 분석한 결과예요. asOf는 확인 가능한 시각 필터이며 과거 전체 원본 상태의 복원이 아니에요."], personalModel: personalModel, perception: TastePerceptionEngine.build(observations: observations, asOf: asOf))
     }
 
     /// 분석과 질문 응답에서 동일한 이전 선택 복원을 사용한다. 명시적인 빈 배열은 복원하지 않는다.

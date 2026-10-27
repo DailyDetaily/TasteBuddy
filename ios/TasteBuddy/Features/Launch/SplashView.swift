@@ -208,12 +208,12 @@ private final class SplashVectorView: UIView {
             leaf.bounds = plane
             leaf.anchorPoint = CGPoint(x: model.data.symbol.cx / 1000, y: model.data.symbol.cy / 500)
             leaf.position = CGPoint(x: model.data.symbol.cx, y: model.data.symbol.cy)
-            leaf.path = path; leaf.fillColor = UIColor.black.cgColor
+            leaf.path = path; leaf.fillColor = UIColor(TBColor.textPrimary).cgColor
             petalRoot.addSublayer(leaf); petals.append(leaf)
         }
         for path in model.glyphs {
             let glyph = CAShapeLayer(), mask = CAShapeLayer()
-            glyph.frame = plane; glyph.path = path; glyph.fillColor = UIColor.black.cgColor
+            glyph.frame = plane; glyph.path = path; glyph.fillColor = UIColor(TBColor.textPrimary).cgColor
             mask.frame = plane; mask.fillColor = UIColor.white.cgColor; mask.fillRule = .evenOdd
             wordRoot.addSublayer(glyph); glyphs.append(glyph); masks.append(mask); steps.append(-1)
         }
